@@ -46,6 +46,20 @@ export type WalletGroup = {
   weightPct: number;
 };
 
+/** A Core 5 coin aggregated across every wallet it sits in. */
+export type Core5Position = {
+  symbol: string;
+  quantity: number;
+  priceZar: number | null;
+  change24hPct: number | null;
+  valueZar: number;
+  investedZar: number;
+  pnlZar: number;
+  pnlPct: number | null;
+  /** How many wallets hold it — shown so the aggregate isn't misread. */
+  walletCount: number;
+};
+
 export type Mover = {
   symbol: string;
   wallet: string;
@@ -95,7 +109,7 @@ export type PortfolioMeta = {
 export type Portfolio = {
   totals: PortfolioTotals;
   wallets: WalletGroup[];
-  core5: Holding[];
+  core5: Core5Position[];
   gainers: Mover[];
   losers: Mover[];
   /** Every holding, sorted by value descending. */

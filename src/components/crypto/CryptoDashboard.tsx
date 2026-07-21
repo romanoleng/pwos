@@ -287,7 +287,7 @@ function MilestoneHitBanner({ holdings }: { holdings: Holding[] }) {
   );
 }
 
-function Core5Card({ holdings }: { holdings: Holding[] }) {
+function Core5Card({ holdings }: { holdings: Portfolio["core5"] }) {
   return (
     <Card>
       <CardHeader
@@ -302,16 +302,21 @@ function Core5Card({ holdings }: { holdings: Holding[] }) {
         <ul className="divide-y divide-line">
           {holdings.map((holding) => (
             <li
-              key={holding.recordId}
+              key={holding.symbol}
               className="flex items-center justify-between gap-3 px-4 py-2.5"
             >
               <div className="min-w-0">
                 <p className="text-sm font-medium">{holding.symbol}</p>
-                <p className="truncate text-[11px] text-faint">{holding.wallet}</p>
+                <p className="truncate text-[11px] text-faint">
+                  {formatQuantity(holding.quantity)}
+                  {holding.walletCount > 1
+                    ? ` · ${holding.walletCount} wallets`
+                    : ""}
+                </p>
               </div>
               <div className="text-right">
                 <Money
-                  value={holding.valueZar ?? 0}
+                  value={holding.valueZar}
                   variant="whole"
                   className="text-sm"
                 />

@@ -74,8 +74,9 @@ export function formatUnitPrice(value: number, currency: Currency = "ZAR"): stri
   let decimals: number;
   if (magnitude === 0) decimals = 2;
   else if (magnitude >= 1000) decimals = 0;
-  else if (magnitude >= 10) decimals = 2;
-  else if (magnitude >= 1) decimals = 3;
+  // No 3-decimal tier: en-ZA uses "," as the decimal mark, so R6.00 would
+  // render as "R6,000" and read as six thousand rather than six rand.
+  else if (magnitude >= 1) decimals = 2;
   else if (magnitude >= 0.01) decimals = 4;
   else if (magnitude >= 0.0001) decimals = 6;
   else decimals = 8;

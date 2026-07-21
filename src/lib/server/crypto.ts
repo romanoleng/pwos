@@ -11,6 +11,7 @@ import "server-only";
 import { CORE_5, FREEDOM_TARGET_ZAR, WALLET_ORDER } from "@/lib/constants";
 import { assessMilestones, parseMilestones } from "@/lib/crypto/milestones";
 import type {
+  Core5Position,
   Holding,
   Mover,
   Portfolio,
@@ -49,6 +50,42 @@ const HOLDING_FIELDS = [
 function walletRank(wallet: string): number {
   const index = (WALLET_ORDER as readonly string[]).indexOf(wallet);
   return index === -1 ? WALLET_ORDER.length : index;
+}
+
+/**
+ * Core 5 coins are held across several wallets (BTC sits in both Luno and
+ * Tangem, ETH in three). A "Core 5" card listing ten rows reads as a bug, so
+ * positions are summed per symbol and the wallet count is kept alongside.
+ */
+function aggregateCore5(holdings: Holding[]): Core5Position[] {
+  const bySymbol = new Map<string, Holding[]>();
+  for (const holding of holdings.filter((h) => h.isCore5)) {
+    const list = bySymbol.get(holding.symbol) ?? [];
+    list.push(holding);
+    bySymbol.set(holding.symbol, list);
+  }
+
+  return [...bySymbol.entries()]
+    .map(([symbol, list]) => {
+      const valueZar = list.reduce((sum, h) => sum + (h.valueZar ?? 0), 0);
+      const investedZar = list.reduce((sum, h) => sum + h.investedZar, 0);
+      const pnlZar = valueZar - investedZar;
+      // Price and 24h move are per-coin, not per-position, so take the first
+      // live figure rather than averaging identical values.
+      const priced = list.find((h) => h.priceZar !== null);
+      return {
+        symbol,
+        quantity: list.reduce((sum, h) => sum + h.quantity, 0),
+        priceZar: priced?.priceZar ?? null,
+        change24hPct: priced?.change24hPct ?? null,
+        valueZar,
+        investedZar,
+        pnlZar,
+        pnlPct: investedZar > 0 ? (pnlZar / investedZar) * 100 : null,
+        walletCount: list.length,
+      } satisfies Core5Position;
+    })
+    .sort((a, b) => b.valueZar - a.valueZar);
 }
 
 export async function getPortfolio(): Promise<Portfolio> {
@@ -201,15 +238,26 @@ export async function getPortfolio(): Promise<Portfolio> {
       return rank !== 0 ? rank : b.valueZar - a.valueZar;
     });
 
-  const movers: Mover[] = holdings
-    .filter((h) => h.change24hPct !== null && h.priceZar !== null)
-    .map((h) => ({
-      symbol: h.symbol,
-      wallet: h.wallet,
-      change24hPct: h.change24hPct!,
-      priceZar: h.priceZar!,
-      valueZar: h.valueZar ?? 0,
-    }));
+  // A 24h move belongs to the coin, not the position. Holding ONDO in two
+  // wallets must not list it twice; values are summed across wallets instead.
+  const moversBySymbol = new Map<string, Mover>();
+  for (const holding of holdings) {
+    if (holding.change24hPct === null || holding.priceZar === null) continue;
+    const existing = moversBySymbol.get(holding.symbol);
+    if (existing) {
+      existing.valueZar += holding.valueZar ?? 0;
+      if (existing.wallet !== holding.wallet) existing.wallet = "multiple wallets";
+    } else {
+      moversBySymbol.set(holding.symbol, {
+        symbol: holding.symbol,
+        wallet: holding.wallet,
+        change24hPct: holding.change24hPct,
+        priceZar: holding.priceZar,
+        valueZar: holding.valueZar ?? 0,
+      });
+    }
+  }
+  const movers: Mover[] = [...moversBySymbol.values()];
 
   const sortedByChange = [...movers].sort((a, b) => b.change24hPct - a.change24hPct);
 
@@ -227,9 +275,7 @@ export async function getPortfolio(): Promise<Portfolio> {
       freedomRemainingZar: Math.max(0, FREEDOM_TARGET_ZAR - totalValue),
     },
     wallets,
-    core5: holdings
-      .filter((h) => h.isCore5)
-      .sort((a, b) => (b.valueZar ?? 0) - (a.valueZar ?? 0)),
+    core5: aggregateCore5(holdings),
     gainers: sortedByChange.filter((m) => m.change24hPct > 0).slice(0, 5),
     losers: sortedByChange
       .filter((m) => m.change24hPct < 0)

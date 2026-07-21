@@ -63,6 +63,34 @@ type SimplePriceResponse = Record<
   { zar?: number; usd?: number; zar_24h_change?: number }
 >;
 
+const sleep = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+
+/**
+ * CoinGecko's public tier rate-limits in bursts and answers 429 with a
+ * Retry-After. Without this retry a single transient 429 drops *every* coin to
+ * its stored Airtable price — which is the worst outcome for a screen whose
+ * entire purpose is live prices, and it fails quietly because the fallback
+ * looks like real data.
+ */
+async function fetchWithRetry(
+  url: string,
+  headers: HeadersInit,
+  attempt = 0,
+): Promise<Response> {
+  const response = await fetch(url, { headers, cache: "no-store" });
+
+  if ((response.status === 429 || response.status >= 500) && attempt < 3) {
+    const retryAfter = Number(response.headers.get("retry-after"));
+    const backoffMs = Number.isFinite(retryAfter) && retryAfter > 0
+      ? Math.min(retryAfter * 1000, 10_000)
+      : 2 ** attempt * 800;
+    await sleep(backoffMs);
+    return fetchWithRetry(url, headers, attempt + 1);
+  }
+
+  return response;
+}
+
 async function fetchPrices(ids: string[]): Promise<Map<string, CoinPrice>> {
   const prices = new Map<string, CoinPrice>();
   if (ids.length === 0) return prices;
@@ -77,7 +105,7 @@ async function fetchPrices(ids: string[]): Promise<Map<string, CoinPrice>> {
     });
 
     const { url, headers } = endpoint(`/simple/price?${params}`);
-    const response = await fetch(url, { headers, cache: "no-store" });
+    const response = await fetchWithRetry(url, headers);
 
     if (!response.ok) {
       throw new Error(`CoinGecko responded ${response.status}`);
