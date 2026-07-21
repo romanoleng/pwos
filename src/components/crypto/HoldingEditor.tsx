@@ -5,6 +5,7 @@ import { useState } from "react";
 import {
   createHolding,
   restoreHolding,
+  setHoldingArchived,
   updateHolding,
   type HoldingSnapshot,
 } from "@/app/actions/holdings";
@@ -178,6 +179,36 @@ export function HoldingEditor({
           <p role="alert" className="mb-3 text-xs text-loss">
             {error}
           </p>
+        ) : null}
+
+        {editing ? (
+          <button
+            type="button"
+            disabled={saving}
+            onClick={async () => {
+              setSaving(true);
+              const result = await setHoldingArchived(editing.recordId, true);
+              setSaving(false);
+              if (!result.ok) {
+                setError(result.error);
+                return;
+              }
+              onClose();
+              onSaved();
+              toast.show({
+                message: `${editing.symbol} archived`,
+                onUndo: async () => {
+                  // Archiving is a checkbox, so undo is simply unticking it.
+                  await setHoldingArchived(editing.recordId, false);
+                  onSaved();
+                  toast.show({ message: `${editing.symbol} restored`, tone: "neutral" });
+                },
+              });
+            }}
+            className="mb-3 w-full rounded-lg border border-line px-3 py-2 text-xs text-muted transition-colors hover:border-loss/40 hover:text-loss disabled:opacity-60"
+          >
+            Archive this position
+          </button>
         ) : null}
 
         <div className="flex gap-2">

@@ -11,6 +11,7 @@ import { isNonAccount, resolveAccount } from "@/lib/accounts";
 import { FIELDS, TABLES } from "@/lib/airtable-fields";
 import {
   budgetCategoryFor,
+  hasSignAnomaly,
   inferTransactionType,
   isNonFinancialCategory,
   type TransactionType,
@@ -31,6 +32,8 @@ export type TransactionRow = {
   type: TransactionType;
   typeConfidence: "stated" | "high" | "low";
   typeReason: string;
+  /** Amount sign contradicts the category — likely an entry slip (§3). */
+  signAnomaly: boolean;
   notes: string | null;
 };
 
@@ -41,6 +44,7 @@ const TXN_FIELDS = [
   FIELDS.transactions.account,
   FIELDS.transactions.date,
   FIELDS.transactions.notes,
+  FIELDS.transactions.type,
 ] as const;
 
 export async function getTransactions(): Promise<TransactionRow[]> {
@@ -56,7 +60,10 @@ export async function getTransactions(): Promise<TransactionRow[]> {
     if (isNonFinancialCategory(category) || isNonAccount(rawAccount)) continue;
 
     const amountZar = numberCell(record, FIELDS.transactions.amount) ?? 0;
-    const inference = inferTransactionType(category, amountZar);
+    // The Type field is now the source of truth; inference is the fallback for
+    // any row written before the backfill or added outside PWOS.
+    const statedType = stringCell(record, FIELDS.transactions.type);
+    const inference = inferTransactionType(category, amountZar, statedType);
     const account = resolveAccount(rawAccount);
 
     rows.push({
@@ -72,6 +79,7 @@ export async function getTransactions(): Promise<TransactionRow[]> {
       type: inference.type,
       typeConfidence: inference.confidence,
       typeReason: inference.reason,
+      signAnomaly: hasSignAnomaly(category, amountZar),
       notes: stringCell(record, FIELDS.transactions.notes),
     });
   }

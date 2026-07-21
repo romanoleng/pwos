@@ -104,6 +104,8 @@ export type PortfolioMeta = {
     marketCapRank?: number;
   }[];
   holdingsCount: number;
+  /** Positions hidden by archiving — still in Airtable. */
+  archivedCount: number;
 };
 
 export type Portfolio = {

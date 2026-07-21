@@ -39,6 +39,8 @@ export const FIELDS = {
     status: "fld4Za8pm5p82Pm50",
     category: "fldwAAwKWdBSAx30j",
     notes: "fldy6RjKLN5iubSF5",
+    /** Checkbox. Set by PWOS to hide a position without deleting it (§9b). */
+    archived: "fldkPq3xjJOY9sCFe",
     m1: "fld4U4jh59SsEne85",
     m2: "fldHIGHprVYvejSvC",
     m3: "fld7oVYZ3SpV5Bw9P",
@@ -52,9 +54,8 @@ export const FIELDS = {
     account: "fldsoRG39bewZ2MWC",
     date: "fldT6wzkOhs44yJ1x",
     notes: "fldvh7XMPP3aQtyV3",
-    // NOTE: there is no Type field yet (income|expense|transfer|contribution).
-    // §3 requires one; adding it needs schema:write, which the app token
-    // deliberately lacks. Until it exists, type is inferred at read time.
+    /** singleSelect: income | expense | transfer | contribution (§3). */
+    type: "fldYkglPU3oyakl93",
   },
   netWorth: {
     name: "fldfxiUQZvJxyTu0f",

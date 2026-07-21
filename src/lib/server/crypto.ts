@@ -22,6 +22,7 @@ import type {
 import {
   FIELDS,
   TABLES,
+  cell,
   listRecords,
   numberCell,
   stringCell,
@@ -44,6 +45,7 @@ const HOLDING_FIELDS = [
   FIELDS.holdings.m3,
   FIELDS.holdings.m4,
   FIELDS.holdings.m5,
+  FIELDS.holdings.archived,
 ] as const;
 
 /** Unknown wallets sort last but are never dropped — see Tangem Cold Wallet. */
@@ -89,7 +91,13 @@ function aggregateCore5(holdings: Holding[]): Core5Position[] {
 }
 
 export async function getPortfolio(): Promise<Portfolio> {
-  const records = await listRecords(TABLES.holdings, { fieldIds: HOLDING_FIELDS });
+  const allRecords = await listRecords(TABLES.holdings, { fieldIds: HOLDING_FIELDS });
+
+  // Archived positions leave the app but stay in Airtable (§9b).
+  const records = allRecords.filter(
+    (record) => cell(record, FIELDS.holdings.archived) !== true,
+  );
+  const archivedCount = allRecords.length - records.length;
 
   const symbols = records
     .map((record) => stringCell(record, FIELDS.holdings.symbol)?.toUpperCase())
@@ -297,6 +305,7 @@ export async function getPortfolio(): Promise<Portfolio> {
       unpricedSymbols: [...new Set(unpricedSymbols)],
       inferredIds,
       holdingsCount: holdings.length,
+      archivedCount,
     },
   };
 }

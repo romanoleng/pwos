@@ -58,6 +58,7 @@ export function TransactionsScreen() {
     .filter((row) => row.type === "income")
     .reduce((total, row) => total + row.amountZar, 0);
   const lowConfidence = all.filter((row) => row.typeConfidence === "low").length;
+  const anomalies = all.filter((row) => row.signAnomaly);
 
   if (error) {
     return (
@@ -133,11 +134,40 @@ export function TransactionsScreen() {
         </div>
       </div>
 
+      {anomalies.length > 0 ? (
+        <details className="rounded-lg border border-warn/30 bg-warn/5 px-3 py-2">
+          <summary className="cursor-pointer text-[11px] font-medium text-warn">
+            {anomalies.length} {anomalies.length === 1 ? "entry looks" : "entries look"}{" "}
+            wrongly signed —{" "}
+            <Money
+              value={anomalies.reduce((t, r) => t + r.amountZar, 0)}
+              variant="whole"
+            />{" "}
+            of spending recorded as money in
+          </summary>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted">
+            These are typed as expenses correctly, so your budgets are right. The
+            amounts are still positive in Airtable though. Fix them there when
+            convenient — nothing here is rewritten automatically.
+          </p>
+          <ul className="mt-2 space-y-1">
+            {anomalies.map((row) => (
+              <li key={row.recordId} className="flex justify-between gap-3 text-[11px]">
+                <span className="truncate text-muted">
+                  {row.date ? formatDate(row.date) : "—"} · {row.description}
+                </span>
+                <Money value={row.amountZar} className="shrink-0" tone="flat" />
+              </li>
+            ))}
+          </ul>
+        </details>
+      ) : null}
+
       {lowConfidence > 0 ? (
         <p className="rounded-lg border border-warn/30 bg-warn/5 px-3 py-2 text-[11px] leading-relaxed text-warn">
           {lowConfidence} {lowConfidence === 1 ? "entry has" : "entries have"}{" "}
-          a guessed type — Airtable has no Type field yet, so it&apos;s inferred from
-          category and amount. Add the field and these become certain.
+          a guessed type — no Type set in Airtable and no category rule matched, so
+          it&apos;s inferred from the amount. Set Type on those rows to make it certain.
         </p>
       ) : null}
 

@@ -146,6 +146,32 @@ export async function restoreHolding(
   }
 }
 
+/**
+ * Archive, not delete (CLAUDE.md §9b).
+ *
+ * Sets the Archived checkbox so the position leaves the app but survives in
+ * Airtable indefinitely. Unticking it restores the row, which is why this
+ * pairs with an undo toast rather than a confirmation dialog.
+ */
+export async function setHoldingArchived(
+  recordId: string,
+  archived: boolean,
+): Promise<MutationResult> {
+  try {
+    await updateRecords(TABLES.holdings, [
+      { id: recordId, fields: { [FIELDS.holdings.archived]: archived } },
+    ]);
+    invalidateCrypto();
+    return { ok: true, data: undefined };
+  } catch (error) {
+    console.error("[setHoldingArchived]", error);
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Could not archive it.",
+    };
+  }
+}
+
 export type NewHolding = {
   symbol: string;
   coin?: string;
