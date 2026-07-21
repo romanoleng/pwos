@@ -1,12 +1,13 @@
 "use client";
 
-import { ChevronDown } from "lucide-react";
+import { ChevronDown, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 
 import { LiveIndicator } from "@/components/crypto/LiveIndicator";
 import { PortfolioChart } from "@/components/crypto/PortfolioChart";
 import { SnapshotButton } from "@/components/crypto/SnapshotButton";
+import { HoldingEditor } from "@/components/crypto/HoldingEditor";
 import { MilestoneLadder } from "@/components/crypto/MilestoneLadder";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money, Percent } from "@/components/ui/Money";
@@ -29,6 +30,12 @@ async function fetcher(url: string): Promise<Portfolio> {
 }
 
 export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
+  const { mutate } = useSWRConfig();
+  const [editor, setEditor] = useState<
+    { kind: "edit"; holding: Holding } | { kind: "add"; wallet?: string } | null
+  >(null);
+  const refresh = () => void mutate("/api/crypto/portfolio");
+
   const { data, error, isValidating } = useSWR<Portfolio>(
     "/api/crypto/portfolio",
     fetcher,
@@ -91,7 +98,15 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
 
       <PortfolioChart totals={data.totals} />
 
-      <div className="flex justify-end">
+      <div className="flex flex-wrap justify-end gap-2">
+        <button
+          type="button"
+          onClick={() => setEditor({ kind: "add" })}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[11px] text-muted transition-colors hover:border-line-2 hover:text-ink"
+        >
+          <Plus size={13} strokeWidth={1.75} />
+          Add holding
+        </button>
         <SnapshotButton />
       </div>
 
@@ -116,7 +131,10 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
               </div>
             }
           />
-          <HoldingsTable holdings={group.holdings} />
+          <HoldingsTable
+            holdings={group.holdings}
+            onEdit={(holding) => setEditor({ kind: "edit", holding })}
+          />
         </Card>
       ))}
 
@@ -168,6 +186,16 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
           )}
         </p>
       )}
+
+      {editor ? (
+        <HoldingEditor
+          mode={editor}
+          open
+          onClose={() => setEditor(null)}
+          onSaved={refresh}
+          knownWallets={wallets.map((w) => w.wallet)}
+        />
+      ) : null}
     </div>
   );
 }
@@ -381,7 +409,13 @@ function MoverList({
   );
 }
 
-function HoldingsTable({ holdings }: { holdings: Holding[] }) {
+function HoldingsTable({
+  holdings,
+  onEdit,
+}: {
+  holdings: Holding[];
+  onEdit: (holding: Holding) => void;
+}) {
   const [expanded, setExpanded] = useState<string | null>(null);
 
   return (
@@ -455,6 +489,16 @@ function HoldingsTable({ holdings }: { holdings: Holding[] }) {
 
             {open ? (
               <div className="border-t border-line bg-bg/40 px-4 py-3">
+                <div className="mb-3 flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => onEdit(holding)}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-line-2 hover:text-ink"
+                  >
+                    <Pencil size={12} strokeWidth={1.75} />
+                    Edit position
+                  </button>
+                </div>
                 <dl className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">
                   <Stat label="Invested">
                     <Money value={holding.investedZar} variant="whole" />

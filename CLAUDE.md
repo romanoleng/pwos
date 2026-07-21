@@ -142,6 +142,32 @@ AUTH_SECRET=               # random 32+ char secret
 APP_PASSWORD=              # single-user gate (or passkey config)
 # None of these may be NEXT_PUBLIC_*
 
+## 9b · User experience — interactive, not a report (locked 2026-07-21)
+PWOS is a financial **operating system**, not a reporting dashboard. Every major card supports the
+actions that make sense for it: view · add · edit · delete · import · export · search · filter ·
+drill down · view history. Workflows beat static reporting. It should feel like a premium
+productivity tool — fast, intuitive, and changes reflected everywhere immediately.
+
+Interaction rules:
+- **Undo, not confirm.** Destructive actions apply optimistically with an ~8s undo toast. Confirmation
+  dialogs train the user to click through without reading; an undo window is both faster and safer.
+  The exception is a *hard* delete (below), which is deliberately slow.
+- **Delete means archive.** Set `Status` → Archived where the table has the field (Holdings, Debt
+  Tracker, Savings Goals all do). The row leaves the app but survives in Airtable indefinitely.
+  True deletion lives only in Settings behind a typed confirmation, and still asks Romano (§2.5).
+- **Slide-overs, not modals**, for add/edit — context stays visible behind the panel.
+- **Inline edit** for single values. **⌘K command palette** for everything else.
+- **The browser never composes a write.** Every mutation is a validated server action that recomputes
+  from source; a client-supplied payload is never trusted (see `commitSnapshot`).
+- **Read-your-writes.** Use Next 16's `updateTag` so a change made on Crypto is immediately reflected
+  on Home, Net Worth and Wealth — never a stale figure beside a fresh one.
+- **Airtable has no transactions.** Any multi-write operation (transfer, contribution) must be ordered
+  so a partial failure is detectable and repairable, and must surface the inconsistency rather than
+  hide it.
+
+Build order for this: prove the whole pattern on **Crypto** first — it's live, it's opened daily, and
+it's the honest test of whether the interaction model works. Only then roll it across the other modules.
+
 ## 10 · Guardrails
 - Do NOT reuse, port, or take layout/styling cues from any existing HTML artifacts or prototypes — they were static mobile-viewer hacks. Build the UI fresh from the Concept B design system (§6). Reference old files for data logic only, never for structure or look.
 - Git branch + frequent commits; never fully autonomous against live data without a checkpoint.

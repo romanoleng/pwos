@@ -162,15 +162,16 @@ export async function assertFields(
 }
 
 /* -------------------------------------------------------------------------
-   Writes. Additive only.
+   Writes.
+
+   Create and update only. There is deliberately NO delete helper: §9b makes
+   "delete" mean archive (Status → Archived), which is an update. True deletion
+   is a Settings-only operation that must be asked for explicitly (§2.5, §10),
+   and the capability is not shipped until that exists.
    ---------------------------------------------------------------------- */
 
 /**
  * Creates records after verifying every field id against the live schema.
- *
- * There is deliberately no delete or bulk-overwrite helper in this module.
- * §2.5 and §10 require asking Romano before any destructive write, and the
- * simplest way to honour that is to not ship the capability until it's needed.
  */
 export async function createRecords(
   tableId: string,
@@ -192,6 +193,48 @@ export async function createRecords(
     created.push(...result.records);
   }
   return created;
+}
+
+/**
+ * Updates records by id, verifying field ids against the live schema first.
+ *
+ * PATCH, not PUT — Airtable's PUT clears every field you don't send, which
+ * would silently wipe milestone text when editing a quantity.
+ */
+export async function updateRecords(
+  tableId: string,
+  records: { id: string; fields: Record<string, unknown> }[],
+): Promise<AirtableRecord[]> {
+  if (records.length === 0) return [];
+
+  const fieldIds = [...new Set(records.flatMap((record) => Object.keys(record.fields)))];
+  await assertFields(tableId, fieldIds);
+
+  const updated: AirtableRecord[] = [];
+  for (let index = 0; index < records.length; index += 10) {
+    const batch = records.slice(index, index + 10);
+    const result = (await airtableFetch(`/${env.airtableBaseId}/${tableId}`, {
+      method: "PATCH",
+      body: JSON.stringify({ records: batch, returnFieldsByFieldId: true }),
+    })) as { records: AirtableRecord[] };
+    updated.push(...result.records);
+  }
+  return updated;
+}
+
+/** Fetches one record by id, or null if it no longer exists. */
+export async function getRecord(
+  tableId: string,
+  recordId: string,
+): Promise<AirtableRecord | null> {
+  try {
+    return (await airtableFetch(
+      `/${env.airtableBaseId}/${tableId}/${recordId}?returnFieldsByFieldId=true`,
+    )) as AirtableRecord;
+  } catch (error) {
+    if (error instanceof AirtableError && error.status === 404) return null;
+    throw error;
+  }
 }
 
 /** Reads a single-cell value by field id, tolerating Airtable's shapes. */

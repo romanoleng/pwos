@@ -1,6 +1,7 @@
 import { BottomTabs } from "@/components/shell/BottomTabs";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { TopBar } from "@/components/shell/TopBar";
+import { ToastProvider } from "@/components/ui/Toast";
 
 /**
  * The authenticated shell (CLAUDE.md §6): sidebar ≥ md, bottom tabs below.
@@ -10,6 +11,7 @@ import { TopBar } from "@/components/shell/TopBar";
  */
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
+    <ToastProvider>
     <div className="min-h-dvh">
       <Sidebar />
       <div className="md:pl-60">
@@ -21,5 +23,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       </div>
       <BottomTabs />
     </div>
+    </ToastProvider>
   );
 }

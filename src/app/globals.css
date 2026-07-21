@@ -116,3 +116,19 @@
 @utility pt-safe {
   padding-top: env(safe-area-inset-top, 0px);
 }
+
+/* Undo-window drain bar (see components/ui/Toast.tsx). */
+@keyframes pwos-drain {
+  from { transform: scaleX(1); }
+  to { transform: scaleX(0); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
