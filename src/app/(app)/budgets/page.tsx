@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 
-import { ModulePlaceholder } from "@/components/ui/Card";
+import { BudgetScreen } from "@/components/budget/BudgetScreen";
+import { PageHeader } from "@/components/ui/Card";
 
 export const metadata: Metadata = { title: "Budgets" };
+export const dynamic = "force-dynamic";
 
-export default function Page() {
+export default function BudgetsPage() {
   return (
-    <ModulePlaceholder
-      title="Budgets"
-      description="Cycle runs 24th to 24th. Real expenses only."
-      note="Transfers and contributions never count as spend (§3). Build order step 6."
-    />
+    <>
+      <PageHeader
+        title="Budgets"
+        description="Cycle runs 24th to 24th. Real expenses only."
+      />
+      <BudgetScreen />
+    </>
   );
 }

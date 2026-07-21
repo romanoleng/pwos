@@ -182,6 +182,37 @@ export function countsAsSpend(type: TransactionType): boolean {
   return type === "expense";
 }
 
+/** A genuine money-back entry, as opposed to a mis-signed expense. */
+function looksLikeRefund(description: string | null | undefined): boolean {
+  return /revers|refund|cashback|rebate/i.test(description ?? "");
+}
+
+/**
+ * How much an expense row contributes to budget spend.
+ *
+ * Expenses are stored negative, so spend is normally `-amount`. Two exceptions
+ * matter, and getting either wrong silently corrupts every budget figure:
+ *
+ *  - A genuine refund ("Reversal - Purchase at Pick n Pay", +R508) must
+ *    *reduce* spend, so it keeps the negation.
+ *  - A mis-signed expense (+R1 335 "Checkers groceries") must still *add* to
+ *    spend. Negating it made Groceries read R-1 154 — negative spending, which
+ *    is plainly wrong and would have quietly understated the budget.
+ *
+ * The distinction is the description, and rows in this state are reported via
+ * `hasSignAnomaly` so the source data can be corrected.
+ */
+export function spendContribution(
+  amountZar: number,
+  category: string | null | undefined,
+  description?: string | null,
+): number {
+  if (amountZar > 0 && hasSignAnomaly(category, amountZar) && !looksLikeRefund(description)) {
+    return amountZar;
+  }
+  return -amountZar;
+}
+
 /**
  * Category consolidation. The Transactions table has 48 categories with heavy
  * overlap (Petrol/Fuel, Eating Out/Restaurants/Takeaways/Food & Dining), while
@@ -220,9 +251,8 @@ export const CATEGORY_TO_BUDGET: Record<string, string> = {
   "Home Maintenance": "Levies + Rates",
 
   Payflex: "Payflex",
-  "Store Account Payments": "Payflex",
-  "Debt Repayment": "Payflex",
-  "Debt Payment": "Payflex",
+  // "Debt Repayment", "Debt Payment" and "Store Account Payments" are
+  // deliberately NOT mapped here — see AMBIGUOUS_DEBT_CATEGORIES.
 
   Medical: "Miscellaneous",
   Health: "Miscellaneous",
@@ -237,8 +267,48 @@ export const CATEGORY_TO_BUDGET: Record<string, string> = {
   Miscellaneous: "Miscellaneous",
 };
 
-/** Null when a category has no budget line — surfaced, never silently dropped. */
-export function budgetCategoryFor(category: string | null | undefined): string | null {
+/**
+ * Categories used for more than one debt, so the category alone cannot decide
+ * the budget line.
+ *
+ * Live example: one cycle's "Debt Repayment" rows contain a R10 000 bond
+ * payment, a R2 519 Payflex instalment and a R500 debt-review payment. Mapping
+ * the category straight to Payflex put the bond into the wrong line — Home Bond
+ * read R0 spent while Payflex read 404% over. The descriptions are explicit, so
+ * they decide instead.
+ */
+const AMBIGUOUS_DEBT_CATEGORIES = new Set([
+  "Debt Repayment",
+  "Debt Payment",
+  "Store Account Payments",
+]);
+
+const DESCRIPTION_RULES: { pattern: RegExp; budget: string | null }[] = [
+  { pattern: /\bbond\b|home\s*loan/i, budget: "Home Bond" },
+  { pattern: /payflex/i, budget: "Payflex" },
+  // PayJustNow and the debt review have no budget line. Returning null surfaces
+  // them as unbudgeted spend rather than inflating an unrelated category.
+  { pattern: /pay\s*just\s*now|payjustnow/i, budget: null },
+  { pattern: /debt\s*review|anders|mbd|scm/i, budget: null },
+];
+
+/**
+ * Null when a category has no budget line — surfaced as unbudgeted spend,
+ * never silently folded into an unrelated one.
+ */
+export function budgetCategoryFor(
+  category: string | null | undefined,
+  description?: string | null,
+): string | null {
   if (!category) return null;
-  return CATEGORY_TO_BUDGET[category.trim()] ?? null;
+  const clean = category.trim();
+
+  if (AMBIGUOUS_DEBT_CATEGORIES.has(clean)) {
+    for (const rule of DESCRIPTION_RULES) {
+      if (rule.pattern.test(description ?? "")) return rule.budget;
+    }
+    return null;
+  }
+
+  return CATEGORY_TO_BUDGET[clean] ?? null;
 }

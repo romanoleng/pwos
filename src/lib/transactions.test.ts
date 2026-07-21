@@ -7,6 +7,7 @@ import {
   inferTransactionType,
   hasSignAnomaly,
   isNonFinancialCategory,
+  spendContribution,
 } from "./transactions.ts";
 
 describe("inferTransactionType", () => {
@@ -129,5 +130,77 @@ describe("hasSignAnomaly", () => {
   it("does not flag transfers, which legitimately go both ways", () => {
     assert.equal(hasSignAnomaly("Transfer", 3895), false);
     assert.equal(hasSignAnomaly("Transfer", -1400), false);
+  });
+});
+
+describe("ambiguous debt categories resolve by description", () => {
+  // Real rows from one cycle, all categorised "Debt Repayment":
+  //   R10 000 "Bond payment — ABSA to Hound Bond"
+  //   R2 519  "Payflex monthly payment"
+  //   R500    "Debt review payment — Anders MbD"
+  // Mapping the category straight to Payflex put the bond in the wrong line.
+  it("routes a bond payment to Home Bond, not Payflex", () => {
+    assert.equal(
+      budgetCategoryFor("Debt Repayment", "Bond payment — ABSA to Hound Bond"),
+      "Home Bond",
+    );
+  });
+
+  it("routes a Payflex instalment to Payflex", () => {
+    assert.equal(
+      budgetCategoryFor("Debt Repayment", "Payflex monthly payment"),
+      "Payflex",
+    );
+  });
+
+  it("leaves PayJustNow unbudgeted rather than inflating Payflex", () => {
+    assert.equal(
+      budgetCategoryFor("Store Account Payments", "Pay Just Now monthly payment"),
+      null,
+    );
+  });
+
+  it("leaves the debt review unbudgeted", () => {
+    assert.equal(
+      budgetCategoryFor("Debt Repayment", "Debt review payment — Anders MbD"),
+      null,
+    );
+  });
+
+  it("returns null when the description gives no clue", () => {
+    assert.equal(budgetCategoryFor("Debt Repayment", "monthly payment"), null);
+    assert.equal(budgetCategoryFor("Debt Repayment", undefined), null);
+  });
+
+  it("does not let description override an unambiguous category", () => {
+    // "Groceries" is unambiguous; a stray word in the description must not
+    // redirect it.
+    assert.equal(budgetCategoryFor("Groceries", "bond street market"), "Groceries");
+  });
+});
+
+describe("spendContribution", () => {
+  it("counts a normally-signed expense as positive spend", () => {
+    assert.equal(spendContribution(-493, "Groceries", "Checkers Sixty60"), 493);
+  });
+
+  it("lets a genuine refund reduce spend", () => {
+    assert.equal(
+      spendContribution(508.47, "Groceries", "Reversal - Purchase at Pick n Pay Asap"),
+      -508.47,
+    );
+  });
+
+  it("still counts a mis-signed expense as spend", () => {
+    // Negating this made Groceries read R-1 154 — negative spending, which
+    // silently understated the budget.
+    assert.equal(spendContribution(1335, "Groceries", "Checkers groceries"), 1335);
+    assert.equal(spendContribution(500, "Fuel", "Petrol — Total/BP"), 500);
+  });
+
+  it("does not treat a positive transfer as spend at all", () => {
+    // Transfers never reach this function, but the sign rule must not claim
+    // them if they ever did.
+    assert.equal(spendContribution(3895, "Transfer", "PayShap received"), -3895);
   });
 });

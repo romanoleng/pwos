@@ -72,7 +72,10 @@ export async function getTransactions(): Promise<TransactionRow[]> {
       description: stringCell(record, FIELDS.transactions.description) ?? "—",
       amountZar,
       category,
-      budgetCategory: budgetCategoryFor(category),
+      budgetCategory: budgetCategoryFor(
+        category,
+        stringCell(record, FIELDS.transactions.description),
+      ),
       rawAccount,
       accountId: account?.id ?? null,
       accountLabel: account?.label ?? rawAccount,

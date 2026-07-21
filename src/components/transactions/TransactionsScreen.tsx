@@ -146,9 +146,10 @@ export function TransactionsScreen() {
             of spending recorded as money in
           </summary>
           <p className="mt-2 text-[11px] leading-relaxed text-muted">
-            These are typed as expenses correctly, so your budgets are right. The
-            amounts are still positive in Airtable though. Fix them there when
-            convenient — nothing here is rewritten automatically.
+            These are expenses entered with a positive amount. The app counts them
+            as spend anyway so your budgets are correct, but the source rows are
+            still wrong — fix the signs in Airtable when convenient. Nothing here
+            is rewritten automatically.
           </p>
           <ul className="mt-2 space-y-1">
             {anomalies.map((row) => (
