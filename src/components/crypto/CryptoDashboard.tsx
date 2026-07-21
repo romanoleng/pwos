@@ -5,6 +5,7 @@ import { useState } from "react";
 import useSWR from "swr";
 
 import { LiveIndicator } from "@/components/crypto/LiveIndicator";
+import { PortfolioChart } from "@/components/crypto/PortfolioChart";
 import { MilestoneLadder } from "@/components/crypto/MilestoneLadder";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money, Percent } from "@/components/ui/Money";
@@ -86,6 +87,8 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
           Showing cached prices — live fetch failed ({meta.staleReason}).
         </p>
       ) : null}
+
+      <PortfolioChart totals={data.totals} />
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Core5Card holdings={core5} />
