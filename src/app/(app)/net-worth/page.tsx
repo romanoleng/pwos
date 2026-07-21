@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-
-import { ModulePlaceholder } from "@/components/ui/Card";
-
+import { NetWorthScreen } from "@/components/networth/NetWorthScreen";
+import { PageHeader } from "@/components/ui/Card";
 export const metadata: Metadata = { title: "Net Worth" };
-
-export default function Page() {
+export const dynamic = "force-dynamic";
+export default function NetWorthPage() {
   return (
-    <ModulePlaceholder
-      title="Net Worth"
-      description="Derived from accounts, investments, live crypto and liabilities."
-      note="Derived — never hand-maintained (§3). Build order step 7."
-    />
+    <>
+      <PageHeader title="Net Worth" description="Derived live from assets, live crypto and Debt Tracker." />
+      <NetWorthScreen />
+    </>
   );
 }
