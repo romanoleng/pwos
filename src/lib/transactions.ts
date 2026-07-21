@@ -38,6 +38,76 @@ const CONTRIBUTION_CATEGORIES = new Set([
 
 const INCOME_CATEGORIES = new Set(["Business Income", "Interest", "Allowance"]);
 
+/**
+ * Categories that are unambiguously spending.
+ *
+ * These beat the amount sign, because the live data contains expenses entered
+ * with a positive amount — "Petrol — Total/BP" at R500, "Checkers groceries"
+ * at R1 335, "Smokes — 2 packs" at R84. Trusting the sign there would type a
+ * dozen real expenses as income and quietly move ~R3 500 of spending onto the
+ * wrong side of the budget.
+ *
+ * The sign anomaly is reported separately (see `hasSignAnomaly`) so the
+ * underlying data can be corrected rather than silently worked around.
+ */
+const EXPENSE_CATEGORIES = new Set([
+  "Groceries",
+  "Petrol",
+  "Fuel",
+  "Transport",
+  "Eating Out",
+  "Restaurants",
+  "Takeaways",
+  "Food & Dining",
+  "Going Out",
+  "Subscriptions",
+  "Cellphone",
+  "Business Internet",
+  "Kids",
+  "Family & Kids",
+  "Activities",
+  "Electricity",
+  "Utilities",
+  "Municipal Rates",
+  "Business Levies",
+  "Home Maintenance",
+  "Bond",
+  "Home Loan",
+  "Debt Repayment",
+  "Debt Payment",
+  "Store Account Payments",
+  "Medical",
+  "Health",
+  "Pharmacy",
+  "Personal",
+  "Personal / Lifestyle",
+  "Clothing & Shoes",
+  "Betting/Lottery",
+  "Smokes",
+  "Bank Fees",
+  "Digital Payments",
+  "Miscellaneous",
+  "Meal Prep",
+]);
+
+/**
+ * True when a row's amount sign contradicts its category — a spending category
+ * with money coming in, or an income category with money going out. Almost
+ * always a data-entry slip, occasionally a genuine refund, so it is surfaced
+ * for review rather than corrected automatically.
+ */
+export function hasSignAnomaly(
+  category: string | null | undefined,
+  amountZar: number | null | undefined,
+): boolean {
+  const clean = category?.trim() ?? "";
+  const amount = amountZar ?? 0;
+  if (amount === 0) return false;
+  if (EXPENSE_CATEGORIES.has(clean) && amount > 0) return true;
+  if (INCOME_CATEGORIES.has(clean) && amount < 0) return true;
+  return false;
+}
+
 /** Rows that aren't financial at all — a task note got into the table. */
 const NON_FINANCIAL_CATEGORIES = new Set(["System Task"]);
 
@@ -76,6 +146,17 @@ export function inferTransactionType(
   }
   if (INCOME_CATEGORIES.has(clean)) {
     return { type: "income", confidence: "high", reason: `Category is ${clean}` };
+  }
+  // Category beats sign: see EXPENSE_CATEGORIES for why.
+  if (EXPENSE_CATEGORIES.has(clean)) {
+    return {
+      type: "expense",
+      confidence: "high",
+      reason:
+        (amountZar ?? 0) > 0
+          ? `Category is ${clean} (amount is positive — sign looks wrong)`
+          : `Category is ${clean}`,
+    };
   }
 
   // Fall back to the amount sign. This is the weak rule: a positive amount in a

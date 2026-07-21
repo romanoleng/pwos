@@ -48,9 +48,12 @@ export function TransactionsScreen() {
     });
   }, [all, query, types]);
 
+  // Negate rather than Math.abs: a refund sits in a spending category with a
+  // positive amount ("Reversal - Purchase at Pick n Pay", +R508), and must
+  // reduce spend rather than add to it.
   const spend = visible
     .filter((row) => row.type === "expense")
-    .reduce((total, row) => total + Math.abs(row.amountZar), 0);
+    .reduce((total, row) => total - row.amountZar, 0);
   const income = visible
     .filter((row) => row.type === "income")
     .reduce((total, row) => total + row.amountZar, 0);
