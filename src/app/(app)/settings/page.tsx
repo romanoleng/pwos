@@ -1,15 +1,12 @@
 import type { Metadata } from "next";
-
-import { ModulePlaceholder } from "@/components/ui/Card";
-
+import { SettingsScreen } from "@/components/settings/SettingsScreen";
+import { PageHeader } from "@/components/ui/Card";
 export const metadata: Metadata = { title: "Settings" };
-
-export default function Page() {
+export default function SettingsPage() {
   return (
-    <ModulePlaceholder
-      title="Settings"
-      description="Theme, locale and preferences."
-      note="Theme toggle already lives in the sidebar and mobile header. Build order step 7."
-    />
+    <>
+      <PageHeader title="Settings" description="Preferences, and where each number comes from." />
+      <SettingsScreen />
+    </>
   );
 }

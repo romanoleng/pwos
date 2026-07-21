@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-
-import { ModulePlaceholder } from "@/components/ui/Card";
-
+import { BusinessesScreen } from "@/components/wealth/BusinessesScreen";
+import { PageHeader } from "@/components/ui/Card";
 export const metadata: Metadata = { title: "Businesses" };
-
-export default function Page() {
+export const dynamic = "force-dynamic";
+export default function BusinessesPage() {
   return (
-    <ModulePlaceholder
-      title="Businesses"
-      description="CreativeDigital profile."
-      note="Basic profile in V1 (§4). Build order step 7."
-    />
+    <>
+      <PageHeader title="Businesses" description="CreativeDigital." />
+      <BusinessesScreen />
+    </>
   );
 }

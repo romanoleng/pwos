@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-
-import { ModulePlaceholder } from "@/components/ui/Card";
-
+import { ReportsScreen } from "@/components/reports/ReportsScreen";
+import { PageHeader } from "@/components/ui/Card";
 export const metadata: Metadata = { title: "Reports" };
-
-export default function Page() {
+export const dynamic = "force-dynamic";
+export default function ReportsPage() {
   return (
-    <ModulePlaceholder
-      title="Reports"
-      description="Monthly summary."
-      note="Basic in V1 (§5). Build order step 7."
-    />
+    <>
+      <PageHeader title="Reports" description="Month by month, from your typed ledger." />
+      <ReportsScreen />
+    </>
   );
 }

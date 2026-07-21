@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-
-import { ModulePlaceholder } from "@/components/ui/Card";
-
+import { WealthScreen } from "@/components/wealth/WealthScreen";
+import { PageHeader } from "@/components/ui/Card";
 export const metadata: Metadata = { title: "Wealth Overview" };
-
-export default function Page() {
+export const dynamic = "force-dynamic";
+export default function WealthPage() {
   return (
-    <ModulePlaceholder
-      title="Wealth Overview"
-      description="Consolidated wealth by class and entity."
-      note="Builds after the Airtable client lands (CLAUDE.md §8 step 7)."
-    />
+    <>
+      <PageHeader title="Wealth Overview" description="Everything you own against everything you owe." />
+      <WealthScreen />
+    </>
   );
 }

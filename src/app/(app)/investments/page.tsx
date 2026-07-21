@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-
-import { ModulePlaceholder } from "@/components/ui/Card";
-
+import { InvestmentsScreen } from "@/components/wealth/InvestmentsScreen";
+import { PageHeader } from "@/components/ui/Card";
 export const metadata: Metadata = { title: "Investments" };
-
-export default function Page() {
+export const dynamic = "force-dynamic";
+export default function InvestmentsPage() {
   return (
-    <ModulePlaceholder
-      title="Investments"
-      description="RA, TFSA, equities, EasyProperties, Family Future."
-      note="Summary balances in V1 (§5). Build order step 7."
-    />
+    <>
+      <PageHeader title="Investments" description="RA, TFSA, equities and property — summary balances." />
+      <InvestmentsScreen />
+    </>
   );
 }

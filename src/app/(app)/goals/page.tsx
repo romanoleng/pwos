@@ -1,15 +1,13 @@
 import type { Metadata } from "next";
-
-import { ModulePlaceholder } from "@/components/ui/Card";
-
+import { GoalsScreen } from "@/components/goals/GoalsScreen";
+import { PageHeader } from "@/components/ui/Card";
 export const metadata: Metadata = { title: "Goals" };
-
-export default function Page() {
+export const dynamic = "force-dynamic";
+export default function GoalsPage() {
   return (
-    <ModulePlaceholder
-      title="Goals"
-      description="Freedom goal, savings goals and coin accumulation."
-      note="Build order step 6."
-    />
+    <>
+      <PageHeader title="Goals" description="The freedom number, savings goals and the kids' accounts." />
+      <GoalsScreen />
+    </>
   );
 }
