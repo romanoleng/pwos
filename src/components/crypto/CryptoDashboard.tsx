@@ -8,11 +8,23 @@ import { LiveIndicator } from "@/components/crypto/LiveIndicator";
 import { PortfolioChart } from "@/components/crypto/PortfolioChart";
 import { SnapshotButton } from "@/components/crypto/SnapshotButton";
 import { HoldingEditor } from "@/components/crypto/HoldingEditor";
+import { HoldingsToolbar } from "@/components/crypto/HoldingsToolbar";
 import { MilestoneLadder } from "@/components/crypto/MilestoneLadder";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money, Percent } from "@/components/ui/Money";
 import { FREEDOM_TARGET_ZAR } from "@/lib/constants";
 import type { Holding, Portfolio } from "@/lib/crypto/types";
+import {
+  EMPTY_FILTER,
+  filterHoldings,
+  holdingsToCsv,
+  isFilterActive,
+  sortHoldings,
+  type HoldingFilter,
+  type SortDirection,
+  type SortKey,
+} from "@/lib/crypto/filter";
+import { toLocalISODate } from "@/lib/crypto/history";
 import { formatPercent, formatQuantity } from "@/lib/format";
 
 type ApiError = { error: string; message: string; variable?: string };
@@ -35,6 +47,10 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
     { kind: "edit"; holding: Holding } | { kind: "add"; wallet?: string } | null
   >(null);
   const refresh = () => void mutate("/api/crypto/portfolio");
+
+  const [filter, setFilter] = useState<HoldingFilter>(EMPTY_FILTER);
+  const [sortKey, setSortKey] = useState<SortKey>("value");
+  const [sortDirection, setSortDirection] = useState<SortDirection>("desc");
 
   const { data, error, isValidating } = useSWR<Portfolio>(
     "/api/crypto/portfolio",
@@ -81,6 +97,29 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
 
   const { meta, wallets, core5, gainers, losers, milestoneHits } = data;
 
+  const filtering = isFilterActive(filter);
+  const visible = sortHoldings(
+    filterHoldings(data.holdings, filter),
+    sortKey,
+    sortDirection,
+  );
+
+  const allHoldings = data.holdings;
+
+  function exportCsv() {
+    // Export what's on screen: if you filtered to losses, you get losses.
+    const csv = holdingsToCsv(filtering ? visible : allHoldings);
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement("a");
+    link.href = url;
+    // toLocalISODate, not toISOString: exporting at 01:00 SAST would otherwise
+    // stamp the file with yesterday's date.
+    link.download = `pwos-holdings-${toLocalISODate(new Date())}.csv`;
+    link.click();
+    URL.revokeObjectURL(url);
+  }
+
   return (
     <div className="space-y-4">
       <PortfolioHeader
@@ -115,7 +154,42 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
         <MoversCard gainers={gainers} losers={losers} />
       </div>
 
-      {wallets.map((group) => (
+      <HoldingsToolbar
+        filter={filter}
+        onFilterChange={setFilter}
+        sortKey={sortKey}
+        sortDirection={sortDirection}
+        onSortChange={(key, direction) => {
+          setSortKey(key);
+          setSortDirection(direction);
+        }}
+        wallets={wallets.map((w) => w.wallet)}
+        onExport={exportCsv}
+        resultCount={visible.length}
+        totalCount={data.holdings.length}
+      />
+
+      {/* While filtering, wallet grouping hides matches behind collapsed
+          sections — so results become one flat, sorted list instead. */}
+      {filtering ? (
+        <Card>
+          <CardHeader
+            title="Results"
+            description={`${visible.length} of ${data.holdings.length} positions`}
+          />
+          {visible.length === 0 ? (
+            <CardBody className="py-8 text-center text-xs text-muted">
+              Nothing matches that.
+            </CardBody>
+          ) : (
+            <HoldingsTable
+              holdings={visible}
+              onEdit={(holding) => setEditor({ kind: "edit", holding })}
+            />
+          )}
+        </Card>
+      ) : (
+        wallets.map((group) => (
         <Card key={group.wallet}>
           <CardHeader
             title={group.wallet}
@@ -136,7 +210,8 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
             onEdit={(holding) => setEditor({ kind: "edit", holding })}
           />
         </Card>
-      ))}
+        ))
+      )}
 
       {meta.inferredIds.length > 0 ? (
         <div className="rounded-xl border border-info/30 bg-info/5 px-4 py-3">
