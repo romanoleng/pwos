@@ -6,6 +6,7 @@ import useSWR from "swr";
 
 import { LiveIndicator } from "@/components/crypto/LiveIndicator";
 import { PortfolioChart } from "@/components/crypto/PortfolioChart";
+import { SnapshotButton } from "@/components/crypto/SnapshotButton";
 import { MilestoneLadder } from "@/components/crypto/MilestoneLadder";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money, Percent } from "@/components/ui/Money";
@@ -89,6 +90,10 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
       ) : null}
 
       <PortfolioChart totals={data.totals} />
+
+      <div className="flex justify-end">
+        <SnapshotButton />
+      </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Core5Card holdings={core5} />
