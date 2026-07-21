@@ -1,0 +1,94 @@
+/**
+ * Shapes shared between the server compute layer and the client UI.
+ * No server imports — this file is safe to pull into a client component.
+ */
+import type { Milestone, MilestoneStatus } from "./milestones";
+
+export type PriceSource = "live" | "airtable-fallback" | "none";
+
+export type Holding = {
+  recordId: string;
+  symbol: string;
+  coin: string | null;
+  wallet: string;
+  quantity: number;
+
+  /** ZAR unit price actually used for valuation. */
+  priceZar: number | null;
+  priceUsd: number | null;
+  priceSource: PriceSource;
+  change24hPct: number | null;
+
+  investedZar: number;
+  valueZar: number | null;
+  pnlZar: number | null;
+  pnlPct: number | null;
+  /** Share of total portfolio value, 0-100. */
+  weightPct: number | null;
+
+  isCore5: boolean;
+  category: string | null;
+
+  milestones: Milestone[];
+  milestoneStatuses: MilestoneStatus[];
+  nextMilestone: MilestoneStatus | null;
+  lastHitMilestone: MilestoneStatus | null;
+  milestonesHitCount: number;
+};
+
+export type WalletGroup = {
+  wallet: string;
+  holdings: Holding[];
+  valueZar: number;
+  investedZar: number;
+  pnlZar: number;
+  pnlPct: number | null;
+  weightPct: number;
+};
+
+export type Mover = {
+  symbol: string;
+  wallet: string;
+  change24hPct: number;
+  priceZar: number;
+  valueZar: number;
+};
+
+export type PortfolioTotals = {
+  valueZar: number;
+  investedZar: number;
+  pnlZar: number;
+  pnlPct: number | null;
+  /** Weighted 24h move across holdings that have live prices. */
+  change24hPct: number | null;
+  change24hZar: number | null;
+  /** Progress toward the R2m freedom number, 0-100 (uncapped above 100). */
+  freedomProgressPct: number;
+  freedomRemainingZar: number;
+};
+
+export type PortfolioMeta = {
+  /** Epoch ms when upstream prices were fetched. */
+  pricesFetchedAt: number;
+  pricesCached: boolean;
+  /** Non-null when prices are stale or unavailable — surfaced in the UI. */
+  staleReason: string | null;
+  /** Symbols with no CoinGecko id, valued from stored Airtable figures. */
+  fallbackSymbols: string[];
+  /** Symbols with no price at all — excluded from totals. */
+  unpricedSymbols: string[];
+  holdingsCount: number;
+};
+
+export type Portfolio = {
+  totals: PortfolioTotals;
+  wallets: WalletGroup[];
+  core5: Holding[];
+  gainers: Mover[];
+  losers: Mover[];
+  /** Every holding, sorted by value descending. */
+  holdings: Holding[];
+  /** Holdings whose live price has crossed an un-actioned milestone. */
+  milestoneHits: Holding[];
+  meta: PortfolioMeta;
+};
