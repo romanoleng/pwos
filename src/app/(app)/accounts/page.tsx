@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 
-import { ModulePlaceholder } from "@/components/ui/Card";
+import { AccountsScreen } from "@/components/accounts/AccountsView";
+import { PageHeader } from "@/components/ui/Card";
 
 export const metadata: Metadata = { title: "Accounts" };
+export const dynamic = "force-dynamic";
 
-export default function Page() {
+export default function AccountsPage() {
   return (
-    <ModulePlaceholder
-      title="Accounts"
-      description="Cash accounts across personal, business and family."
-      note="Build order step 6."
-    />
+    <>
+      <PageHeader
+        title="Accounts"
+        description="Every account, what's in it, and what you can actually spend."
+      />
+      <AccountsScreen />
+    </>
   );
 }

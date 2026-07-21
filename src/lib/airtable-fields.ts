@@ -45,6 +45,45 @@ export const FIELDS = {
     m4: "fldNJ5K4VtW8uWEHZ",
     m5: "fld5SNCiJPQPOP8E8",
   },
+  transactions: {
+    description: "fldkv75saQVcniLIk",
+    amount: "fldrJ6f3gt0PwbJgC",
+    category: "fldhsDTulqpR7MdtA",
+    account: "fldsoRG39bewZ2MWC",
+    date: "fldT6wzkOhs44yJ1x",
+    notes: "fldvh7XMPP3aQtyV3",
+    // NOTE: there is no Type field yet (income|expense|transfer|contribution).
+    // §3 requires one; adding it needs schema:write, which the app token
+    // deliberately lacks. Until it exists, type is inferred at read time.
+  },
+  netWorth: {
+    name: "fldfxiUQZvJxyTu0f",
+    category: "fldBS5N3nnYVMCQ3q",
+    type: "fldGCrLxFR8XIwxZB",
+    valueZar: "fldqBv7liYBBOQ3Lz",
+    notes: "fldzTawYXUivHbh8F",
+    lastUpdated: "fld13UXcF9zmMxxXw",
+  },
+  debt: {
+    name: "fld19zodyvt0yKC1P",
+    type: "fldgVTyiDZrS8Brhd",
+    balanceZar: "fldyDq6KrUTl0MQgt",
+    monthlyZar: "fldRylhwh9GUkXciS",
+    interestPct: "fldZwbE4Ei51vVnm2",
+    priority: "fld9HFlI1tDIedwBJ",
+    status: "fldxbXjuQeD4F9xpH",
+    payoffDate: "fldpRkJrHVVd21Vf4",
+    notes: "fldgVYqZ1kBUGDUnv",
+  },
+  budget: {
+    category: "fld1QIml3qV4jGEpd",
+    type: "fldGbX8xaJD4MtfM8",
+    budgetedZar: "fldl87k7XXfFuzN2K",
+    actualZar: "fldkfB2EJKlHYCGIN",
+    month: "fldHh2t1v4qfuffhy",
+    priority: "fld1NDKCYIKWUgxQk",
+    notes: "fld8IL0p2VKGpmRAJ",
+  },
   marketData: {
     coin: "fld16hk0Hxqjax3gP",
     symbol: "fldJRC8s6xHzW5XVi",
