@@ -164,3 +164,26 @@ APP_PASSWORD=              # single-user gate (or passkey config)
     **singleLineText, not a date field**. `Daily Crypto Report` is ZAR. Handle both; parse dates defensively.
   - `Transactions` has **no type field** (income|expense|transfer|contribution) — §3 requires one.
     Adding it is an additive schema change → **ask Romano before writing**. `temp_do_not_use` fldxxu9rYZGo2RcQ2 is junk.
+
+### Data findings from building the Crypto module (2026-07-21)
+- **Holdings has 48 rows**, not 67 coins — several coins appear in more than one wallet.
+- **Wallets in the data:** EasyCrypto · Luno · Tangem — Forever Bag · Tangem — Growth Engine ·
+  Tangem — Trading · **Tangem — Cold Wallet** (this last one is NOT in §5's list). Wallet ordering
+  must stay tolerant: unknown wallets sort last but are never dropped.
+- **Milestone text uses US number conventions** — `R1,268` is one thousand two hundred sixty-eight,
+  `R181.20` has a decimal point. Display is en-ZA (`R1 268,00`). Parsing these with en-ZA rules
+  misreads every trigger by three orders of magnitude. Pinned by a test.
+- Milestone shapes seen: `Price: R… | Sell R… (N coins) | Keep N`, approximations (`~2,143 coins`,
+  `Keep ~2.998M`), prose sells (`Sell tiny fraction…`, `Keep most`), bracketed notes whose contents
+  must not be mistaken for triggers, and several `n/a` variants. M5 is date/conviction based.
+- **Snapshots (tblLh1ZFJF3U7ekOi) is effectively abandoned** — 1 row, all value columns empty, and
+  its notes describe cash transactions. Do NOT read charts from it.
+- **Daily Crypto Report (tblOnIdrw4iv2Mfun) is the real history** — 34 rows, ZAR, ISO date strings.
+  The retired 3-hourly scheduler wrote up to **9 rows for a single date** (2026-06-21), so any series
+  must collapse to one point per day (last write wins) or it draws a sawtooth that never happened.
+- History stops ~2026-06-24; the scheduler is retired (see the Finance Live State description).
+- **Timezone trap:** `new Date("14 Jun 2026").toISOString()` yields the 13th, because the string parses
+  as local midnight in SAST (UTC+2). Vercel runs in UTC and Romano is UTC+2, so always format dates
+  through `toLocalISODate()` in `src/lib/crypto/history.ts`. Pinned by regression tests.
+- Portfolio is currently **down**: roughly R254k invested against ~R138k value as of the last stored
+  snapshot. Freedom progress ≈ 6.9%. The UI must not soften this.
