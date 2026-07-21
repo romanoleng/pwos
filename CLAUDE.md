@@ -142,6 +142,32 @@ AUTH_SECRET=               # random 32+ char secret
 APP_PASSWORD=              # single-user gate (or passkey config)
 # None of these may be NEXT_PUBLIC_*
 
+## 9b · User experience — interactive, not a report (locked 2026-07-21)
+PWOS is a financial **operating system**, not a reporting dashboard. Every major card supports the
+actions that make sense for it: view · add · edit · delete · import · export · search · filter ·
+drill down · view history. Workflows beat static reporting. It should feel like a premium
+productivity tool — fast, intuitive, and changes reflected everywhere immediately.
+
+Interaction rules:
+- **Undo, not confirm.** Destructive actions apply optimistically with an ~8s undo toast. Confirmation
+  dialogs train the user to click through without reading; an undo window is both faster and safer.
+  The exception is a *hard* delete (below), which is deliberately slow.
+- **Delete means archive.** Set `Status` → Archived where the table has the field (Holdings, Debt
+  Tracker, Savings Goals all do). The row leaves the app but survives in Airtable indefinitely.
+  True deletion lives only in Settings behind a typed confirmation, and still asks Romano (§2.5).
+- **Slide-overs, not modals**, for add/edit — context stays visible behind the panel.
+- **Inline edit** for single values. **⌘K command palette** for everything else.
+- **The browser never composes a write.** Every mutation is a validated server action that recomputes
+  from source; a client-supplied payload is never trusted (see `commitSnapshot`).
+- **Read-your-writes.** Use Next 16's `updateTag` so a change made on Crypto is immediately reflected
+  on Home, Net Worth and Wealth — never a stale figure beside a fresh one.
+- **Airtable has no transactions.** Any multi-write operation (transfer, contribution) must be ordered
+  so a partial failure is detectable and repairable, and must surface the inconsistency rather than
+  hide it.
+
+Build order for this: prove the whole pattern on **Crypto** first — it's live, it's opened daily, and
+it's the honest test of whether the interaction model works. Only then roll it across the other modules.
+
 ## 10 · Guardrails
 - Do NOT reuse, port, or take layout/styling cues from any existing HTML artifacts or prototypes — they were static mobile-viewer hacks. Build the UI fresh from the Concept B design system (§6). Reference old files for data logic only, never for structure or look.
 - Git branch + frequent commits; never fully autonomous against live data without a checkpoint.
@@ -164,3 +190,26 @@ APP_PASSWORD=              # single-user gate (or passkey config)
     **singleLineText, not a date field**. `Daily Crypto Report` is ZAR. Handle both; parse dates defensively.
   - `Transactions` has **no type field** (income|expense|transfer|contribution) — §3 requires one.
     Adding it is an additive schema change → **ask Romano before writing**. `temp_do_not_use` fldxxu9rYZGo2RcQ2 is junk.
+
+### Data findings from building the Crypto module (2026-07-21)
+- **Holdings has 48 rows**, not 67 coins — several coins appear in more than one wallet.
+- **Wallets in the data:** EasyCrypto · Luno · Tangem — Forever Bag · Tangem — Growth Engine ·
+  Tangem — Trading · **Tangem — Cold Wallet** (this last one is NOT in §5's list). Wallet ordering
+  must stay tolerant: unknown wallets sort last but are never dropped.
+- **Milestone text uses US number conventions** — `R1,268` is one thousand two hundred sixty-eight,
+  `R181.20` has a decimal point. Display is en-ZA (`R1 268,00`). Parsing these with en-ZA rules
+  misreads every trigger by three orders of magnitude. Pinned by a test.
+- Milestone shapes seen: `Price: R… | Sell R… (N coins) | Keep N`, approximations (`~2,143 coins`,
+  `Keep ~2.998M`), prose sells (`Sell tiny fraction…`, `Keep most`), bracketed notes whose contents
+  must not be mistaken for triggers, and several `n/a` variants. M5 is date/conviction based.
+- **Snapshots (tblLh1ZFJF3U7ekOi) is effectively abandoned** — 1 row, all value columns empty, and
+  its notes describe cash transactions. Do NOT read charts from it.
+- **Daily Crypto Report (tblOnIdrw4iv2Mfun) is the real history** — 34 rows, ZAR, ISO date strings.
+  The retired 3-hourly scheduler wrote up to **9 rows for a single date** (2026-06-21), so any series
+  must collapse to one point per day (last write wins) or it draws a sawtooth that never happened.
+- History stops ~2026-06-24; the scheduler is retired (see the Finance Live State description).
+- **Timezone trap:** `new Date("14 Jun 2026").toISOString()` yields the 13th, because the string parses
+  as local midnight in SAST (UTC+2). Vercel runs in UTC and Romano is UTC+2, so always format dates
+  through `toLocalISODate()` in `src/lib/crypto/history.ts`. Pinned by regression tests.
+- Portfolio is currently **down**: roughly R254k invested against ~R138k value as of the last stored
+  snapshot. Freedom progress ≈ 6.9%. The UI must not soften this.
