@@ -77,6 +77,18 @@ export type PortfolioMeta = {
   fallbackSymbols: string[];
   /** Symbols with no price at all — excluded from totals. */
   unpricedSymbols: string[];
+  /**
+   * Coins whose CoinGecko id the app inferred rather than read from Airtable.
+   * Surfaced for confirmation: symbols are not unique on CoinGecko, so an
+   * inferred match must be checked before it is trusted as a balance.
+   */
+  inferredIds: {
+    symbol: string;
+    coingeckoId: string;
+    source: "market-data" | "alias" | "inferred";
+    name?: string;
+    marketCapRank?: number;
+  }[];
   holdingsCount: number;
 };
 

@@ -26,40 +26,8 @@ import {
   stringCell,
   type AirtableRecord,
 } from "./airtable";
+import { resolveCoinIds, type ResolvedId } from "./coin-ids";
 import { getPrices } from "./prices";
-
-/**
- * Symbol → CoinGecko id.
- *
- * Primary source is the Market Data table, which already carries a
- * `CoinGecko ID` per coin — so aliases live in the data, not in code. These
- * few are hardcoded only as a safety net for §5's named cases in the event a
- * Market Data row is missing.
- */
-const FALLBACK_IDS: Record<string, string> = {
-  RENDER: "render-token",
-  RNDR: "render-token",
-  POL: "polygon-ecosystem-token",
-};
-
-async function loadCoingeckoIds(): Promise<Map<string, string>> {
-  const records = await listRecords(TABLES.marketData, {
-    fieldIds: [FIELDS.marketData.symbol, FIELDS.marketData.coingeckoId],
-  });
-
-  const map = new Map<string, string>();
-  for (const record of records) {
-    const symbol = stringCell(record, FIELDS.marketData.symbol)?.toUpperCase();
-    const id = stringCell(record, FIELDS.marketData.coingeckoId);
-    if (symbol && id) map.set(symbol, id);
-  }
-
-  for (const [symbol, id] of Object.entries(FALLBACK_IDS)) {
-    if (!map.has(symbol)) map.set(symbol, id);
-  }
-
-  return map;
-}
 
 const HOLDING_FIELDS = [
   FIELDS.holdings.coin,
@@ -84,23 +52,28 @@ function walletRank(wallet: string): number {
 }
 
 export async function getPortfolio(): Promise<Portfolio> {
-  const [records, idsBySymbol] = await Promise.all([
-    listRecords(TABLES.holdings, { fieldIds: HOLDING_FIELDS }),
-    loadCoingeckoIds(),
-  ]);
+  const records = await listRecords(TABLES.holdings, { fieldIds: HOLDING_FIELDS });
+
+  const symbols = records
+    .map((record) => stringCell(record, FIELDS.holdings.symbol)?.toUpperCase())
+    .filter((symbol): symbol is string => Boolean(symbol));
+
+  const idsBySymbol = await resolveCoinIds(symbols);
 
   // Only request prices for coins actually held.
   const wanted = new Set<string>();
   for (const record of records) {
     const symbol = stringCell(record, FIELDS.holdings.symbol)?.toUpperCase();
-    const id = symbol ? idsBySymbol.get(symbol) : undefined;
-    if (id) wanted.add(id);
+    const resolved = symbol ? idsBySymbol.get(symbol) : undefined;
+    if (resolved) wanted.add(resolved.coingeckoId);
   }
 
   const snapshot = await getPrices([...wanted]);
 
   const fallbackSymbols: string[] = [];
   const unpricedSymbols: string[] = [];
+  /** Ids the app guessed rather than read from Airtable — must be confirmed. */
+  const inferredIds: ResolvedId[] = [];
 
   const holdings: Holding[] = records.map((record: AirtableRecord) => {
     const symbol = (stringCell(record, FIELDS.holdings.symbol) ?? "—").toUpperCase();
@@ -108,8 +81,9 @@ export async function getPortfolio(): Promise<Portfolio> {
     const quantity = numberCell(record, FIELDS.holdings.quantity) ?? 0;
     const investedZar = numberCell(record, FIELDS.holdings.investedZar) ?? 0;
 
-    const coingeckoId = idsBySymbol.get(symbol);
-    const live = coingeckoId ? snapshot.prices.get(coingeckoId) : undefined;
+    const resolved = idsBySymbol.get(symbol);
+    const live = resolved ? snapshot.prices.get(resolved.coingeckoId) : undefined;
+    if (live && resolved?.source === "inferred") inferredIds.push(resolved);
 
     let priceZar: number | null = null;
     let priceUsd: number | null = null;
@@ -275,6 +249,7 @@ export async function getPortfolio(): Promise<Portfolio> {
       staleReason: snapshot.staleReason,
       fallbackSymbols: [...new Set(fallbackSymbols)],
       unpricedSymbols: [...new Set(unpricedSymbols)],
+      inferredIds,
       holdingsCount: holdings.length,
     },
   };

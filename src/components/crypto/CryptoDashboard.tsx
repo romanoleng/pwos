@@ -120,6 +120,38 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
         </Card>
       ))}
 
+      {meta.inferredIds.length > 0 ? (
+        <div className="rounded-xl border border-info/30 bg-info/5 px-4 py-3">
+          <p className="text-xs font-medium text-info">
+            {meta.inferredIds.length} coin
+            {meta.inferredIds.length === 1 ? "" : "s"} matched automatically — worth
+            confirming
+          </p>
+          <p className="mt-1 text-[11px] leading-relaxed text-muted">
+            These had no CoinGecko ID in your Market Data table, so the app picked the
+            highest-market-cap coin with an exact symbol match. Symbols aren&apos;t
+            unique on CoinGecko, so check these are the right assets, then paste the id
+            into Market Data to make it permanent.
+          </p>
+          <ul className="mt-2.5 space-y-1">
+            {meta.inferredIds.map((match) => (
+              <li key={match.symbol} className="text-[11px]">
+                <span className="font-medium text-ink">{match.symbol}</span>
+                <span className="text-faint"> → </span>
+                <code className="text-muted">{match.coingeckoId}</code>
+                {match.name ? (
+                  <span className="text-faint">
+                    {" "}
+                    ({match.name}
+                    {match.marketCapRank ? `, rank #${match.marketCapRank}` : ""})
+                  </span>
+                ) : null}
+              </li>
+            ))}
+          </ul>
+        </div>
+      ) : null}
+
       {(meta.fallbackSymbols.length > 0 || meta.unpricedSymbols.length > 0) && (
         <p className="text-xs leading-relaxed text-faint">
           {meta.fallbackSymbols.length > 0 && (
