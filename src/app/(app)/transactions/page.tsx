@@ -1,15 +1,19 @@
 import type { Metadata } from "next";
 
-import { ModulePlaceholder } from "@/components/ui/Card";
+import { TransactionsScreen } from "@/components/transactions/TransactionsScreen";
+import { PageHeader } from "@/components/ui/Card";
 
 export const metadata: Metadata = { title: "Transactions" };
+export const dynamic = "force-dynamic";
 
-export default function Page() {
+export default function TransactionsPage() {
   return (
-    <ModulePlaceholder
-      title="Transactions"
-      description="Typed ledger: income, expense, transfer, contribution."
-      note="Blocked: the Airtable Transactions table has no type field yet (§11). Build order step 6."
-    />
+    <>
+      <PageHeader
+        title="Transactions"
+        description="Log what you spend, as you spend it."
+      />
+      <TransactionsScreen />
+    </>
   );
 }
