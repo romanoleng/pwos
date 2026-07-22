@@ -46,6 +46,7 @@ export function LogTransaction({
   accounts = [],
   allCategories = [],
   kidAccounts = [],
+  suggestsNewCycle = false,
   editing,
 }: {
   open: boolean;
@@ -61,6 +62,11 @@ export function LogTransaction({
   allCategories?: { name: string; kind: string }[];
   /** Lisa's and Liam's accounts, offered as transfer destinations. */
   kidAccounts?: { id: string; child: string | null; account: string }[];
+  /**
+   * Whether the current cycle has run long enough that income probably opens a
+   * new one. Decided on the server, which knows both dates.
+   */
+  suggestsNewCycle?: boolean;
   /** When present the sheet edits this entry instead of creating one. */
   editing?: EditingTransaction;
 }) {
@@ -107,6 +113,7 @@ export function LogTransaction({
       category: chosenCategory || "Transfer",
       account: String(formData.get("account") ?? ""),
       ...destinationFrom(String(formData.get("toAccount") ?? "")),
+      startsCycle: formData.get("startsCycle") === "on",
       date: String(formData.get("date") ?? ""),
       notes: String(formData.get("notes") ?? ""),
     };
@@ -307,6 +314,25 @@ export function LogTransaction({
             ))}
           </select>
         </Field>
+
+        {direction === "in" && !editing ? (
+          <label className="mt-1 flex items-start gap-2.5 rounded-lg border border-line bg-surface-2 px-3 py-2.5">
+            <input
+              type="checkbox"
+              name="startsCycle"
+              defaultChecked={suggestsNewCycle}
+              className="mt-0.5 size-4 shrink-0 accent-[var(--accent)]"
+            />
+            <span className="min-w-0">
+              <span className="block text-xs font-medium">Start a new budget cycle here</span>
+              <span className="mt-0.5 block text-[11px] leading-relaxed text-faint">
+                {suggestsNewCycle
+                  ? "It's been a while since the last one, so this looks like the month's income."
+                  : "Leave this off for a top-up — the cycle you're in keeps running."}
+              </span>
+            </span>
+          </label>
+        ) : null}
 
         {needsDestination && !editing ? (
           <Field

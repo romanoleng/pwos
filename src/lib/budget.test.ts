@@ -115,3 +115,54 @@ describe("spendPace", () => {
     assert.equal(pace, null);
   });
 });
+
+describe("getBudgetCycle with anchors", () => {
+  // Romano is paid by clients, not payroll: 24 Feb, 24 Mar, 23 Apr, 22 May,
+  // 24 Jun. Close to the 24th, never reliably on it.
+  const ANCHORS = ["2026-02-24", "2026-03-24", "2026-04-23", "2026-05-22", "2026-06-24"];
+  const at = (iso: string) => new Date(`${iso}T09:00:00+02:00`);
+
+  it("starts the cycle the day the money actually landed", () => {
+    const cycle = getBudgetCycle(at("2026-05-25"), ANCHORS);
+    assert.equal(cycle.start, "2026-05-22");
+    assert.equal(cycle.end, "2026-06-24");
+  });
+
+  it("runs an open cycle to where payday would nominally fall", () => {
+    // 24 Jun is the newest anchor; July's payment isn't logged yet.
+    const cycle = getBudgetCycle(at("2026-07-22"), ANCHORS);
+    assert.equal(cycle.start, "2026-06-24");
+    assert.equal(cycle.end, "2026-07-24");
+    assert.equal(cycle.remainingDays, 2);
+  });
+
+  it("rolls over on the anchor day itself", () => {
+    assert.equal(getBudgetCycle(at("2026-05-21"), ANCHORS).start, "2026-04-23");
+    assert.equal(getBudgetCycle(at("2026-05-22"), ANCHORS).start, "2026-05-22");
+  });
+
+  it("ignores a mid-cycle top-up that was never anchored", () => {
+    // R15 800 arrived 15 June, three weeks into the May cycle. Inferring the
+    // cycle from income size would have wrongly restarted it here.
+    assert.equal(getBudgetCycle(at("2026-06-16"), ANCHORS).start, "2026-05-22");
+  });
+
+  it("falls back to the 24th before any anchor exists", () => {
+    assert.equal(getBudgetCycle(at("2026-01-10"), ANCHORS).start, "2025-12-24");
+  });
+
+  it("matches the nominal cycle when there are no anchors at all", () => {
+    const withAnchors = getBudgetCycle(at("2026-07-22"), []);
+    const nominal = getBudgetCycle(at("2026-07-22"));
+    assert.deepEqual(withAnchors, nominal);
+  });
+
+  it("is unaffected by duplicate or unsorted anchors", () => {
+    const messy = ["2026-06-24", "2026-02-24", "2026-06-24", "2026-05-22"];
+    assert.equal(getBudgetCycle(at("2026-07-22"), messy).start, "2026-06-24");
+  });
+
+  it("names the cycle for the month it ends in", () => {
+    assert.equal(getBudgetCycle(at("2026-07-22"), ANCHORS).budgetMonth, "2026-07-01");
+  });
+});

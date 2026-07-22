@@ -4,9 +4,10 @@
  */
 import "server-only";
 
-import { getBudgetCycle } from "@/lib/budget";
+
 import type { RecordKind } from "@/lib/records";
 
+import { getCurrentCycle } from "./cycle";
 import { moneyOrNull, sql } from "./db";
 
 export type ResetRow = {
@@ -24,7 +25,7 @@ export type ResetState = {
 };
 
 export async function getResetState(): Promise<ResetState> {
-  const cycle = getBudgetCycle();
+  const cycle = await getCurrentCycle();
 
   const [accounts, debts, budgets, goals, kids, assets] = await Promise.all([
     sql<{ id: string; label: string; balance_zar: string | null; spendable: boolean; kind: string }>`

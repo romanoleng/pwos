@@ -1,14 +1,21 @@
-import { NextResponse } from "next/server";
+import { NextResponse, type NextRequest } from "next/server";
 
+import { isPeriodKind } from "@/lib/period";
 import { safeDbError } from "@/lib/server/db";
 
 import { getHome } from "@/lib/server/home";
 export const dynamic = "force-dynamic";
-/** Reads several Airtable tables; needs more than the default cold-start budget. */
+/** Reads several tables; needs more than the default cold-start budget. */
 export const maxDuration = 30;
-export async function GET() {
+export async function GET(request: NextRequest) {
+  // Validated against the allow-list, so a hand-edited URL can't ask for a
+  // range the app never defined.
+  const requested = request.nextUrl.searchParams.get("period");
+  const period = isPeriodKind(requested) ? requested : "cycle";
   try {
-    return NextResponse.json(await getHome(), { headers: { "Cache-Control": "no-store" } });
+    return NextResponse.json(await getHome(period), {
+      headers: { "Cache-Control": "no-store" },
+    });
   } catch (error) {
     console.error("[home]", error);
     return NextResponse.json(

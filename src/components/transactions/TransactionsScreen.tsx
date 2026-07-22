@@ -39,6 +39,7 @@ export function TransactionsScreen() {
       allCategories: { name: string; kind: string }[];
       categories: string[];
       kidAccounts: { id: string; child: string | null; account: string }[];
+      suggestsNewCycle: boolean;
     };
   }>(
     "/api/home",
@@ -337,6 +338,7 @@ export function TransactionsScreen() {
         accounts={home?.defaults.accounts}
         allCategories={home?.defaults.allCategories}
         kidAccounts={home?.defaults.kidAccounts}
+        suggestsNewCycle={home?.defaults.suggestsNewCycle}
         suggestedCategories={home?.defaults.categories}
       />
 
@@ -349,6 +351,7 @@ export function TransactionsScreen() {
           accounts={home?.defaults.accounts}
           allCategories={home?.defaults.allCategories}
         kidAccounts={home?.defaults.kidAccounts}
+        suggestsNewCycle={home?.defaults.suggestsNewCycle}
           onSaved={() => {
             setEditing(null);
             setExpanded(null);

@@ -4,8 +4,8 @@
  */
 import "server-only";
 
-import { getBudgetCycle } from "@/lib/budget";
 
+import { getCurrentCycle } from "./cycle";
 import { money, sql } from "./db";
 
 export type MonthReport = {
@@ -20,7 +20,7 @@ export type ReportsSummary = {
 };
 
 export async function getReports(): Promise<ReportsSummary> {
-  const cycle = getBudgetCycle();
+  const cycle = await getCurrentCycle();
 
   const [months, categories, current] = await Promise.all([
     sql<{ month: string; income: string; spend: string; transfer: string; contribution: string; n: string }>`

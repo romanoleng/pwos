@@ -2,7 +2,7 @@
 
 import { revalidateTag } from "next/cache";
 
-import { getBudgetCycle } from "@/lib/budget";
+import { getCurrentCycle } from "@/lib/server/cycle";
 import { sql } from "@/lib/server/db";
 
 import type { MutationResult } from "./holdings";
@@ -44,7 +44,7 @@ export async function createBudgetLine(input: {
     return { ok: false, error: "Amount can't be negative." };
   }
 
-  const cycleStart = input.cycleStart || getBudgetCycle().start;
+  const cycleStart = input.cycleStart || (await getCurrentCycle()).start;
 
   try {
     const known = await sql<{ kind: string }>`
@@ -133,7 +133,7 @@ export async function restoreBudgetLine(
 export async function copyBudgetsForward(): Promise<
   MutationResult<{ copied: number; from: string }>
 > {
-  const cycle = getBudgetCycle();
+  const cycle = await getCurrentCycle();
   try {
     const already = await sql<{ n: string }>`
       select count(*)::text as n from budgets where cycle_start = ${cycle.start}::date`;

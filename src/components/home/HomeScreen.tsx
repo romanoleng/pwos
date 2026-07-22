@@ -8,6 +8,7 @@ import useSWR from "swr";
 import { LogTransaction } from "@/components/transactions/LogTransaction";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
+import { PeriodBar, usePeriodKind } from "@/components/ui/PeriodBar";
 import { formatDate, formatPercent } from "@/lib/format";
 import type { HomeSummary } from "@/lib/server/home";
 
@@ -25,7 +26,8 @@ async function fetcher(url: string): Promise<HomeSummary> {
  * is first, and the log button is reachable without scrolling.
  */
 export function HomeScreen() {
-  const { data, error, mutate } = useSWR<HomeSummary>("/api/home", fetcher, {
+  const periodKind = usePeriodKind();
+  const { data, error, mutate } = useSWR<HomeSummary>(`/api/home?period=${periodKind}`, fetcher, {
     refreshInterval: 120_000,
   });
   const [logging, setLogging] = useState(false);
@@ -47,12 +49,43 @@ export function HomeScreen() {
     );
   }
 
-  const { available, cards, budget, today, recent, defaults } = data;
+  const { available, cards, budget, today, recent, defaults, period } = data;
   const usedPct =
     budget.budgetedZar > 0 ? (budget.spentZar / budget.budgetedZar) * 100 : 0;
 
   return (
     <div className="space-y-4">
+      <PeriodBar
+        hint={`${period.label} · ${
+          period.start ? formatDate(period.start) : "the beginning"
+        } → today · ${period.count} ${period.count === 1 ? "entry" : "entries"}`}
+      />
+
+      <Card>
+        <CardBody className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
+          <div>
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
+              Spent · {period.label}
+            </p>
+            <Money
+              value={period.spentZar}
+              variant="whole"
+              className="mt-1 block text-2xl font-semibold tracking-tight"
+            />
+          </div>
+          <div className="text-right">
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
+              Came in
+            </p>
+            <Money
+              value={period.incomeZar}
+              variant="whole"
+              className="mt-1 block text-lg font-medium text-gain"
+            />
+          </div>
+        </CardBody>
+      </Card>
+
       <Card>
         <CardBody>
           <div className="flex items-start justify-between gap-3">
@@ -234,6 +267,7 @@ export function HomeScreen() {
         accounts={defaults.accounts}
         allCategories={defaults.allCategories}
         kidAccounts={defaults.kidAccounts}
+        suggestsNewCycle={defaults.suggestsNewCycle}
       />
     </div>
   );

@@ -38,13 +38,55 @@ function daysBetween(startIso: string, endIso: string): number {
 }
 
 /**
- * The cycle containing `now`.
+ * The cycle containing `now`, given the days income actually landed.
  *
- * On the 24th itself the *new* cycle starts — payday money belongs to the month
- * it funds, not the one just closed.
+ * Anchors win when there are any: Romano is paid by clients, not a payroll, so
+ * the money arrives near the 24th but rarely on it. The 24th remains the
+ * fallback for dates older than the first anchor.
+ *
+ * On the anchor day itself the *new* cycle starts — payday money belongs to the
+ * month it funds, not the one just closed.
  */
-export function getBudgetCycle(now: Date = new Date()): BudgetCycle {
+export function getBudgetCycle(
+  now: Date = new Date(),
+  /** Cycle start dates, any order. */
+  anchors: string[] = [],
+): BudgetCycle {
   const today = toLocalISODate(now);
+
+  if (anchors.length > 0) {
+    const sorted = [...new Set(anchors)].sort();
+    const startedIndex = sorted.findLastIndex((anchor) => anchor <= today);
+    if (startedIndex !== -1) {
+      const start = sorted[startedIndex];
+      const next = sorted[startedIndex + 1];
+      // The cycle runs to the next anchor, or to where the nominal payday
+      // would fall if the next payment hasn't been logged yet.
+      const end = next ?? nominalCycle(start).end;
+      return buildCycle(start, end, today);
+    }
+  }
+
+  return nominalCycle(today);
+}
+
+function buildCycle(start: string, end: string, today: string): BudgetCycle {
+  const totalDays = daysBetween(start, end);
+  const elapsedDays = Math.max(0, daysBetween(start, today));
+  return {
+    start,
+    end,
+    totalDays,
+    elapsedDays: Math.min(elapsedDays, totalDays),
+    remainingDays: Math.max(0, totalDays - elapsedDays),
+    // Named for the month it ends in, matching nominalCycle below.
+    budgetMonth: `${end.slice(0, 7)}-01`,
+  };
+}
+
+/** The fixed 24th-to-24th cycle, used before any anchor exists. */
+function nominalCycle(now: Date | string = new Date()): BudgetCycle {
+  const today = typeof now === "string" ? now : toLocalISODate(now);
   const [year, month, day] = today.split("-").map(Number);
   const monthIndex = month - 1;
 

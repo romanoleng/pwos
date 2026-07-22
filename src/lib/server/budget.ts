@@ -9,12 +9,14 @@
  */
 import "server-only";
 
-import { getBudgetCycle, type BudgetLine, type BudgetSummary } from "@/lib/budget";
+import type { BudgetLine, BudgetSummary } from "@/lib/budget";
+
+import { getCurrentCycle } from "./cycle";
 
 import { money, sql } from "./db";
 
 export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSummary> {
-  const cycle = getBudgetCycle(now);
+  const cycle = await getCurrentCycle(now);
 
   const [lines, unbudgeted, income, spare] = await Promise.all([
     sql<{ id: string; category: string; kind: string | null; budgeted_zar: string; actual_zar: string; txn_count: string }>`

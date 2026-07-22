@@ -15,11 +15,13 @@
  */
 import "server-only";
 
-import { getBudgetCycle } from "@/lib/budget";
 import { toLocalISODate } from "@/lib/crypto/history";
 
 import { getAccounts } from "./accounts";
 import { getBudgetSummary } from "./budget";
+import { resolvePeriod, type PeriodKind } from "@/lib/period";
+
+import { getCurrentCycle, getCycleBounds } from "./cycle";
 import { money, sql } from "./db";
 
 export type HomeCard = {
@@ -55,6 +57,11 @@ export type HomeSummary = {
     cycleEnd: string;
   };
   today: { spendZar: number; count: number };
+  /** Whatever range is selected at the top of the screen. */
+  period: {
+    kind: PeriodKind; start: string | null; end: string; label: string;
+    spentZar: number; incomeZar: number; count: number;
+  };
   recent: HomeTransaction[];
   /** Smart defaults for the log form — last used account, frequent categories. */
   defaults: {
@@ -68,11 +75,17 @@ export type HomeSummary = {
     allCategories: { name: string; kind: string }[];
     /** Lisa's and Liam's accounts — valid transfer destinations. */
     kidAccounts: { id: string; child: string | null; account: string }[];
+    /** Start of the cycle in progress. */
+    cycleStart: string;
+    /** The current cycle has run its course, so income likely opens a new one. */
+    suggestsNewCycle: boolean;
   };
 };
 
-export async function getHome(): Promise<HomeSummary> {
-  const todayIso0 = toLocalISODate(new Date());
+export async function getHome(
+  periodKind: PeriodKind = "cycle",
+): Promise<HomeSummary> {
+  const todayIso = toLocalISODate(new Date());
   const [accounts, budget, recentRows, todayRow, catRows, descRows, accountRows, allCatRows, kidRows] =
     await Promise.all([
     getAccounts(),
@@ -86,7 +99,7 @@ export async function getHome(): Promise<HomeSummary> {
     sql<{ spend: string; n: string }>`
       select coalesce(sum(-amount_zar) filter (where type='expense'),0) as spend,
              count(*)::text as n
-      from transactions where occurred_on = ${todayIso0}::date`,
+      from transactions where occurred_on = ${todayIso}::date`,
     // Pinned categories first — chosen deliberately rather than inferred from
     // frequency, which surfaced duplicate-inflated and debit-order lines while
     // missing the things actually bought in a shop.
@@ -105,9 +118,28 @@ export async function getHome(): Promise<HomeSummary> {
       select id::text, child, account from kids_accounts order by child, account`,
   ]);
 
-  const cycle = getBudgetCycle();
+  const cycle = await getCurrentCycle();
+
+  // The selected range, and what it actually contains. Resolved server-side so
+  // the figures and the label can never describe different windows.
+  const bounds = await getCycleBounds();
+  const period = resolvePeriod(periodKind, todayIso, bounds);
+  const [periodRow] = await sql<{ spend: string; income: string; n: string }>`
+    select
+      coalesce(sum(-amount_zar) filter (where type = 'expense'), 0) as spend,
+      coalesce(sum(amount_zar)  filter (where type = 'income'),  0) as income,
+      count(*) filter (where type in ('expense','income'))         as n
+    from transactions
+    where occurred_on < ${period.end}::date
+      and (${period.start}::date is null or occurred_on >= ${period.start}::date)`;
 
   return {
+    period: {
+      kind: period.kind, start: period.start, end: period.end, label: period.label,
+      spentZar: money(periodRow.spend),
+      incomeZar: money(periodRow.income),
+      count: Number(periodRow.n),
+    },
     available: {
       spendableZar: accounts.totals.spendableZar,
       totalCashZar: accounts.totals.cashZar,
@@ -151,6 +183,8 @@ export async function getHome(): Promise<HomeSummary> {
       accounts: accountRows,
       allCategories: allCatRows,
       kidAccounts: kidRows,
+      cycleStart: cycle.start,
+      suggestsNewCycle: cycle.elapsedDays >= 20,
     },
   };
 }

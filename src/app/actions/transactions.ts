@@ -29,6 +29,8 @@ export type NewTransaction = {
   date?: string;
   notes?: string;
   confirmDuplicate?: boolean;
+  /** Income that opens a new pay cycle. Explicit — never inferred (§11). */
+  startsCycle?: boolean;
 };
 
 export type CreatedTransaction = {
@@ -45,7 +47,7 @@ export type DuplicateWarning = {
 };
 
 function invalidate(): void {
-  for (const tag of ["transactions", "accounts", "budget", "networth", "wealth", "kids"]) {
+  for (const tag of ["transactions", "accounts", "budget", "networth", "wealth", "kids", "home"]) {
     revalidateTag(tag, "max");
   }
 }
@@ -100,13 +102,27 @@ export async function createTransaction(
       }
     }
 
+    // Only income can open a cycle: an expense marking the start of a month
+    // would make no sense, and the flag drives the whole budget period.
+    const startsCycle = input.direction === "in" && input.startsCycle === true;
+
     const created = await sql<{ id: string }>`
       insert into transactions
         (occurred_on, description, amount_zar, type, category, account_id, to_account_id,
-         to_kid_account_id, notes)
+         to_kid_account_id, notes, starts_cycle)
       values (${occurredOn}::date, ${description}, ${signed}, ${type}::transaction_type,
-              ${input.category}, ${from}, ${to}, ${toKid}::bigint, ${input.notes || null})
+              ${input.category}, ${from}, ${to}, ${toKid}::bigint, ${input.notes || null},
+              ${startsCycle})
       returning id::text`;
+
+    if (startsCycle) {
+      // Idempotent: logging a second payment on the same day must not create a
+      // second cycle, and re-anchoring an existing day is a no-op.
+      await sql`
+        insert into cycle_anchors (started_on, transaction_id, note)
+        values (${occurredOn}::date, ${created[0].id}::bigint, ${"Logged with income"})
+        on conflict (started_on) do nothing`;
+    }
 
     // Both legs, or neither. Postgres guarantees it.
     const moved = await sql<{ label: string; balance_zar: string | null }>`
@@ -184,7 +200,7 @@ export async function deleteTransaction(
       delete from transactions where id = ${recordId}::bigint
       returning occurred_on::text, description, amount_zar, type::text,
                 category, original_category, account_id, to_account_id,
-                to_kid_account_id::text, notes`;
+                to_kid_account_id::text, notes, starts_cycle`;
     if (rows.length === 0) return { ok: false, error: "That entry no longer exists." };
 
     const row = rows[0];
@@ -203,6 +219,12 @@ export async function deleteTransaction(
     if (row.to_kid_account_id) {
       await sql`update kids_accounts set balance_zar = balance_zar - ${Math.abs(amount)}
                 where id = ${row.to_kid_account_id as string}::bigint`;
+    }
+    // The cycle it opened goes with it, or the budget period would point at a
+    // payment that no longer exists.
+    if (row.starts_cycle) {
+      await sql`delete from cycle_anchors
+                where started_on = ${String(row.occurred_on).slice(0, 10)}::date`;
     }
 
     invalidate();
@@ -224,13 +246,13 @@ export async function restoreTransaction(
     await sql`
       insert into transactions
         (occurred_on, description, amount_zar, type, category, original_category, account_id,
-         to_account_id, to_kid_account_id, notes)
+         to_account_id, to_kid_account_id, notes, starts_cycle)
       values (${String(f.occurred_on).slice(0, 10)}::date, ${f.description as string},
               ${money(f.amount_zar)}, ${f.type as string}::transaction_type,
               ${(f.category as string) ?? null}, ${(f.original_category as string) ?? null},
               ${(f.account_id as string) ?? null}, ${(f.to_account_id as string) ?? null},
               ${(f.to_kid_account_id as string) ?? null}::bigint,
-              ${(f.notes as string) ?? null})`;
+              ${(f.notes as string) ?? null}, ${f.starts_cycle === true})`;
     if (f.account_id) {
       await sql`update accounts set balance_zar = coalesce(balance_zar, 0) + ${money(f.amount_zar)}
                 where id = ${f.account_id as string} and balance_zar is not null`;
@@ -238,6 +260,11 @@ export async function restoreTransaction(
     if (f.to_kid_account_id) {
       await sql`update kids_accounts set balance_zar = balance_zar + ${Math.abs(money(f.amount_zar))}
                 where id = ${f.to_kid_account_id as string}::bigint`;
+    }
+    if (f.starts_cycle === true) {
+      await sql`insert into cycle_anchors (started_on, note)
+                values (${String(f.occurred_on).slice(0, 10)}::date, ${"Restored with income"})
+                on conflict (started_on) do nothing`;
     }
     invalidate();
     return { ok: true, data: undefined };
