@@ -98,7 +98,7 @@ export function EditableAmount({
           if (event.key === "Escape") setEditing(false);
         }}
         aria-label={field.label}
-        className="tnum h-7 w-28 rounded border border-accent bg-surface-2 px-1.5 text-right text-sm outline-none"
+        className="tnum h-8 w-28 rounded border border-accent bg-surface-2 px-1.5 text-right text-base outline-none sm:h-7 sm:text-sm"
       />
     );
   }

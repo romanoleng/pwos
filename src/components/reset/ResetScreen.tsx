@@ -255,7 +255,7 @@ export function ResetScreen() {
                     }
                     placeholder="—"
                     aria-label={`New value for ${row.label}`}
-                    className={`tnum h-9 w-32 shrink-0 rounded-lg border bg-surface-2 px-2 text-right text-sm outline-none transition-colors ${
+                    className={`tnum h-10 w-32 shrink-0 rounded-lg border bg-surface-2 px-2 text-right text-base outline-none transition-colors sm:h-9 sm:text-sm ${
                       invalid
                         ? "border-loss text-loss"
                         : changed

@@ -5,8 +5,9 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 
-import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
+import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money } from "@/components/ui/Money";
 import type { AccountsView as AccountsData } from "@/lib/server/accounts";
 import { formatDate } from "@/lib/format";
@@ -114,11 +115,11 @@ export function AccountsScreen() {
         </div>
       ) : null}
 
-      <Card>
-        <CardHeader
-          title="Accounts"
-          description="Balance as recorded, with ledger activity as a cross-check."
-        />
+      <CollapsibleSection
+        id="accounts:list"
+        title="Accounts"
+        description="Balance as recorded, with ledger activity as a cross-check."
+      >
         <ul className="divide-y divide-line">
           {accounts.map((entry) => {
             const open = expanded === entry.account.id;
@@ -224,7 +225,7 @@ export function AccountsScreen() {
             );
           })}
         </ul>
-      </Card>
+      </CollapsibleSection>
 
       <p className="text-[11px] leading-relaxed text-faint">
         Balances are the figures recorded in your Net Worth table. The ledger column

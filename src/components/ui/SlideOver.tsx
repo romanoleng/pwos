@@ -116,4 +116,4 @@ export function Field({
 }
 
 export const inputClass =
-  "mt-1.5 h-10 w-full rounded-lg border border-line bg-surface-2 px-3 text-sm outline-none transition-colors placeholder:text-faint focus:border-accent";
+  "mt-1.5 h-10 w-full rounded-lg border border-line bg-surface-2 px-3 text-base outline-none transition-colors placeholder:text-faint focus:border-accent sm:text-sm";

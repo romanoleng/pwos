@@ -132,3 +132,31 @@
     transition-duration: 0.01ms !important;
   }
 }
+
+/*
+ * iOS Safari zooms the whole page when a focused input is smaller than 16px,
+ * and there is no way to dismiss that zoom except pinching back. It is not
+ * fixable with user-scalable=no — Safari has ignored that since iOS 10 — so
+ * the only real fix is never rendering a control below 16px on a phone.
+ *
+ * The utilities on each field already do this; this is the floor for anything
+ * that ships without one.
+ */
+@media (max-width: 767px) {
+  input,
+  select,
+  textarea {
+    font-size: 16px;
+  }
+}
+
+@keyframes fade-in {
+  from {
+    opacity: 0;
+    transform: translateY(-2px);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}

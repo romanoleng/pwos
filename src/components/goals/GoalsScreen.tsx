@@ -4,6 +4,7 @@ import useSWR from "swr";
 
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
+import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money } from "@/components/ui/Money";
 import { formatDate, formatMoneyWhole, formatPercent } from "@/lib/format";
 import { isKidInvestment } from "@/lib/kids";
@@ -90,16 +91,16 @@ export function GoalsScreen() {
         )}
       </Card>
 
-      <Card>
-        <CardHeader
-          title="Lisa & Liam"
-          description="Cash they can reach. Their investments live on the Investments screen."
-          action={
-            <span className="text-sm">
-              <Money value={data.totals.kidsSavedZar} variant="whole" />
-            </span>
-          }
-        />
+      <CollapsibleSection
+        id="goals:kids"
+        title="Lisa & Liam"
+        description="Cash they can reach. Their investments live on the Investments screen."
+        action={
+          <span className="text-sm">
+            <Money value={data.totals.kidsSavedZar} variant="whole" />
+          </span>
+        }
+      >
         {savingsAccounts.length === 0 ? (
           <CardBody className="py-8 text-center text-xs text-muted">No accounts recorded.</CardBody>
         ) : (
@@ -118,7 +119,7 @@ export function GoalsScreen() {
             ))}
           </ul>
         )}
-      </Card>
+      </CollapsibleSection>
 
       <p className="text-[11px] text-faint">Tap any figure to edit it. Changes save immediately and can be undone.</p>
     </div>

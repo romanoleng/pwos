@@ -143,7 +143,7 @@ export function TransactionsScreen() {
             onChange={(event) => setQuery(event.target.value)}
             placeholder="Search transactions…"
             aria-label="Search transactions"
-            className="h-10 w-full rounded-lg border border-line bg-surface-2 pl-8 pr-3 text-sm outline-none placeholder:text-faint focus:border-accent"
+            className="h-10 w-full rounded-lg border border-line bg-surface-2 pl-8 pr-3 text-base outline-none placeholder:text-faint focus:border-accent sm:text-sm"
           />
         </div>
         <button

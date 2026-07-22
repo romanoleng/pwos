@@ -11,6 +11,7 @@ import { HoldingEditor } from "@/components/crypto/HoldingEditor";
 import { HoldingsToolbar } from "@/components/crypto/HoldingsToolbar";
 import { MilestoneLadder } from "@/components/crypto/MilestoneLadder";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money, Percent } from "@/components/ui/Money";
 import { FREEDOM_TARGET_ZAR } from "@/lib/constants";
 import type { Holding, Portfolio } from "@/lib/crypto/types";
@@ -190,26 +191,27 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
         </Card>
       ) : (
         wallets.map((group) => (
-        <Card key={group.wallet}>
-          <CardHeader
-            title={group.wallet}
-            description={`${group.holdings.length} ${
-              group.holdings.length === 1 ? "position" : "positions"
-            } · ${formatPercent(group.weightPct)} of portfolio`}
-            action={
-              <div className="text-right">
-                <Money value={group.valueZar} variant="whole" className="text-sm" />
-                <div className="text-xs">
-                  <Money value={group.pnlZar} variant="whole" signed />
-                </div>
+        <CollapsibleSection
+          key={group.wallet}
+          id={`wallet:${group.wallet}`}
+          title={group.wallet}
+          description={`${group.holdings.length} ${
+            group.holdings.length === 1 ? "position" : "positions"
+          } · ${formatPercent(group.weightPct)} of portfolio`}
+          action={
+            <div className="text-right">
+              <Money value={group.valueZar} variant="whole" className="text-sm" />
+              <div className="text-xs">
+                <Money value={group.pnlZar} variant="whole" signed />
               </div>
-            }
-          />
+            </div>
+          }
+        >
           <HoldingsTable
             holdings={group.holdings}
             onEdit={(holding) => setEditor({ kind: "edit", holding })}
           />
-        </Card>
+        </CollapsibleSection>
         ))
       )}
 

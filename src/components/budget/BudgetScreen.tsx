@@ -138,7 +138,7 @@ export function BudgetScreen() {
                   value={incomeDraft}
                   onChange={setIncomeDraft}
                   ariaLabel="Expected income this cycle"
-                  className="tnum mt-1 h-9 w-40 rounded-lg border border-accent bg-surface-2 px-2 text-lg outline-none"
+                  className="tnum mt-1 h-10 w-40 rounded-lg border border-accent bg-surface-2 px-2 text-lg outline-none"
                 />
               )}
               <p className="mt-1 text-[11px] text-faint">
