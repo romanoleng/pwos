@@ -26,6 +26,8 @@ import { Card, CardBody } from "@/components/ui/Card";
  */
 
 const collapsed = new Set<string>();
+/** Ids whose default has been applied — a default must not fight a user tap. */
+const initialised = new Set<string>();
 const listeners = new Set<() => void>();
 
 function emit(): void {
@@ -64,6 +66,13 @@ export function CollapsibleSection({
   children: ReactNode;
   defaultCollapsed?: boolean;
 }) {
+  // First sight of this id applies its default; after that the user's taps
+  // own the state for the session.
+  if (!initialised.has(id)) {
+    initialised.add(id);
+    if (defaultCollapsed) collapsed.add(id);
+  }
+
   const open = !useSyncExternalStore(
     subscribe,
     () => isCollapsed(id),

@@ -7,6 +7,7 @@ import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { PeriodBar, usePeriodKind } from "@/components/ui/PeriodBar";
+import { iconForCategory } from "@/lib/categoryIcons";
 import { formatDate } from "@/lib/format";
 import type { StatSlice, StatsSummary } from "@/lib/server/stats";
 
@@ -211,7 +212,13 @@ function Breakdown({
         {slices.map((slice) => (
           <li key={slice.label} className="px-4 py-3">
             <div className="flex items-baseline justify-between gap-3">
-              <p className="truncate text-sm font-medium">{slice.label}</p>
+              <p className="flex min-w-0 items-center gap-2 text-sm font-medium">
+                {(() => {
+                  const Icon = iconForCategory(slice.label);
+                  return <Icon size={14} strokeWidth={1.75} className="shrink-0 text-muted" />;
+                })()}
+                <span className="truncate">{slice.label}</span>
+              </p>
               <p className="shrink-0 text-sm">
                 <Money value={slice.amountZar} variant="whole" />
               </p>

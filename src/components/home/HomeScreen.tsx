@@ -10,7 +10,7 @@ import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { PeriodBar, usePeriodKind } from "@/components/ui/PeriodBar";
-import { formatDate, formatPercent } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import type { HomeSummary } from "@/lib/server/home";
 
 async function fetcher(url: string): Promise<HomeSummary> {
@@ -62,31 +62,6 @@ export function HomeScreen() {
       />
 
       <Card>
-        <CardBody className="flex flex-wrap items-baseline justify-between gap-x-6 gap-y-2">
-          <div>
-            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
-              Spent · {period.label}
-            </p>
-            <Money
-              value={period.spentZar}
-              variant="whole"
-              className="mt-1 block text-2xl font-semibold tracking-tight"
-            />
-          </div>
-          <div className="text-right">
-            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
-              Came in
-            </p>
-            <Money
-              value={period.incomeZar}
-              variant="whole"
-              className="mt-1 block text-lg font-medium text-gain"
-            />
-          </div>
-        </CardBody>
-      </Card>
-
-      <Card>
         <CardBody>
           <div className="flex items-start justify-between gap-3">
             <div className="min-w-0">
@@ -107,67 +82,69 @@ export function HomeScreen() {
             <button
               type="button"
               onClick={() => setLogging(true)}
-              className="hidden md:inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-accent px-3.5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              className="hidden shrink-0 items-center gap-1.5 rounded-xl bg-accent px-3.5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90 md:inline-flex"
             >
               <Plus size={16} strokeWidth={2.25} />
               Log
             </button>
           </div>
 
-          {today.count > 0 ? (
-            <p className="mt-4 border-t border-line pt-3 text-xs text-muted">
-              Today: <Money value={today.spendZar} variant="whole" className="text-ink" />{" "}
-              across {today.count} {today.count === 1 ? "entry" : "entries"}
-            </p>
-          ) : (
-            <p className="mt-4 border-t border-line pt-3 text-xs text-faint">
-              Nothing logged today.
-            </p>
-          )}
-        </CardBody>
-      </Card>
+          {/* The old three-card stack, compressed to rows: spent and came-in
+              for the selected period, then the budget as a slim bar. Recent
+              now fits on the first screen, which is the log-and-glance flow. */}
+          <dl className="mt-4 grid grid-cols-3 gap-3 border-t border-line pt-3">
+            <div>
+              <dt className="text-[11px] text-faint">Spent</dt>
+              <dd className="mt-0.5 text-sm font-medium">
+                <Money value={period.spentZar} variant="whole" />
+              </dd>
+            </div>
+            <div>
+              <dt className="text-[11px] text-faint">Came in</dt>
+              <dd className="mt-0.5 text-sm font-medium">
+                <Money value={period.incomeZar} variant="whole" className="text-gain" />
+              </dd>
+            </div>
+            <div>
+              <dt className="text-[11px] text-faint">Today</dt>
+              <dd className="mt-0.5 text-sm font-medium">
+                {today.count > 0 ? (
+                  <Money value={today.spendZar} variant="whole" />
+                ) : (
+                  <span className="text-faint">—</span>
+                )}
+              </dd>
+            </div>
+          </dl>
 
-      <Link href="/budgets" className="block">
-        <Card className="transition-colors hover:border-line-2">
-          <CardBody>
+          <Link href="/budgets" className="mt-3 block border-t border-line pt-3">
             <div className="flex items-baseline justify-between gap-3">
-              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
-                {budget.overspent ? "Over budget" : "Budget left"}
+              <p className="text-[11px] text-faint">
+                {budget.overspent ? "Over budget by " : "Budget left "}
+                <Money
+                  value={Math.abs(budget.remainingZar)}
+                  variant="whole"
+                  className={`text-sm font-medium ${budget.overspent ? "text-loss" : "text-ink"}`}
+                />
+                {budget.dailyAllowanceZar !== null ? (
+                  <span className="ml-1.5">
+                    · <Money value={budget.dailyAllowanceZar} variant="whole" /> a day
+                  </span>
+                ) : null}
               </p>
               <p className="text-[11px] text-faint">
                 {budget.daysLeft} {budget.daysLeft === 1 ? "day" : "days"} left
               </p>
             </div>
-
-            <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3">
-              <Money
-                value={Math.abs(budget.remainingZar)}
-                variant="whole"
-                className={`text-2xl font-semibold tracking-tight ${
-                  budget.overspent ? "text-loss" : ""
-                }`}
-              />
-              {budget.dailyAllowanceZar !== null ? (
-                <span className="text-xs text-muted">
-                  <Money value={budget.dailyAllowanceZar} variant="whole" /> a day
-                </span>
-              ) : null}
-            </p>
-
-            <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-raise">
+            <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-raise">
               <div
                 className={`h-full rounded-full ${budget.overspent ? "bg-loss" : "bg-accent"}`}
                 style={{ width: `${Math.min(100, Math.max(0, usedPct))}%` }}
               />
             </div>
-            <p className="mt-2 text-[11px] text-faint">
-              <Money value={budget.spentZar} variant="whole" /> of{" "}
-              <Money value={budget.budgetedZar} variant="whole" /> ·{" "}
-              {formatPercent(usedPct, 0)}
-            </p>
-          </CardBody>
-        </Card>
-      </Link>
+          </Link>
+        </CardBody>
+      </Card>
 
       <Card>
         <CardHeader

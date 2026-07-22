@@ -5,6 +5,7 @@ import { useState } from "react";
 
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
+import { iconForCategory } from "@/lib/categoryIcons";
 import { formatDate } from "@/lib/format";
 import {
   calendarWeeks, groupByMonth, monthsPresent, summariseCategories, type ViewRow,
@@ -213,7 +214,13 @@ export function SummaryView({
               className="w-full px-4 py-3 text-left transition-colors hover:bg-surface-2"
             >
               <div className="flex items-baseline justify-between gap-3">
-                <p className="truncate text-sm font-medium">{share.category}</p>
+                <p className="flex min-w-0 items-center gap-2 truncate text-sm font-medium">
+                  {(() => {
+                    const Icon = iconForCategory(share.category);
+                    return <Icon size={14} strokeWidth={1.75} className="shrink-0 text-muted" />;
+                  })()}
+                  <span className="truncate">{share.category}</span>
+                </p>
                 <p className="shrink-0 text-sm">
                   <Money value={share.spentZar} variant="whole" />
                 </p>

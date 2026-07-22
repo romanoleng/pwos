@@ -194,6 +194,9 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
         <CollapsibleSection
           key={group.wallet}
           id={`wallet:${group.wallet}`}
+          // The daily check is totals + Core 5; the six wallets are the
+          // drill-down, one tap away rather than seven screens deep.
+          defaultCollapsed
           title={group.wallet}
           description={`${group.holdings.length} ${
             group.holdings.length === 1 ? "position" : "positions"

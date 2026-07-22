@@ -14,6 +14,7 @@ import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money } from "@/components/ui/Money";
 import { Field, SlideOver, inputClass } from "@/components/ui/SlideOver";
 import { useToast } from "@/components/ui/Toast";
+import { iconForCategory } from "@/lib/categoryIcons";
 import type { CategoryRow } from "@/lib/server/categories";
 
 async function fetcher(url: string): Promise<{ categories: CategoryRow[] }> {
@@ -132,7 +133,11 @@ export function CategoryManager() {
                 <li key={category.name} className="px-4 py-2.5">
                   <div className="flex items-center justify-between gap-3">
                     <div className="min-w-0">
-                      <p className="truncate text-sm font-medium">
+                      <p className="flex items-center gap-2 truncate text-sm font-medium">
+                        {(() => {
+                          const Icon = iconForCategory(category.name);
+                          return <Icon size={14} strokeWidth={1.75} className="shrink-0 text-muted" />;
+                        })()}
                         {category.name}
                         {category.pinned ? (
                           <Pin

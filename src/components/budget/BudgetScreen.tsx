@@ -16,6 +16,7 @@ import { EditableAmount } from "@/components/ui/EditableAmount";
 import { useToast } from "@/components/ui/Toast";
 import { Money, Percent } from "@/components/ui/Money";
 import { parseAmount } from "@/lib/amount";
+import { iconForCategory } from "@/lib/categoryIcons";
 import { spendPace, type BudgetSummary } from "@/lib/budget";
 import { formatDate, formatPercent } from "@/lib/format";
 
@@ -383,7 +384,11 @@ export function BudgetScreen() {
               return (
                 <li key={line.recordId} className="px-4 py-3">
                   <div className="flex items-baseline justify-between gap-3">
-                    <p className="text-sm font-medium">
+                    <p className="flex items-center gap-2 text-sm font-medium">
+                      {(() => {
+                        const Icon = iconForCategory(line.category);
+                        return <Icon size={14} strokeWidth={1.75} className="shrink-0 text-muted" />;
+                      })()}
                       {line.category}
                       {line.type ? (
                         <span className="ml-2 rounded bg-raise px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-muted">
