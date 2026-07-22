@@ -138,6 +138,42 @@ export function HomeScreen() {
 
       <Card>
         <CardHeader
+          title="Recent"
+          action={
+            <Link href="/transactions" className="text-[11px] text-accent hover:underline">
+              All transactions
+            </Link>
+          }
+        />
+        {recent.length === 0 ? (
+          <CardBody className="py-8 text-center text-xs text-muted">
+            Nothing logged yet.
+          </CardBody>
+        ) : (
+          <ul className="divide-y divide-line">
+            {recent.map((row) => (
+              <li key={row.recordId} className="flex items-center gap-3 px-4 py-2.5">
+                <div className="min-w-0 flex-1">
+                  <p className="truncate text-sm">{row.description}</p>
+                  <p className="mt-0.5 truncate text-[11px] text-faint">
+                    {row.date ? formatDate(row.date) : "—"}
+                    {row.accountLabel ? ` · ${row.accountLabel}` : ""}
+                    {row.category ? ` · ${row.category}` : ""}
+                  </p>
+                </div>
+                <Money
+                  value={row.amountZar}
+                  className="shrink-0 text-sm"
+                  tone={row.amountZar < 0 ? "flat" : "gain"}
+                />
+              </li>
+            ))}
+          </ul>
+        )}
+      </Card>
+
+      <Card>
+        <CardHeader
           title="Your cards"
           action={
             <Link href="/accounts" className="text-[11px] text-accent hover:underline">
@@ -178,42 +214,6 @@ export function HomeScreen() {
             </li>
           ))}
         </ul>
-      </Card>
-
-      <Card>
-        <CardHeader
-          title="Recent"
-          action={
-            <Link href="/transactions" className="text-[11px] text-accent hover:underline">
-              All transactions
-            </Link>
-          }
-        />
-        {recent.length === 0 ? (
-          <CardBody className="py-8 text-center text-xs text-muted">
-            Nothing logged yet.
-          </CardBody>
-        ) : (
-          <ul className="divide-y divide-line">
-            {recent.map((row) => (
-              <li key={row.recordId} className="flex items-center gap-3 px-4 py-2.5">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm">{row.description}</p>
-                  <p className="mt-0.5 truncate text-[11px] text-faint">
-                    {row.date ? formatDate(row.date) : "—"}
-                    {row.accountLabel ? ` · ${row.accountLabel}` : ""}
-                    {row.category ? ` · ${row.category}` : ""}
-                  </p>
-                </div>
-                <Money
-                  value={row.amountZar}
-                  className="shrink-0 text-sm"
-                  tone={row.amountZar < 0 ? "flat" : "gain"}
-                />
-              </li>
-            ))}
-          </ul>
-        )}
       </Card>
 
       <Link
