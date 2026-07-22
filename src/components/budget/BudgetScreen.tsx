@@ -1,9 +1,14 @@
 "use client";
 
+import { Plus, Trash2 } from "lucide-react";
+import { useState } from "react";
 import useSWR from "swr";
 
+import { copyBudgetsForward, deleteBudgetLine, restoreBudgetLine } from "@/app/actions/budgets";
+import { BudgetLineEditor } from "@/components/budget/BudgetLineEditor";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
+import { useToast } from "@/components/ui/Toast";
 import { Money, Percent } from "@/components/ui/Money";
 import { spendPace, type BudgetSummary } from "@/lib/budget";
 import { formatDate, formatPercent } from "@/lib/format";
@@ -21,7 +26,49 @@ export function BudgetScreen() {
   const { data, error, mutate } = useSWR<BudgetSummary>("/api/budget", fetcher, {
     refreshInterval: 120_000,
   });
+  const toast = useToast();
+  const [adding, setAdding] = useState(false);
+  const [busy, setBusy] = useState(false);
   const refresh = () => void mutate();
+
+  async function onRemove(recordId: string, category: string) {
+    setBusy(true);
+    const result = await deleteBudgetLine(recordId);
+    setBusy(false);
+    if (!result.ok) {
+      toast.show({ message: result.error, tone: "error" });
+      return;
+    }
+    refresh();
+    // Removing a line never touches the transactions underneath it, so undo
+    // costs nothing and the spend is still there either way.
+    const { snapshot } = result.data;
+    toast.show({
+      message: `${category} budget removed`,
+      tone: "neutral",
+      onUndo: async () => {
+        const undone = await restoreBudgetLine(snapshot);
+        refresh();
+        toast.show(
+          undone.ok
+            ? { message: `${category} restored`, tone: "neutral" }
+            : { message: `Couldn't undo: ${undone.error}`, tone: "error" },
+        );
+      },
+    });
+  }
+
+  async function onCopyForward() {
+    setBusy(true);
+    const result = await copyBudgetsForward();
+    setBusy(false);
+    if (!result.ok) {
+      toast.show({ message: result.error, tone: "error" });
+      return;
+    }
+    refresh();
+    toast.show({ message: `${result.data.copied} lines copied forward`, tone: "success" });
+  }
 
   if (error) {
     return (
@@ -153,10 +200,41 @@ export function BudgetScreen() {
         <CardHeader
           title="Categories"
           description="Tap a budget figure to change it. Spend is computed from your logged transactions."
+          action={
+            <button
+              type="button"
+              onClick={() => setAdding(true)}
+              className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium hover:bg-surface-2"
+            >
+              <Plus size={13} strokeWidth={2} />
+              Add
+            </button>
+          }
         />
         {lines.length === 0 ? (
-          <CardBody className="py-8 text-center text-xs text-muted">
-            No budget rows for this cycle.
+          <CardBody className="py-8 text-center">
+            <p className="text-sm font-medium">No budget set for this cycle yet</p>
+            <p className="mx-auto mt-1.5 max-w-xs text-xs leading-relaxed text-muted">
+              A cycle starts fresh on payday. Copy last cycle&apos;s lines as a
+              starting point, or add them one at a time.
+            </p>
+            <div className="mt-4 flex flex-wrap justify-center gap-2">
+              <button
+                type="button"
+                onClick={onCopyForward}
+                disabled={busy}
+                className="rounded-lg bg-accent px-3.5 py-2 text-xs font-medium text-white disabled:opacity-60"
+              >
+                Copy last cycle
+              </button>
+              <button
+                type="button"
+                onClick={() => setAdding(true)}
+                className="rounded-lg border border-line px-3.5 py-2 text-xs font-medium"
+              >
+                Add a line
+              </button>
+            </div>
           </CardBody>
         ) : (
           <ul className="divide-y divide-line">
@@ -195,10 +273,19 @@ export function BudgetScreen() {
                     />
                   </div>
 
-                  <p className="mt-1.5 flex justify-between text-[11px] text-faint">
-                    <span>
+                  <p className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-faint">
+                    <span className="flex items-center gap-2">
                       {line.transactionCount}{" "}
                       {line.transactionCount === 1 ? "entry" : "entries"}
+                      <button
+                        type="button"
+                        onClick={() => void onRemove(line.recordId, line.category)}
+                        disabled={busy}
+                        aria-label={`Remove the ${line.category} budget`}
+                        className="text-faint transition-colors hover:text-loss disabled:opacity-40"
+                      >
+                        <Trash2 size={12} strokeWidth={1.75} />
+                      </button>
                     </span>
                     <span className={over ? "text-loss" : ""}>
                       {over ? "over by " : "left "}
@@ -213,6 +300,14 @@ export function BudgetScreen() {
           </ul>
         )}
       </Card>
+
+      <BudgetLineEditor
+        open={adding}
+        onClose={() => setAdding(false)}
+        onSaved={refresh}
+        available={data.availableCategories}
+        cycleLabel={`${formatDate(cycle.start)} → ${formatDate(cycle.end)}`}
+      />
     </div>
   );
 }

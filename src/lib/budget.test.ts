@@ -87,6 +87,7 @@ describe("spendPace", () => {
     unbudgetedZar: 0,
     unbudgetedCategories: [],
     dailyAllowanceZar: null,
+    availableCategories: [],
   };
 
   it("returns 1 when spending tracks the calendar exactly", () => {

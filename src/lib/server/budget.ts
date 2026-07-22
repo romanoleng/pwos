@@ -16,7 +16,7 @@ import { money, sql } from "./db";
 export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSummary> {
   const cycle = getBudgetCycle(now);
 
-  const [lines, unbudgeted, income] = await Promise.all([
+  const [lines, unbudgeted, income, spare] = await Promise.all([
     sql<{ id: string; category: string; kind: string | null; budgeted_zar: string; actual_zar: string; txn_count: string }>`
       select b.id::text, b.category, b.kind, b.budgeted_zar,
              coalesce(sum(-t.amount_zar), 0) as actual_zar,
@@ -51,6 +51,14 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
       where type = 'income'
         and occurred_on >= ${cycle.start}::date
         and occurred_on <  ${cycle.end}::date`,
+
+    // Categories with no line yet — what the "add" picker can still offer.
+    sql<{ name: string; kind: string }>`
+      select c.name, c.kind::text from categories c
+      where not exists (
+        select 1 from budgets b
+        where b.cycle_start = ${cycle.start}::date and b.category = c.name)
+      order by c.kind, c.sort_order, c.name`,
   ]);
 
   const budgetLines: BudgetLine[] = lines.map((r) => {
@@ -81,5 +89,6 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
       category: r.category, amountZar: money(r.amount_zar),
     })),
     dailyAllowanceZar: cycle.remainingDays > 0 ? remainingZar / cycle.remainingDays : null,
+    availableCategories: spare,
   };
 }

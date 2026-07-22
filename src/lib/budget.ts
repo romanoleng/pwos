@@ -105,6 +105,8 @@ export type BudgetSummary = {
   unbudgetedCategories: { category: string; amountZar: number }[];
   /** Remaining budget ÷ days left. Null once the cycle is over. */
   dailyAllowanceZar: number | null;
+  /** Categories that could still be given a line this cycle. */
+  availableCategories: { name: string; kind: string }[];
 };
 
 /**
