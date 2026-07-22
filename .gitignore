@@ -43,3 +43,4 @@ yarn-error.log*
 next-env.d.ts
 
 # Neon connection string lives in .env.local, which is already ignored.
+backups/

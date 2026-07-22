@@ -10,6 +10,7 @@ import "server-only";
 
 import { budgetCategoryFor, type TransactionType } from "@/lib/transactions";
 
+import { cutoverFloor } from "./cutover";
 import { isoDate, money, sql } from "./db";
 
 export type TransactionRow = {
@@ -43,11 +44,14 @@ type Row = {
 };
 
 export async function getTransactions(): Promise<TransactionRow[]> {
+  // Nothing before the reset cutover is shown anywhere in the app.
+  const floor = await cutoverFloor();
   const rows = await sql<Row>`
     select t.id::text, t.occurred_on::text, t.description, t.amount_zar, t.type,
            t.category, t.original_category, t.account_id, a.label as account_label, t.notes
     from transactions t
     left join accounts a on a.id = t.account_id
+    where ${floor}::date is null or t.occurred_on >= ${floor}::date
     order by t.occurred_on desc, t.id desc`;
 
   return rows.map((r) => ({

@@ -18,6 +18,7 @@ import { resolvePeriod, type PeriodKind } from "@/lib/period";
 import { toLocalISODate } from "@/lib/crypto/history";
 
 import { getCycleBounds } from "./cycle";
+import { cutoverFloor } from "./cutover";
 import { money, sql } from "./db";
 
 export type StatSlice = {
@@ -74,10 +75,16 @@ export async function getStats(periodKind: PeriodKind = "cycle"): Promise<StatsS
   const today = toLocalISODate(new Date());
   const bounds = await getCycleBounds();
   const period = resolvePeriod(periodKind, today, bounds);
+  const floor = await cutoverFloor();
 
   // A null start means "everything", so the lower bound is left open rather
   // than faked with an early date that would silently exclude older rows.
-  const start = period.start;
+  // The later of the selected period and the cutover — a period that reaches
+  // back past the reset must still stop at it.
+  const start =
+    floor === null ? period.start
+    : period.start === null ? floor
+    : period.start > floor ? period.start : floor;
   const end = period.end;
 
   const [
@@ -141,6 +148,7 @@ export async function getStats(periodKind: PeriodKind = "cycle"): Promise<StatsS
              coalesce(sum(-amount_zar) filter (where type = 'expense'), 0) as expense
       from transactions
       where occurred_on >= (date_trunc('month', ${today}::date) - interval '11 months')
+        and (${floor}::date is null or occurred_on >= ${floor}::date)
       group by 1 order by 1`,
 
     // The cycle before this one, for the "compared with" line.
@@ -149,7 +157,7 @@ export async function getStats(periodKind: PeriodKind = "cycle"): Promise<StatsS
         coalesce(sum(amount_zar)  filter (where type = 'income'), 0)  as income,
         coalesce(sum(-amount_zar) filter (where type = 'expense'), 0) as expense
       from transactions
-      where ${bounds.previousStart}::date is not null
+      where ${floor}::date is null and ${bounds.previousStart}::date is not null
         and occurred_on >= ${bounds.previousStart}::date
         and occurred_on <  ${bounds.start}::date`,
   ]);

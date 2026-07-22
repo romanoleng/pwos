@@ -21,6 +21,7 @@ import { getAccounts } from "./accounts";
 import { getBudgetSummary } from "./budget";
 import { resolvePeriod, type PeriodKind } from "@/lib/period";
 
+import { cutoverFloor } from "./cutover";
 import { getCurrentCycle, getCycleBounds } from "./cycle";
 import { money, sql } from "./db";
 
@@ -123,7 +124,13 @@ export async function getHome(
   // The selected range, and what it actually contains. Resolved server-side so
   // the figures and the label can never describe different windows.
   const bounds = await getCycleBounds();
+  const floor = await cutoverFloor();
   const period = resolvePeriod(periodKind, todayIso, bounds);
+  // A period reaching back past the reset still stops at it.
+  const periodStart =
+    floor === null ? period.start
+    : period.start === null ? floor
+    : period.start > floor ? period.start : floor;
   const [periodRow] = await sql<{ spend: string; income: string; n: string }>`
     select
       coalesce(sum(-amount_zar) filter (where type = 'expense'), 0) as spend,
@@ -131,7 +138,7 @@ export async function getHome(
       count(*) filter (where type in ('expense','income'))         as n
     from transactions
     where occurred_on < ${period.end}::date
-      and (${period.start}::date is null or occurred_on >= ${period.start}::date)`;
+      and (${periodStart}::date is null or occurred_on >= ${periodStart}::date)`;
 
   return {
     period: {

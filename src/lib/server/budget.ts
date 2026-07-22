@@ -11,6 +11,7 @@ import "server-only";
 
 import type { BudgetLine, BudgetSummary } from "@/lib/budget";
 
+import { cutoverFloor } from "./cutover";
 import { getCurrentCycle } from "./cycle";
 
 import { money, sql } from "./db";
@@ -23,8 +24,11 @@ import { money, sql } from "./db";
  * the two totals need to be visible side by side rather than discovered after.
  */
 async function previewCycleStart(cycleStart: string): Promise<BudgetSummary["cycleStart"]> {
+  // Pre-reset cycles aren't offered: after a reset there is nothing to copy.
+  const floor = await cutoverFloor();
   const previous = await sql<{ cycle_start: string }>`
     select cycle_start::text from budgets where cycle_start < ${cycleStart}::date
+      and (${floor}::date is null or cycle_start >= ${floor}::date)
     order by cycle_start desc limit 1`;
   if (previous.length === 0) return null;
   const from = previous[0].cycle_start;
@@ -61,6 +65,7 @@ async function previewCycleStart(cycleStart: string): Promise<BudgetSummary["cyc
 
 export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSummary> {
   const cycle = await getCurrentCycle(now);
+  const floor = await cutoverFloor();
 
   const [lines, unbudgeted, income, spare, plan, puttingAway] = await Promise.all([
     sql<{ id: string; category: string; kind: string | null; budgeted_zar: string; actual_zar: string; txn_count: string }>`
@@ -74,7 +79,9 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
        and t.type = 'expense'
        and t.occurred_on >= ${cycle.start}::date
        and t.occurred_on <  ${cycle.end}::date
+       and (${floor}::date is null or t.occurred_on >= ${floor}::date)
       where b.cycle_start = ${cycle.start}::date and c.kind = 'expense'
+        and (${floor}::date is null or b.cycle_start >= ${floor}::date)
       group by b.id, b.category, b.kind, b.budgeted_zar
       order by actual_zar desc`,
 
@@ -87,6 +94,7 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
       where t.type = 'expense'
         and t.occurred_on >= ${cycle.start}::date
         and t.occurred_on <  ${cycle.end}::date
+        and (${floor}::date is null or t.occurred_on >= ${floor}::date)
         and not exists (
           select 1 from budgets b
           where b.cycle_start = ${cycle.start}::date and b.category = t.category)
@@ -116,7 +124,8 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
     sql<{ total: string }>`
       select coalesce(sum(b.budgeted_zar), 0) as total from budgets b
       join categories c on c.name = b.category and c.kind = 'contribution'
-      where b.cycle_start = ${cycle.start}::date`,
+      where b.cycle_start = ${cycle.start}::date
+        and (${floor}::date is null or b.cycle_start >= ${floor}::date)`,
   ]);
 
   const budgetLines: BudgetLine[] = lines.map((r) => {

@@ -9,6 +9,7 @@ import "server-only";
 
 import { getBudgetCycle, type BudgetCycle } from "@/lib/budget";
 
+import { cutoverFloor } from "./cutover";
 import { sql } from "./db";
 
 export async function getCycleAnchors(): Promise<string[]> {
@@ -27,7 +28,10 @@ export async function getCycleBounds(now: Date = new Date()): Promise<{
 }> {
   const anchors = await getCycleAnchors();
   const cycle = getBudgetCycle(now, anchors);
-  const earlier = anchors.filter((a) => a < cycle.start);
+  const floor = await cutoverFloor();
+  const earlier = anchors.filter(
+    (a) => a < cycle.start && (floor === null || a >= floor),
+  );
   return {
     start: cycle.start,
     end: cycle.end,

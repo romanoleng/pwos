@@ -3,6 +3,7 @@
 import { ChevronRight, Shapes } from "lucide-react";
 import Link from "next/link";
 
+import { FreshStart } from "@/components/settings/FreshStart";
 import { ThemeToggle } from "@/components/theme";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { SignOutButton } from "@/components/shell/SignOutButton";
@@ -35,6 +36,8 @@ export function SettingsScreen() {
           </li>
         </ul>
       </Card>
+
+      <FreshStart defaultDate="2026-07-24" />
 
       <Card>
         <CardHeader title="Appearance" />
