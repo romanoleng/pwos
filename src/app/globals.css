@@ -6,19 +6,23 @@
    anywhere in the app, so every component stays single-source and themable.
    ========================================================================== */
 
+/* The default dark theme wears the Midnight palette (Romano's call,
+   2026-07-22, superseding §6's neutral-grey hex values): the same ladder
+   shape, re-grounded on deep navy. The theme id stays "dark" so stored
+   preferences and the pre-paint fallback never notice the swap. */
 :root,
 [data-theme="dark"] {
-  --bg: #0a0a0b;
-  --surface: #141416;
-  --surface-2: #18181b;
-  --raise: #1d1d21;
+  --bg: #070b14;
+  --surface: #0d1220;
+  --surface-2: #121a2c;
+  --raise: #172136;
 
-  --line: #232327;
-  --line-2: #2c2c31;
+  --line: #1f2a44;
+  --line-2: #293754;
 
-  --ink: #ededef;
-  --muted: #9a9aa2;
-  --faint: #66666e;
+  --ink: #e9ecf5;
+  --muted: #97a2bf;
+  --faint: #5f6a86;
 
   --accent: #8a86f5;
   /* Mobile tab bar. Dark and Light share this purple; the colour themes
@@ -35,21 +39,21 @@
   color-scheme: dark;
 }
 
-/* Light values are derived from the dark set: same hue family, inverted
-   luminance, nudged toward darker chroma so accent/gain/loss still pass
-   contrast on a white surface. */
+/* The light theme wears the Paper palette (same 2026-07-22 swap): warm
+   ivory ground, parchment neutrals. Semantic colours are the darker-chroma
+   set tuned for near-white surfaces. */
 [data-theme="light"] {
-  --bg: #fbfbfc;
-  --surface: #ffffff;
-  --surface-2: #f6f6f7;
-  --raise: #f0f0f2;
+  --bg: #f6f2ea;
+  --surface: #fdfbf6;
+  --surface-2: #f2ede2;
+  --raise: #ebe4d6;
 
-  --line: #e7e7ea;
-  --line-2: #d6d6dc;
+  --line: #e4dccb;
+  --line-2: #d4c9b2;
 
-  --ink: #17171a;
-  --muted: #5e5e6a;
-  --faint: #8b8b96;
+  --ink: #201c13;
+  --muted: #6d6552;
+  --faint: #98907c;
 
   --accent: #5b55e0;
   --tabbar: #8a86f5;

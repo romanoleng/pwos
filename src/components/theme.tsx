@@ -19,8 +19,10 @@ export const THEMES: {
   hint: string;
   appearance: "dark" | "light";
 }[] = [
-  { id: "dark", name: "Dark", hint: "The default. Neutral greys.", appearance: "dark" },
-  { id: "light", name: "Light", hint: "Cool white.", appearance: "light" },
+  // ids stay "dark"/"light" while the palettes and names are Midnight/Paper —
+  // stored preferences and the pre-paint fallback key on the id, not the name.
+  { id: "dark", name: "Midnight", hint: "The default. Deep navy.", appearance: "dark" },
+  { id: "light", name: "Paper", hint: "Warm ivory.", appearance: "light" },
   { id: "emerald", name: "Emerald", hint: "Terminal green on deep forest.", appearance: "dark" },
   { id: "ember", name: "Ember", hint: "Molten coral on warm charcoal.", appearance: "dark" },
   { id: "ultraviolet", name: "Ultraviolet", hint: "Synthwave — fuchsia on violet.", appearance: "dark" },
