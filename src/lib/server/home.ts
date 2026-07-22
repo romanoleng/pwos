@@ -1,100 +1,136 @@
 /**
- * Home (CLAUDE.md §5) — the freedom number, then the honest picture beneath it.
+ * Home — the daily driver (CLAUDE.md §5, revised 2026-07-22).
  *
- * §0 is explicit that R2m is the centrepiece "with true net worth shown
- * honestly beneath it". So progress is measured against total wealth, not
- * crypto alone, and the shortfall is never softened.
+ * Romano's call: Home is for *operating* the money day to day — what's
+ * available, the cards, the budget, and logging what you just spent. Wealth,
+ * crypto, goals and investments live in their own modules and are deliberately
+ * absent here.
+ *
+ * The freedom number moved to Goals, where it still leads. §0 called it the
+ * centrepiece of Home; in practice Home is opened on a phone in a shop, and a
+ * long-term target is the wrong thing to show at that moment.
+ *
+ * A useful side effect: this no longer touches the portfolio, so Home doesn't
+ * wait on CoinGecko or on paging the Holdings table.
  */
 import "server-only";
 
-import { FREEDOM_TARGET_ZAR, FREEDOM_TARGET_LABEL } from "@/lib/constants";
 import { getBudgetCycle } from "@/lib/budget";
+import { toLocalISODate } from "@/lib/crypto/history";
+import { spendContribution } from "@/lib/transactions";
 
 import { getAccounts } from "./accounts";
 import { getBudgetSummary } from "./budget";
-import { getPortfolio } from "./crypto";
-import { getNetWorth } from "./networth";
+import { getTransactions } from "./transactions";
+
+export type HomeCard = {
+  id: string;
+  label: string;
+  kind: string;
+  spendable: boolean;
+  balanceZar: number | null;
+  lastActivity: string | null;
+};
+
+export type HomeTransaction = {
+  recordId: string;
+  date: string | null;
+  description: string;
+  amountZar: number;
+  category: string | null;
+  accountLabel: string | null;
+  type: string;
+};
 
 export type HomeSummary = {
-  freedom: {
-    targetZar: number;
-    targetLabel: string;
-    /** Liquid wealth counted toward the goal: crypto + cash + investments. */
-    progressZar: number;
-    progressPct: number;
-    remainingZar: number;
-  };
-  netWorthZar: number;
-  dedupedNetWorthZar: number;
-  crypto: { valueZar: number; change24hPct: number | null; pnlZar: number };
-  cash: { spendableZar: number; totalZar: number };
+  available: { spendableZar: number; totalCashZar: number };
+  cards: HomeCard[];
   budget: {
     remainingZar: number;
+    budgetedZar: number;
+    spentZar: number;
     daysLeft: number;
     dailyAllowanceZar: number | null;
     overspent: boolean;
+    cycleStart: string;
+    cycleEnd: string;
   };
-  nextMilestone: {
-    symbol: string;
-    level: number;
-    distancePct: number;
-    instruction: string;
-  } | null;
-  movers: { symbol: string; change24hPct: number }[];
+  today: { spendZar: number; count: number };
+  recent: HomeTransaction[];
+  /** Smart defaults for the log form — last used account, frequent categories. */
+  defaults: { accountLabel: string | null; categories: string[] };
 };
 
 export async function getHome(): Promise<HomeSummary> {
-  const [portfolio, accounts, netWorth, budget] = await Promise.all([
-    getPortfolio(),
+  const [accounts, budget, transactions] = await Promise.all([
     getAccounts(),
-    getNetWorth(),
     getBudgetSummary(),
+    getTransactions(),
   ]);
 
-  // The freedom number is a wealth target, so it counts assets — not debt.
-  // Net worth is shown separately and honestly beneath it (§0).
-  const progressZar = netWorth.assetsZar;
   const cycle = getBudgetCycle();
+  const todayIso = toLocalISODate(new Date());
 
-  const next = portfolio.holdings
-    .filter((h) => h.nextMilestone?.distancePct != null)
-    .sort(
-      (a, b) => (a.nextMilestone!.distancePct ?? 0) - (b.nextMilestone!.distancePct ?? 0),
-    )[0];
+  const todays = transactions.filter((t) => t.date?.slice(0, 10) === todayIso);
+  const todaySpend = todays
+    .filter((t) => t.type === "expense")
+    .reduce((sum, t) => sum + spendContribution(t.amountZar, t.category, t.description), 0);
+
+  // Smart defaults from actual behaviour, not a guess: the account most
+  // recently used, and the categories used most in the last 60 days.
+  const recentWindow = transactions.filter((t) => {
+    if (!t.date) return false;
+    const days = (Date.parse(todayIso) - Date.parse(t.date.slice(0, 10))) / 86_400_000;
+    return days >= 0 && days <= 60;
+  });
+
+  const categoryCounts = new Map<string, number>();
+  for (const t of recentWindow) {
+    if (t.type !== "expense" || !t.category) continue;
+    categoryCounts.set(t.category, (categoryCounts.get(t.category) ?? 0) + 1);
+  }
 
   return {
-    freedom: {
-      targetZar: FREEDOM_TARGET_ZAR,
-      targetLabel: FREEDOM_TARGET_LABEL,
-      progressZar,
-      progressPct: (progressZar / FREEDOM_TARGET_ZAR) * 100,
-      remainingZar: Math.max(0, FREEDOM_TARGET_ZAR - progressZar),
+    available: {
+      spendableZar: accounts.totals.spendableZar,
+      totalCashZar: accounts.totals.cashZar,
     },
-    netWorthZar: netWorth.netZar,
-    dedupedNetWorthZar: netWorth.dedupedNetZar,
-    crypto: {
-      valueZar: portfolio.totals.valueZar,
-      change24hPct: portfolio.totals.change24hPct,
-      pnlZar: portfolio.totals.pnlZar,
-    },
-    cash: { spendableZar: accounts.totals.spendableZar, totalZar: accounts.totals.cashZar },
+    cards: accounts.accounts
+      .filter((a) => a.account.kind !== "crypto")
+      .map((a) => ({
+        id: a.account.id,
+        label: a.account.label,
+        kind: a.account.kind,
+        spendable: a.account.spendable,
+        balanceZar: a.storedZar,
+        lastActivity: a.lastActivity,
+      })),
     budget: {
       remainingZar: budget.totals.remainingZar,
+      budgetedZar: budget.totals.budgetedZar,
+      spentZar: budget.totals.actualZar,
       daysLeft: cycle.remainingDays,
       dailyAllowanceZar: budget.dailyAllowanceZar,
       overspent: budget.totals.remainingZar < 0,
+      cycleStart: cycle.start,
+      cycleEnd: cycle.end,
     },
-    nextMilestone: next
-      ? {
-          symbol: next.symbol,
-          level: next.nextMilestone!.milestone.level,
-          distancePct: next.nextMilestone!.distancePct!,
-          instruction: next.nextMilestone!.milestone.raw,
-        }
-      : null,
-    movers: [...portfolio.gainers.slice(0, 3), ...portfolio.losers.slice(0, 2)].map((m) => ({
-      symbol: m.symbol,
-      change24hPct: m.change24hPct,
+    today: { spendZar: todaySpend, count: todays.length },
+    recent: transactions.slice(0, 8).map((t) => ({
+      recordId: t.recordId,
+      date: t.date,
+      description: t.description,
+      amountZar: t.amountZar,
+      category: t.category,
+      accountLabel: t.accountLabel,
+      type: t.type,
     })),
+    defaults: {
+      accountLabel: transactions.find((t) => t.accountLabel)?.accountLabel ?? null,
+      categories: [...categoryCounts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 6)
+        .map(([category]) => category),
+    },
   };
 }

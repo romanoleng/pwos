@@ -57,13 +57,20 @@ export function LogTransaction({
   open,
   onClose,
   onSaved,
+  defaultAccount,
+  suggestedCategories = [],
 }: {
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
+  /** Last account used — the likeliest one, so it's pre-selected. */
+  defaultAccount?: string;
+  /** Most-used categories from the last 60 days, offered as one-tap chips. */
+  suggestedCategories?: string[];
 }) {
   const toast = useToast();
   const [direction, setDirection] = useState<"out" | "in">("out");
+  const [category, setCategory] = useState("");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
@@ -72,15 +79,22 @@ export function LogTransaction({
       ? [...EXPENSE_CATEGORIES, ...MOVE_CATEGORIES]
       : [...IN_CATEGORIES, ...MOVE_CATEGORIES];
 
+  // Chips come from what Romano actually uses, not a fixed guess. Research on
+  // expense logging is consistent that a short list of recent categories beats
+  // a long dropdown — logging has to take seconds, not willpower.
+  const chips = suggestedCategories.filter((c) => categories.includes(c)).slice(0, 6);
+
   async function onSubmit(formData: FormData) {
     setSaving(true);
     setError(null);
+
+    const chosenCategory = category || String(formData.get("category") ?? "");
 
     const result = await createTransaction({
       description: String(formData.get("description") ?? ""),
       amountZar: Number(formData.get("amount")),
       direction,
-      category: String(formData.get("category") ?? ""),
+      category: chosenCategory,
       account: String(formData.get("account") ?? ""),
       date: String(formData.get("date") ?? ""),
       notes: String(formData.get("notes") ?? ""),
@@ -93,6 +107,7 @@ export function LogTransaction({
     }
 
     const recordId = result.data.recordId;
+    setCategory("");
     onClose();
     onSaved();
     toast.show({
@@ -131,6 +146,7 @@ export function LogTransaction({
           />
         </div>
 
+        {/* Amount first: it is the only value that always has to be typed. */}
         <Field label="Amount (ZAR)" hint="Just the number — the direction sets the sign.">
           <input
             name="amount"
@@ -140,7 +156,7 @@ export function LogTransaction({
             required
             autoFocus
             inputMode="decimal"
-            className={`${inputClass} text-lg tabular-nums`}
+            className={`${inputClass} h-14 text-2xl tabular-nums`}
             placeholder="0,00"
           />
         </Field>
@@ -156,20 +172,54 @@ export function LogTransaction({
         </Field>
 
         <Field label="Category">
-          <select name="category" required className={inputClass} defaultValue="">
+          {chips.length > 0 ? (
+            <div className="mb-2 mt-1.5 flex flex-wrap gap-1.5">
+              {chips.map((chip) => (
+                <button
+                  key={chip}
+                  type="button"
+                  aria-pressed={category === chip}
+                  onClick={() => setCategory(category === chip ? "" : chip)}
+                  className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
+                    category === chip
+                      ? "border-accent/50 bg-accent/15 text-ink"
+                      : "border-line text-muted hover:border-line-2 hover:text-ink"
+                  }`}
+                >
+                  {chip}
+                </button>
+              ))}
+            </div>
+          ) : null}
+          <select
+            name="category"
+            required={!category}
+            className={inputClass}
+            value={category}
+            onChange={(event) => setCategory(event.target.value)}
+          >
             <option value="" disabled>
               Pick one…
             </option>
-            {categories.map((category) => (
-              <option key={category} value={category}>
-                {category}
+            {categories.map((option) => (
+              <option key={option} value={option}>
+                {option}
               </option>
             ))}
           </select>
         </Field>
 
         <Field label="Account">
-          <select name="account" required className={inputClass} defaultValue="Capitec Main">
+          <select
+            name="account"
+            required
+            className={inputClass}
+            defaultValue={
+              defaultAccount && ACCOUNT_OPTIONS.includes(defaultAccount)
+                ? defaultAccount
+                : "Capitec Main"
+            }
+          >
             {ACCOUNT_OPTIONS.map((account) => (
               <option key={account} value={account}>
                 {account}

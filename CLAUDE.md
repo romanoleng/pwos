@@ -72,8 +72,27 @@ Ships in V1: Home · Wealth Overview · Banking/Accounts · Transactions · Budg
 
 Deferred to V1.1+ (architect for, don't build): document vault · statement upload (PDF/CSV) · Credit Cards · Bills & Subscriptions · Assets register · Tax Centre · AI Wealth Advisor · live bank/broker/exchange integrations.
 
-### Home
-Hero freedom number (progress %, amount to go, Feb-2028 target, what it unlocks). True net worth beneath. At-a-glance strip: total wealth · crypto value + 24h · cash on hand · budget cycle (payday 24th) · next milestone · top movers.
+### Home — REVISED 2026-07-22
+Home is the **daily driver**, not a wealth summary. It is opened on a phone, in a
+shop, to answer "what can I spend?" and to log what was just spent. In order:
+
+1. **Available to spend** (Capitec Main + GOtyme) with a **Log** button beside it
+2. **Budget left** this cycle, days remaining, per-day allowance
+3. **Your cards** — every account and its balance
+4. **Recent** — the last few entries, so a log visibly landed
+
+Deliberately NOT on Home: crypto, investments, goals, net worth, milestones,
+movers. Those live in their own modules, one tap away.
+
+This supersedes §0's "freedom number is the centrepiece of Home". The freedom
+number now leads the **Goals** screen instead. A long-term target is the wrong
+thing to show someone standing at a till, and dropping crypto from Home also
+removes a CoinGecko round-trip from the most-opened screen.
+
+Logging follows the pattern that expense-tracker research converges on: amount
+first (the only field that must always be typed), smart defaults for account and
+date, and one-tap chips for the categories actually used in the last 60 days
+rather than a 48-item dropdown. Capture now, understand later.
 
 ### ★ Crypto — the flagship. World-class, live, fast. Watched daily.
 Live data:

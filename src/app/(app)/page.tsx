@@ -6,7 +6,7 @@ export const dynamic = "force-dynamic";
 export default function HomePage() {
   return (
     <>
-      <PageHeader title="Home" description="Where the money actually stands." />
+      <PageHeader title="Home" description="What you can spend, and what you just spent." />
       <HomeScreen />
     </>
   );
