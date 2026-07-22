@@ -3,7 +3,7 @@
 import { ChevronDown } from "lucide-react";
 import { useSyncExternalStore, type ReactNode } from "react";
 
-import { Card, CardBody } from "@/components/ui/Card";
+import { Card } from "@/components/ui/Card";
 
 /**
  * A section you can fold away once you've read it (build report item 01).
@@ -84,8 +84,14 @@ export function CollapsibleSection({
   return (
     <Card>
       {/* rounded-t is the card's 12px radius minus its 1px border, so the
-          tint fills the corner instead of overpainting it. */}
-      <div className="flex items-center gap-1 rounded-t-[11px] border-b border-line bg-section-head px-2 py-2.5 pr-4">
+          tint fills the corner instead of overpainting it. Collapsed, the
+          header IS the card, so it rounds all four corners and drops the
+          divider that would otherwise underline nothing. */}
+      <div
+        className={`flex items-center gap-1 bg-section-head px-2 py-2.5 pr-4 ${
+          open ? "rounded-t-[11px] border-b border-line" : "rounded-[11px]"
+        }`}
+      >
         <button
           type="button"
           onClick={() => toggleSection(id)}
@@ -125,14 +131,11 @@ export function CollapsibleSection({
           the tint alone is too weak at low screen brightness. Row dividers
           (divide-line, in each child list) start at the indent with the rows,
           so they read as part of the group. */}
+      {/* Closed = just the header. The rotated chevron already says
+          "collapsed", and it reopens with the same tap — a footer note
+          restating that was one more row on every folded section. */}
       {open ? (
         <div className="animate-[fade-in_160ms_ease-out] pl-3">{children}</div>
-      ) : null}
-
-      {!open ? (
-        <CardBody className="py-2 text-center text-[11px] text-faint">
-          Collapsed — totals above still include it
-        </CardBody>
       ) : null}
     </Card>
   );

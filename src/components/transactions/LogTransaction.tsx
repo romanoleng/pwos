@@ -365,10 +365,12 @@ export function LogTransaction({
           </select>
         </Field>
 
-        {/* Account and date share a row — both are usually the smart default
-            (main account, today), so neither earns a full line of its own. */}
+        {/* The pair that shares a row depends on the mode. A transfer's two
+            sides belong next to each other (From | To — reference app,
+            2026-07-22); otherwise Account pairs with Date, both usually the
+            smart default. */}
         <div className="grid grid-cols-2 gap-3">
-          <Field label={needsDestination ? "From account" : "Account"}>
+          <Field label={needsDestination ? "From" : "Account"}>
             <select
               name="account"
               required
@@ -389,39 +391,48 @@ export function LogTransaction({
             </select>
           </Field>
 
-          {/* Not a <label>: the Rep/Inst button lives in the heading row, and
-              inside a label its taps would also activate the date input. */}
-          <div className="mb-4">
-            <span className="flex items-center justify-between text-xs font-medium text-muted">
-              <span>Date</span>
-              {!editing && direction !== "move" ? (
-                <button
-                  type="button"
-                  onClick={() => setScheduleSheet(true)}
-                  aria-haspopup="dialog"
-                  className={`-my-1 flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] transition-colors ${
-                    scheduleMode === "once"
-                      ? "text-faint hover:text-ink"
-                      : "bg-accent/15 font-medium text-accent"
-                  }`}
-                >
-                  <RepeatIcon size={11} strokeWidth={2} />
-                  {scheduleMode === "once"
-                    ? "Once"
-                    : scheduleMode === "repeat"
-                      ? `Repeats × ${scheduleMonths}`
-                      : `Instalments ÷ ${scheduleMonths}`}
-                </button>
-              ) : null}
-            </span>
-            <input
-              name="date"
-              type="date"
-              defaultValue={editing?.date?.slice(0, 10) ?? toLocalISODate(new Date())}
-              className={inputClass}
+          {needsDestination && !editing ? (
+            <Field label="To" hint="Both sides move together.">
+              <select name="toAccount" className={inputClass} defaultValue="" required>
+                <option value="" disabled>
+                  Where to?
+                </option>
+                {accountOptions.map((account) => (
+                  <option key={account} value={`account:${account}`}>
+                    {account}
+                  </option>
+                ))}
+                {kidAccounts.length > 0 ? (
+                  <optgroup label="Lisa &amp; Liam">
+                    {kidAccounts.map((kid) => (
+                      <option key={kid.id} value={`kid:${kid.id}`}>
+                        {[kid.child, kid.account].filter(Boolean).join(" · ")}
+                      </option>
+                    ))}
+                  </optgroup>
+                ) : null}
+              </select>
+            </Field>
+          ) : (
+            <DateBlock
+              editing={editing}
+              scheduleMode={scheduleMode}
+              scheduleMonths={scheduleMonths}
+              showSchedule={!editing && direction !== "move"}
+              onOpenSchedule={() => setScheduleSheet(true)}
             />
-          </div>
+          )}
         </div>
+
+        {needsDestination && !editing ? (
+          <DateBlock
+            editing={editing}
+            scheduleMode={scheduleMode}
+            scheduleMonths={scheduleMonths}
+            showSchedule={false}
+            onOpenSchedule={() => setScheduleSheet(true)}
+          />
+        ) : null}
 
         {direction === "in" && !editing && scheduleMode === "once" ? (
           <label className="mt-1 flex items-start gap-2.5 rounded-lg border border-line bg-surface-2 px-3 py-2.5">
@@ -440,33 +451,6 @@ export function LogTransaction({
               </span>
             </span>
           </label>
-        ) : null}
-
-        {needsDestination && !editing ? (
-          <Field
-            label="To account"
-            hint="Both sides move: this one is credited as the other is debited."
-          >
-            <select name="toAccount" className={inputClass} defaultValue="" required>
-              <option value="" disabled>
-                Where is it going?
-              </option>
-              {accountOptions.map((account) => (
-                <option key={account} value={`account:${account}`}>
-                  {account}
-                </option>
-              ))}
-              {kidAccounts.length > 0 ? (
-                <optgroup label="Lisa &amp; Liam">
-                  {kidAccounts.map((kid) => (
-                    <option key={kid.id} value={`kid:${kid.id}`}>
-                      {[kid.child, kid.account].filter(Boolean).join(" · ")}
-                    </option>
-                  ))}
-                </optgroup>
-              ) : null}
-            </select>
-          </Field>
         ) : null}
 
         <Field label="Notes">
@@ -550,6 +534,57 @@ export function LogTransaction({
         />
       ) : null}
     </SlideOver>
+  );
+}
+
+/**
+ * Date input with the Rep/Inst. button in its heading row. Not a <label>:
+ * inside one, taps on the button would also activate the date input.
+ */
+function DateBlock({
+  editing,
+  scheduleMode,
+  scheduleMonths,
+  showSchedule,
+  onOpenSchedule,
+}: {
+  editing?: EditingTransaction;
+  scheduleMode: ScheduleMode;
+  scheduleMonths: number;
+  showSchedule: boolean;
+  onOpenSchedule: () => void;
+}) {
+  return (
+    <div className="mb-4">
+      <span className="flex items-center justify-between text-xs font-medium text-muted">
+        <span>Date</span>
+        {showSchedule ? (
+          <button
+            type="button"
+            onClick={onOpenSchedule}
+            aria-haspopup="dialog"
+            className={`-my-1 flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] transition-colors ${
+              scheduleMode === "once"
+                ? "text-faint hover:text-ink"
+                : "bg-accent/15 font-medium text-accent"
+            }`}
+          >
+            <RepeatIcon size={11} strokeWidth={2} />
+            {scheduleMode === "once"
+              ? "Once"
+              : scheduleMode === "repeat"
+                ? `Repeats × ${scheduleMonths}`
+                : `Instalments ÷ ${scheduleMonths}`}
+          </button>
+        ) : null}
+      </span>
+      <input
+        name="date"
+        type="date"
+        defaultValue={editing?.date?.slice(0, 10) ?? toLocalISODate(new Date())}
+        className={inputClass}
+      />
+    </div>
   );
 }
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { Money, Percent } from "@/components/ui/Money";
+import { Money, Percent, Sensitive } from "@/components/ui/Money";
 import type { MilestoneStatus } from "@/lib/crypto/milestones";
 
 const LEVEL_LABEL: Record<number, string> = {
@@ -69,8 +69,12 @@ export function MilestoneLadder({ statuses }: { statuses: MilestoneStatus[] }) {
               </span>
             </div>
 
-            {/* Verbatim instruction — never reworded. */}
-            <p className="mt-1.5 text-xs leading-relaxed text-muted">{milestone.raw}</p>
+            {/* Verbatim instruction — never reworded. Sensitive because the
+                raw text is full of prices and coin counts, which the privacy
+                eye must catch just like the rendered figures. */}
+            <p className="mt-1.5 text-xs leading-relaxed text-muted">
+              <Sensitive>{milestone.raw}</Sensitive>
+            </p>
           </li>
         );
       })}

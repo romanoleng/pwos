@@ -41,20 +41,20 @@ export function BottomTabs() {
           const Icon = item.icon;
           return (
             <li key={item.href}>
+              {/* The active tab INVERTS: black cell, the bar's own colour as
+                  ink (Romano's ask, 2026-07-22). Unmissable in the corner of
+                  an eye, and it works on every theme's accent because the
+                  ink is the accent. */}
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
                 className={`flex flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 text-[10px] transition-transform active:scale-95 ${
                   active
-                    ? "font-semibold text-tabbar-ink"
+                    ? "bg-black/85 font-semibold text-tabbar"
                     : "font-medium text-tabbar-dim"
                 }`}
               >
-                <span
-                  className={`flex h-7 w-13 items-center justify-center rounded-full transition-colors ${
-                    active ? "bg-black/15" : ""
-                  }`}
-                >
+                <span className="flex h-7 w-13 items-center justify-center">
                   <Icon size={20} strokeWidth={active ? 2.25 : 1.75} />
                 </span>
                 {item.label}

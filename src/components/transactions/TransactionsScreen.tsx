@@ -9,7 +9,7 @@ import { LogTransaction, type EditingTransaction } from "@/components/transactio
 import { CalendarView, MonthlyView, SummaryView } from "@/components/transactions/TransactionViews";
 import { useToast } from "@/components/ui/Toast";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
-import { Money } from "@/components/ui/Money";
+import { Money, Sensitive } from "@/components/ui/Money";
 import { formatDate } from "@/lib/format";
 import type { TransactionRow } from "@/lib/server/transactions";
 import type { TransactionType } from "@/lib/transactions";
@@ -377,7 +377,14 @@ export function TransactionsScreen() {
                 <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-bg/40 px-4 py-2.5">
                   <p className="text-[11px] text-faint">
                     {row.type}
-                    {row.notes ? ` · ${row.notes}` : ""}
+                    {/* Notes are free text and often carry amounts or refs —
+                        the privacy eye masks them like any figure. */}
+                    {row.notes ? (
+                      <>
+                        {" · "}
+                        <Sensitive>{row.notes}</Sensitive>
+                      </>
+                    ) : null}
                   </p>
                   <div className="flex gap-2">
                     <button

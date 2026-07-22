@@ -386,7 +386,7 @@ function MilestoneHitBanner({ holdings }: { holdings: Holding[] }) {
             <span className="text-faint">({holding.wallet})</span>{" "}
             <span className="text-muted">
               — M{holding.lastHitMilestone?.milestone.level}:{" "}
-              {holding.lastHitMilestone?.milestone.raw}
+              <Sensitive>{holding.lastHitMilestone?.milestone.raw}</Sensitive>
             </span>
           </li>
         ))}
