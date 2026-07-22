@@ -6,6 +6,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
 import { Money } from "@/components/ui/Money";
 import { formatDate, formatMoneyWhole, formatPercent } from "@/lib/format";
+import { isKidInvestment } from "@/lib/kids";
 import type { GoalsSummary } from "@/lib/server/goals";
 
 async function fetcher(url: string): Promise<GoalsSummary> {
@@ -20,6 +21,9 @@ export function GoalsScreen() {
   if (!data) return <Card><CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody></Card>;
 
   const refresh = () => void mutate();
+  // Their investments are tracked individually on the Investments screen, so
+  // only reachable cash is listed here.
+  const savingsAccounts = data.kids.filter((kid) => !isKidInvestment(kid.accountType));
 
   return (
     <div className="space-y-4">
@@ -89,24 +93,18 @@ export function GoalsScreen() {
       <Card>
         <CardHeader
           title="Lisa & Liam"
-          description="Kids' savings and investment accounts."
+          description="Cash they can reach. Their investments live on the Investments screen."
           action={
             <span className="text-sm">
-              <Money value={data.totals.kidsZar} variant="whole" />
-              {data.totals.kidsMonthlyZar > 0 ? (
-                <span className="ml-2 text-[11px] text-faint">
-                  +<Money value={data.totals.kidsMonthlyZar} variant="whole" />
-                  /mo
-                </span>
-              ) : null}
+              <Money value={data.totals.kidsSavedZar} variant="whole" />
             </span>
           }
         />
-        {data.kids.length === 0 ? (
+        {savingsAccounts.length === 0 ? (
           <CardBody className="py-8 text-center text-xs text-muted">No accounts recorded.</CardBody>
         ) : (
           <ul className="divide-y divide-line">
-            {data.kids.map((kid) => (
+            {savingsAccounts.map((kid) => (
               <li key={kid.recordId} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
                   <p className="truncate text-sm font-medium">{kid.account}</p>

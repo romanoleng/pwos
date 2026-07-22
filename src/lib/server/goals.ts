@@ -2,6 +2,7 @@
 import "server-only";
 
 import { FREEDOM_TARGET_LABEL, FREEDOM_TARGET_ZAR } from "@/lib/constants";
+import { isKidInvestment } from "@/lib/kids";
 
 import { isoDate, money, moneyOrNull, sql } from "./db";
 import { getNetWorth } from "./networth";
@@ -14,7 +15,8 @@ export type Goal = {
 
 export type KidAccount = {
   recordId: string; account: string; child: string | null;
-  institution: string | null; balanceZar: number; monthlyZar: number;
+  institution: string | null; accountType: string | null;
+  balanceZar: number; monthlyZar: number;
 };
 
 export type GoalsSummary = {
@@ -23,6 +25,7 @@ export type GoalsSummary = {
   totals: {
     savedZar: number; targetZar: number; monthlyZar: number;
     kidsZar: number; kidsMonthlyZar: number;
+    kidsInvestedZar: number; kidsSavedZar: number;
   };
 };
 
@@ -38,8 +41,8 @@ export async function getGoals(): Promise<GoalsSummary> {
       select id::text, name, current_zar, target_zar, monthly_zar, priority, status, target_date::text
       from goals where not archived order by current_zar desc`,
     sql<{ id: string; account: string; child: string | null; institution: string | null;
-          balance_zar: string; monthly_zar: string }>`
-      select id::text, account, child, institution, balance_zar, monthly_zar
+          account_type: string | null; balance_zar: string; monthly_zar: string }>`
+      select id::text, account, child, institution, account_type, balance_zar, monthly_zar
       from kids_accounts order by child, monthly_zar desc, balance_zar desc`,
     getNetWorth(),
   ]);
@@ -58,7 +61,8 @@ export async function getGoals(): Promise<GoalsSummary> {
 
   const kids: KidAccount[] = kidRows.map((r) => ({
     recordId: r.id, account: r.account, child: r.child,
-    institution: r.institution, balanceZar: money(r.balance_zar), monthlyZar: money(r.monthly_zar),
+    institution: r.institution, accountType: r.account_type,
+    balanceZar: money(r.balance_zar), monthlyZar: money(r.monthly_zar),
   }));
 
   return {
@@ -74,6 +78,12 @@ export async function getGoals(): Promise<GoalsSummary> {
       monthlyZar: goals.reduce((t, g) => t + g.monthlyZar, 0),
       kidsZar: kids.reduce((t, k) => t + k.balanceZar, 0),
       kidsMonthlyZar: kids.reduce((t, k) => t + k.monthlyZar, 0),
+      kidsInvestedZar: kids
+        .filter((k) => isKidInvestment(k.accountType))
+        .reduce((t, k) => t + k.balanceZar, 0),
+      kidsSavedZar: kids
+        .filter((k) => !isKidInvestment(k.accountType))
+        .reduce((t, k) => t + k.balanceZar, 0),
     },
   };
 }

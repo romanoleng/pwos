@@ -6,9 +6,11 @@ import useSWR from "swr";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
 import { Money } from "@/components/ui/Money";
+import { groupByChild, isKidInvestment } from "@/lib/kids";
+import type { GoalsSummary } from "@/lib/server/goals";
 import type { NetWorthSummary } from "@/lib/server/networth";
 
-async function fetcher(url: string): Promise<NetWorthSummary> {
+async function fetcher<T>(url: string): Promise<T> {
   const response = await fetch(url);
   if (!response.ok) throw new Error("Could not load investments.");
   return response.json();
@@ -19,10 +21,18 @@ const INVESTMENT_CLASSES = ["Investments", "Property", "Savings"];
 
 export function InvestmentsScreen() {
   const { data, error, mutate } = useSWR<NetWorthSummary>("/api/networth", fetcher);
+  // Kids' accounts come from the goals payload, which already reads them.
+  const { data: goals, mutate: mutateGoals } = useSWR<GoalsSummary>("/api/goals", fetcher);
   if (error) return <Card><CardBody className="text-sm text-loss">Couldn&apos;t load investments.</CardBody></Card>;
   if (!data) return <Card><CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody></Card>;
 
-  const refresh = () => void mutate();
+  const refresh = () => {
+    void mutate();
+    void mutateGoals();
+  };
+  const kidGroups = groupByChild(
+    (goals?.kids ?? []).filter((kid) => isKidInvestment(kid.accountType)),
+  );
   const classes = data.classes.filter((c) => INVESTMENT_CLASSES.includes(c.category));
   const total = classes.reduce((sum, c) => sum + c.valueZar, 0);
   const crypto = data.classes.find((c) => c.category === "Crypto");
@@ -56,7 +66,54 @@ export function InvestmentsScreen() {
         </Card>
       ))}
 
-      <p className="text-[11px] text-faint">Tap any balance to update it. §5 keeps these as summary balances in V1.</p>
+      {kidGroups.map((group) => (
+        <Card key={group.child}>
+          <CardHeader
+            title={`${group.child}'s investments`}
+            description="Retirement annuity, tax-free savings and the share account, each tracked on its own."
+            action={
+              <span className="text-sm">
+                <Money value={group.balanceZar} variant="whole" />
+                {group.monthlyZar > 0 ? (
+                  <span className="ml-2 text-[11px] text-faint">
+                    +<Money value={group.monthlyZar} variant="whole" />
+                    /mo
+                  </span>
+                ) : null}
+              </span>
+            }
+          />
+          <ul className="divide-y divide-line">
+            {group.accounts.map((kid) => (
+              <li key={kid.recordId} className="flex items-center justify-between gap-3 px-4 py-2.5">
+                <div className="min-w-0">
+                  <p className="truncate text-sm">{kid.account}</p>
+                  <p className="mt-0.5 text-[11px] text-faint">
+                    {kid.institution ?? "—"} · contributing{" "}
+                    <EditableAmount
+                      editKey="kids.monthly"
+                      recordId={kid.recordId}
+                      value={kid.monthlyZar}
+                      onSaved={refresh}
+                      className="text-faint"
+                    />
+                    /mo
+                  </p>
+                </div>
+                <EditableAmount
+                  editKey="kids.balance"
+                  recordId={kid.recordId}
+                  value={kid.balanceZar}
+                  onSaved={refresh}
+                  className="text-sm"
+                />
+              </li>
+            ))}
+          </ul>
+        </Card>
+      ))}
+
+      <p className="text-[11px] text-faint">Tap any balance or contribution to update it.</p>
     </div>
   );
 }

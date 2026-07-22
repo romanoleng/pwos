@@ -106,6 +106,15 @@ export const EDITABLE: Record<string, EditableField> = {
     min: 0,
     invalidates: ["goals"],
   },
+  "kids.monthly": {
+    key: "kids.monthly",
+    table: "kidsAccounts",
+    fieldId: "monthly_zar",
+    label: "Monthly contribution",
+    kind: "currency",
+    min: 0,
+    invalidates: ["kids", "networth", "wealth"],
+  },
   "kids.balance": {
     key: "kids.balance",
     table: "kidsAccounts",
