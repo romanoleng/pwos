@@ -284,3 +284,23 @@ real creditors under debt review whose balances are best guesses.
   between the two. One failed mid-way and left a real budget at R750 instead of
   R1 000. The audit trigger recorded `{"budgeted_zar":[1000,750]}`, which is
   the only reason the original was recoverable.
+
+#### A mistake worth not repeating (22 Jul 2026)
+
+I "rehearsed" a category merge inside `begin` / … / `rollback` using the Neon
+serverless driver, reported it as a dry run, and it had actually applied.
+
+The Neon HTTP driver sends **each `sql` call as its own HTTP request, and each
+request is its own transaction**. A bare `begin` and `rollback` issued as
+separate calls do nothing — there is no session for them to span. Multi-
+statement atomicity needs `neon.transaction([...])` (one round trip) or a
+pooled `Pool` connection.
+
+Two lessons, in order of importance:
+
+1. **Never describe a write as a rehearsal without proving the rollback.** The
+   script printed the post-rollback state and it plainly said `archived = true`
+   — the evidence was right there and I read past it.
+2. The audit trigger is what made the repair exact rather than a guess. It
+   recorded `{"category": ["Crypto DCA", "Crypto Investment"]}`, so the single
+   affected row could be put back precisely.
