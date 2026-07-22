@@ -1,9 +1,13 @@
 import { NextResponse } from "next/server";
 
+import { AirtableError } from "@/lib/server/airtable";
+
 import { MissingEnvError } from "@/lib/server/env";
 import { getTransactions } from "@/lib/server/transactions";
 
 export const dynamic = "force-dynamic";
+/** Reads several Airtable tables; needs more than the default cold-start budget. */
+export const maxDuration = 30;
 
 export async function GET() {
   try {
@@ -20,7 +24,15 @@ export async function GET() {
     }
     console.error("[transactions]", error);
     return NextResponse.json(
-      { error: "upstream", message: "Could not load transactions." },
+      {
+        error: "upstream",
+        message: "Could not load transactions.",
+        // Upstream status only — no token, no request detail. Turns a blank
+        // failure into a diagnosable one: 401 means the Airtable token is
+        // being rejected, 429 means rate limiting.
+        upstreamStatus: error instanceof AirtableError ? error.status : undefined,
+        upstream: error instanceof AirtableError ? "airtable" : "unknown",
+      },
       { status: 502 },
     );
   }

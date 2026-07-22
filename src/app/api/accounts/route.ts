@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { AirtableError } from "@/lib/server/airtable";
+
 import { getAccounts } from "@/lib/server/accounts";
 import { MissingEnvError } from "@/lib/server/env";
 
@@ -19,7 +21,15 @@ export async function GET() {
     }
     console.error("[accounts]", error);
     return NextResponse.json(
-      { error: "upstream", message: "Could not load accounts." },
+      {
+        error: "upstream",
+        message: "Could not load accounts.",
+        // Upstream status only — no token, no request detail. Turns a blank
+        // failure into a diagnosable one: 401 means the Airtable token is
+        // being rejected, 429 means rate limiting.
+        upstreamStatus: error instanceof AirtableError ? error.status : undefined,
+        upstream: error instanceof AirtableError ? "airtable" : "unknown",
+      },
       { status: 502 },
     );
   }
