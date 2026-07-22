@@ -21,7 +21,9 @@
   --faint: #66666e;
 
   --accent: #8a86f5;
-  /* Mobile tab bar. Fixed across themes — see the note in BottomTabs. */
+  /* Mobile tab bar. Dark and Light share this purple; the colour themes
+     override it with their own accent (always with near-black icons — the
+     contrast maths from the tab-bar commit holds for every accent used). */
   --tabbar: #8a86f5;
   --tabbar-ink: #000000;
   --tabbar-dim: #29284a;
@@ -61,66 +63,93 @@
   color-scheme: light;
 }
 
-/* Midnight — the dark theme re-grounded on deep navy. Only the neutrals
-   change temperature; accent and semantic colours inherit the dark set,
-   which was tuned for surfaces this dark. */
-[data-theme="midnight"] {
-  --bg: #070b14;
-  --surface: #0d1220;
-  --surface-2: #121a2c;
-  --raise: #172136;
+/* ---------------------------------------------------------------------------
+   The colour themes. Dark and Light are the restrained workspace pair; these
+   three commit to a palette. Each redefines the full ladder INCLUDING the
+   semantic colours — gain/loss/warn/info are re-picked per theme so none of
+   them collides with that theme's accent (green accent vs green gain, orange
+   accent vs amber warn, fuchsia accent vs red loss are the traps).
+   Loss/gain always stay red-ish/green-ish: money legibility outranks style.
+   ------------------------------------------------------------------------- */
 
-  --line: #1f2a44;
-  --line-2: #293754;
+/* Emerald — terminal green on deep forest. The money-screen look. */
+[data-theme="emerald"] {
+  --bg: #04100b;
+  --surface: #081912;
+  --surface-2: #0c2017;
+  --raise: #12291d;
 
-  --ink: #e9ecf5;
-  --muted: #97a2bf;
-  --faint: #5f6a86;
+  --line: #1b3626;
+  --line-2: #264533;
+
+  --ink: #e6f4ea;
+  --muted: #8fb39c;
+  --faint: #567a63;
+
+  --accent: #10a06c;
+  --tabbar: #10a06c;
+  --tabbar-dim: #06402c;
+  /* gain lifted well above the accent so a profit still reads as its own
+     signal inside an already-green world */
+  --gain: #86dfae;
+  --loss: #e0705d;
+  --warn: #d9b04a;
+  --info: #62aed8;
 
   color-scheme: dark;
 }
 
-/* Black — true black for OLED phones: the pixels under --bg switch off.
-   The ladder is compressed toward zero, so the hairlines carry more of the
-   structure than they do in Dark. */
-[data-theme="black"] {
-  --bg: #000000;
-  --surface: #0a0a0b;
-  --surface-2: #101012;
-  --raise: #161618;
+/* Ember — molten coral on warm charcoal. Sunset heat. */
+[data-theme="ember"] {
+  --bg: #140a08;
+  --surface: #1d100c;
+  --surface-2: #241511;
+  --raise: #2d1b15;
 
-  --line: #202024;
-  --line-2: #2b2b30;
+  --line: #3c251c;
+  --line-2: #4d3024;
 
-  --ink: #f2f2f4;
+  --ink: #f5eae4;
+  --muted: #c0a394;
+  --faint: #85685a;
+
+  --accent: #ec6a45;
+  --tabbar: #ec6a45;
+  --tabbar-dim: #5a2313;
+  --gain: #6cc793;
+  /* loss pushed to true crimson — on this ground a warm red-orange would
+     read as decoration, not damage */
+  --loss: #e04f4f;
+  --warn: #d9ab4a;
+  --info: #82a9dd;
 
   color-scheme: dark;
 }
 
-/* Paper — warm ivory light. Neutrals shift toward parchment; accent and
-   semantic colours reuse the light set, which already passes contrast on
-   near-white ground (unlike the dark-set values they would otherwise
-   inherit from :root). */
-[data-theme="paper"] {
-  --bg: #f6f2ea;
-  --surface: #fdfbf6;
-  --surface-2: #f2ede2;
-  --raise: #ebe4d6;
+/* Ultraviolet — synthwave: fuchsia on deep violet, cyan for info. */
+[data-theme="ultraviolet"] {
+  --bg: #0d0716;
+  --surface: #150b22;
+  --surface-2: #1b102c;
+  --raise: #231637;
 
-  --line: #e4dccb;
-  --line-2: #d4c9b2;
+  --line: #301f4a;
+  --line-2: #3f2a61;
 
-  --ink: #201c13;
-  --muted: #6d6552;
-  --faint: #98907c;
+  --ink: #f0eaf8;
+  --muted: #a894c6;
+  --faint: #6f5c8e;
 
-  --accent: #5b55e0;
-  --gain: #2c8a62;
-  --loss: #b04f3b;
-  --warn: #94660f;
-  --info: #38689f;
+  --accent: #d452e6;
+  --tabbar: #d452e6;
+  --tabbar-dim: #4a1a55;
+  --gain: #4fd6a2;
+  /* salmon rather than rose — rose sits too close to the fuchsia accent */
+  --loss: #ef6a5a;
+  --warn: #e3b341;
+  --info: #58c7e8;
 
-  color-scheme: light;
+  color-scheme: dark;
 }
 
 @theme inline {

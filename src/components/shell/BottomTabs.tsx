@@ -11,9 +11,11 @@ import { TAB_CHOICES, useChosenTabs } from "@/lib/tabs";
  * Mobile navigation (< md). Fixed to the bottom, inside the safe area so it
  * clears the iPhone home indicator when installed as a PWA.
  *
- * The bar is solid purple with black icons — see the tab-bar commit for the
- * contrast maths. The middle three tabs are chosen in Settings; Home and More
- * are fixed, as the anchor and the escape hatch.
+ * The bar is a solid accent colour with black icons — purple in Dark/Light,
+ * the theme's accent in the colour themes; every accent used keeps the
+ * black-icon contrast from the tab-bar commit's maths. The middle three tabs
+ * are chosen in Settings; Home and More are fixed, as the anchor and the
+ * escape hatch.
  */
 export function BottomTabs() {
   const pathname = usePathname();
