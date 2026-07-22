@@ -1,101 +1,70 @@
 /**
- * Net Worth — derived, not hand-maintained (CLAUDE.md §3).
- *
- * The Net Worth table's own crypto rows were already ~R11k stale when checked,
- * which is exactly why §3 requires computing this live: assets from the ledger
- * plus live crypto, liabilities from Debt Tracker as the single source.
+ * Net Worth — derived (CLAUDE.md §3).
+ * Assets from Postgres plus live crypto; liabilities from the debts table.
  */
 import "server-only";
 
-import { FIELDS, TABLES } from "@/lib/airtable-fields";
-
-import { listRecords, numberCell, stringCell } from "./airtable";
+import { money, sql } from "./db";
 import { getDebtSummary } from "./debt";
 import { getPortfolio } from "./crypto";
 
 export type NetWorthClass = {
   category: string;
   valueZar: number;
-  /** True when the figure is computed live rather than read from a stored row. */
   live: boolean;
   rows: { recordId: string; name: string; valueZar: number }[];
 };
 
 export type NetWorthSummary = {
-  assetsZar: number;
-  liabilitiesZar: number;
-  netZar: number;
+  assetsZar: number; liabilitiesZar: number; netZar: number;
   classes: NetWorthClass[];
-  /** Liabilities, with flagged duplicates counted once. */
-  dedupedLiabilitiesZar: number;
-  dedupedNetZar: number;
-  duplicateOvercountZar: number;
-  /** What the stored Net Worth table says, for comparison. */
-  storedCryptoZar: number;
-  liveCryptoZar: number;
+  dedupedLiabilitiesZar: number; dedupedNetZar: number; duplicateOvercountZar: number;
+  storedCryptoZar: number; liveCryptoZar: number;
 };
 
 export async function getNetWorth(): Promise<NetWorthSummary> {
-  const [records, debt, portfolio] = await Promise.all([
-    listRecords(TABLES.netWorth, {
-      fieldIds: [FIELDS.netWorth.name, FIELDS.netWorth.category, FIELDS.netWorth.type, FIELDS.netWorth.valueZar],
-    }),
+  const [assetRows, accountRows, debt, portfolio] = await Promise.all([
+    sql<{ id: string; name: string; category: string; value_zar: string }>`
+      select id::text, name, category, value_zar from assets where not archived`,
+    sql<{ id: string; label: string; kind: string; balance_zar: string | null }>`
+      select id, label, kind::text, balance_zar from accounts
+      where not archived and kind <> 'crypto' and balance_zar is not null`,
     getDebtSummary(),
     getPortfolio(),
   ]);
 
   const byCategory = new Map<string, NetWorthClass>();
-  let storedCryptoZar = 0;
+  const add = (category: string, row: { recordId: string; name: string; valueZar: number }) => {
+    const entry = byCategory.get(category) ?? { category, valueZar: 0, live: false, rows: [] };
+    entry.valueZar += row.valueZar;
+    entry.rows.push(row);
+    byCategory.set(category, entry);
+  };
 
-  for (const record of records) {
-    const type = stringCell(record, FIELDS.netWorth.type);
-    // Liabilities come from Debt Tracker, the single source (§3). Including the
-    // Net Worth liability rows too would double-count the same obligations.
-    if (type !== "Asset") continue;
-
-    const category = stringCell(record, FIELDS.netWorth.category) ?? "Other";
-    const name = stringCell(record, FIELDS.netWorth.name) ?? "—";
-    const valueZar = numberCell(record, FIELDS.netWorth.valueZar) ?? 0;
-
-    if (category === "Crypto") {
-      // Superseded by the live portfolio below.
-      storedCryptoZar += valueZar;
-      continue;
-    }
-
-    const existing = byCategory.get(category) ?? {
-      category,
-      valueZar: 0,
-      live: false,
-      rows: [],
-    };
-    existing.valueZar += valueZar;
-    existing.rows.push({ recordId: record.id, name, valueZar });
-    byCategory.set(category, existing);
+  for (const a of assetRows) {
+    add(a.category, { recordId: a.id, name: a.name, valueZar: money(a.value_zar) });
+  }
+  for (const a of accountRows) {
+    add(a.kind === "savings" ? "Savings" : "Cash", {
+      recordId: a.id, name: a.label, valueZar: money(a.balance_zar),
+    });
   }
 
   const liveCryptoZar = portfolio.totals.valueZar;
-  byCategory.set("Crypto", {
-    category: "Crypto",
-    valueZar: liveCryptoZar,
-    live: true,
-    rows: [],
-  });
+  byCategory.set("Crypto", { category: "Crypto", valueZar: liveCryptoZar, live: true, rows: [] });
 
   const classes = [...byCategory.values()].sort((a, b) => b.valueZar - a.valueZar);
-  const assetsZar = classes.reduce((total, entry) => total + entry.valueZar, 0);
-  const liabilitiesZar = debt.totalZar;
-  const duplicateOvercountZar = debt.totalZar - debt.dedupedTotalZar;
+  const assetsZar = classes.reduce((total, e) => total + e.valueZar, 0);
 
   return {
     assetsZar,
-    liabilitiesZar,
-    netZar: assetsZar - liabilitiesZar,
+    liabilitiesZar: debt.totalZar,
+    netZar: assetsZar - debt.totalZar,
     classes,
     dedupedLiabilitiesZar: debt.dedupedTotalZar,
     dedupedNetZar: assetsZar - debt.dedupedTotalZar,
-    duplicateOvercountZar,
-    storedCryptoZar,
+    duplicateOvercountZar: debt.totalZar - debt.dedupedTotalZar,
+    storedCryptoZar: liveCryptoZar,
     liveCryptoZar,
   };
 }

@@ -1,110 +1,84 @@
 /**
  * Budgets (CLAUDE.md §5).
  *
- * Actuals are computed from the transaction ledger, NOT from the Budget
- * table's stored `Actual` column — that column is R0 for 15 of 16 categories,
- * so trusting it would show a budget that looks perfectly on track while the
- * money is gone.
+ * Actuals are aggregated in SQL rather than by pulling every transaction into
+ * memory: one round-trip instead of 437 rows over the wire.
  *
- * Only `expense` transactions count. Transfers and contributions are excluded
- * by §3, which is why the Type backfill mattered: R149k of transfers would
- * otherwise land in these figures.
+ * The consolidated category IS the budget line now, so the mapping table the
+ * Airtable version needed has gone.
  */
 import "server-only";
 
-import { FIELDS, TABLES } from "@/lib/airtable-fields";
-import { getBudgetCycle, isInCycle, type BudgetLine, type BudgetSummary } from "@/lib/budget";
-import { spendContribution } from "@/lib/transactions";
+import { getBudgetCycle, type BudgetLine, type BudgetSummary } from "@/lib/budget";
 
-import { listRecords, numberCell, stringCell } from "./airtable";
-import { getTransactions } from "./transactions";
-
-const BUDGET_FIELDS = [
-  FIELDS.budget.category,
-  FIELDS.budget.type,
-  FIELDS.budget.budgetedZar,
-  FIELDS.budget.actualZar,
-  FIELDS.budget.month,
-] as const;
+import { money, sql } from "./db";
 
 export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSummary> {
   const cycle = getBudgetCycle(now);
 
-  const [budgetRows, transactions] = await Promise.all([
-    listRecords(TABLES.budget, { fieldIds: BUDGET_FIELDS }),
-    getTransactions(),
+  const [lines, unbudgeted, income] = await Promise.all([
+    sql<{ category: string; kind: string | null; budgeted_zar: string; actual_zar: string; txn_count: string }>`
+      select b.category, b.kind, b.budgeted_zar,
+             coalesce(sum(-t.amount_zar), 0) as actual_zar,
+             count(t.id)                     as txn_count
+      from budgets b
+      left join transactions t
+        on t.category = b.category
+       and t.type = 'expense'
+       and t.occurred_on >= ${cycle.start}::date
+       and t.occurred_on <  ${cycle.end}::date
+      where b.cycle_start = ${cycle.start}::date
+      group by b.id, b.category, b.kind, b.budgeted_zar
+      order by actual_zar desc`,
+
+    // Expenses in this cycle whose category has no budget line — real money
+    // that must not disappear from the totals.
+    sql<{ category: string; amount_zar: string }>`
+      select coalesce(t.category, t.original_category, 'Uncategorised') as category,
+             sum(-t.amount_zar) as amount_zar
+      from transactions t
+      where t.type = 'expense'
+        and t.occurred_on >= ${cycle.start}::date
+        and t.occurred_on <  ${cycle.end}::date
+        and not exists (
+          select 1 from budgets b
+          where b.cycle_start = ${cycle.start}::date and b.category = t.category)
+      group by 1
+      order by 2 desc`,
+
+    sql<{ total: string }>`
+      select coalesce(sum(amount_zar), 0) as total from transactions
+      where type = 'income'
+        and occurred_on >= ${cycle.start}::date
+        and occurred_on <  ${cycle.end}::date`,
   ]);
 
-  const forThisCycle = budgetRows.filter((row) => {
-    const month = stringCell(row, FIELDS.budget.month);
-    return month ? month.slice(0, 7) === cycle.budgetMonth.slice(0, 7) : false;
-  });
-
-  // Spend per consolidated budget category, this cycle, expenses only.
-  const spendByCategory = new Map<string, { amount: number; count: number }>();
-  const unbudgeted = new Map<string, number>();
-
-  for (const txn of transactions) {
-    if (txn.type !== "expense") continue;
-    if (!isInCycle(txn.date, cycle)) continue;
-
-    // Genuine refunds reduce spend; mis-signed expenses still add to it.
-    const spend = spendContribution(txn.amountZar, txn.category, txn.description);
-    const line = txn.budgetCategory;
-
-    if (!line) {
-      if (txn.category) {
-        unbudgeted.set(txn.category, (unbudgeted.get(txn.category) ?? 0) + spend);
-      }
-      continue;
-    }
-
-    const current = spendByCategory.get(line) ?? { amount: 0, count: 0 };
-    spendByCategory.set(line, { amount: current.amount + spend, count: current.count + 1 });
-  }
-
-  const lines: BudgetLine[] = forThisCycle.map((row) => {
-    const category = stringCell(row, FIELDS.budget.category) ?? "—";
-    const budgetedZar = numberCell(row, FIELDS.budget.budgetedZar) ?? 0;
-    const spent = spendByCategory.get(category) ?? { amount: 0, count: 0 };
+  const budgetLines: BudgetLine[] = lines.map((r) => {
+    const budgetedZar = money(r.budgeted_zar);
+    const actualZar = money(r.actual_zar);
     return {
-      category,
-      type: stringCell(row, FIELDS.budget.type),
+      category: r.category,
+      type: r.kind,
       budgetedZar,
-      actualZar: spent.amount,
-      remainingZar: budgetedZar - spent.amount,
-      usedPct: budgetedZar > 0 ? (spent.amount / budgetedZar) * 100 : 0,
-      transactionCount: spent.count,
+      actualZar,
+      remainingZar: budgetedZar - actualZar,
+      usedPct: budgetedZar > 0 ? (actualZar / budgetedZar) * 100 : 0,
+      transactionCount: Number(r.txn_count),
     };
   });
 
-  // Spend against a budget line that doesn't exist this cycle must still show,
-  // otherwise real money would vanish from the totals entirely.
-  for (const [category, spent] of spendByCategory) {
-    if (!lines.some((line) => line.category === category)) {
-      unbudgeted.set(category, (unbudgeted.get(category) ?? 0) + spent.amount);
-    }
-  }
-
-  const budgetedZar = lines.reduce((total, line) => total + line.budgetedZar, 0);
-  const actualZar = lines.reduce((total, line) => total + line.actualZar, 0);
-  const unbudgetedZar = [...unbudgeted.values()].reduce((total, amount) => total + amount, 0);
-
-  const incomeZar = transactions
-    .filter((txn) => txn.type === "income" && isInCycle(txn.date, cycle))
-    .reduce((total, txn) => total + txn.amountZar, 0);
-
+  const budgetedZar = budgetLines.reduce((t, l) => t + l.budgetedZar, 0);
+  const actualZar = budgetLines.reduce((t, l) => t + l.actualZar, 0);
   const remainingZar = budgetedZar - actualZar;
 
   return {
     cycle,
-    lines: lines.sort((a, b) => b.actualZar - a.actualZar),
-    totals: { budgetedZar, actualZar, remainingZar, incomeZar },
-    unbudgetedZar,
-    unbudgetedCategories: [...unbudgeted.entries()]
-      .map(([category, amountZar]) => ({ category, amountZar }))
-      .sort((a, b) => b.amountZar - a.amountZar),
-    dailyAllowanceZar:
-      cycle.remainingDays > 0 ? remainingZar / cycle.remainingDays : null,
+    lines: budgetLines,
+    totals: { budgetedZar, actualZar, remainingZar, incomeZar: money(income[0]?.total) },
+    unbudgetedZar: unbudgeted.reduce((t, r) => t + money(r.amount_zar), 0),
+    unbudgetedCategories: unbudgeted.map((r) => ({
+      category: r.category, amountZar: money(r.amount_zar),
+    })),
+    dailyAllowanceZar: cycle.remainingDays > 0 ? remainingZar / cycle.remainingDays : null,
   };
 }

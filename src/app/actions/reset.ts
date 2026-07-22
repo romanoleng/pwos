@@ -2,9 +2,8 @@
 
 import { revalidateTag } from "next/cache";
 
-import { TABLES } from "@/lib/airtable-fields";
 import { editableField, validateEditable } from "@/lib/editable";
-import { getRecord, numberCell, updateRecords } from "@/lib/server/airtable";
+import { moneyOrNull, query } from "@/lib/server/db";
 
 import type { MutationResult } from "./holdings";
 
@@ -25,13 +24,16 @@ export type ResetChange = { editKey: string; recordId: string; value: number };
 export type ResetPrevious = { editKey: string; recordId: string; value: number | null };
 
 const TABLE_BY_KEY = {
-  netWorth: TABLES.netWorth,
-  debtTracker: TABLES.debtTracker,
-  savingsGoals: TABLES.savingsGoals,
-  kidsAccounts: TABLES.kidsAccounts,
-  budget: TABLES.budget,
-  holdings: TABLES.holdings,
+  accounts: "accounts",
+  assets: "assets",
+  debtTracker: "debts",
+  savingsGoals: "goals",
+  kidsAccounts: "kids_accounts",
+  budget: "budgets",
+  holdings: "holdings",
 } as const;
+
+const TEXT_ID = new Set(["accounts"]);
 
 function invalidateAll(): void {
   for (const tag of ["accounts", "networth", "wealth", "debt", "budget", "goals", "kids"]) {
@@ -47,40 +49,37 @@ export async function applyReset(
 
   // Validate everything before writing anything. Half-applying a reset would
   // leave the app in a state nobody can reason about.
-  const byTable = new Map<string, { id: string; fields: Record<string, unknown> }[]>();
   for (const change of changes) {
     const field = editableField(change.editKey);
     if (!field) return { ok: false, error: `Unknown field: ${change.editKey}` };
-
     const invalid = validateEditable(field, change.value);
     if (invalid) return { ok: false, error: `${field.label}: ${invalid}` };
-
-    if (!/^rec[A-Za-z0-9]{14}$/.test(change.recordId)) {
+    if (!/^[A-Za-z0-9_-]{1,40}$/.test(change.recordId)) {
       return { ok: false, error: "Invalid record reference." };
     }
-
-    const tableId = TABLE_BY_KEY[field.table];
-    const list = byTable.get(tableId) ?? [];
-    list.push({ id: change.recordId, fields: { [field.fieldId]: change.value } });
-    byTable.set(tableId, list);
   }
 
   try {
     const previous: ResetPrevious[] = [];
+    let applied = 0;
+
     for (const change of changes) {
       const field = editableField(change.editKey)!;
-      const record = await getRecord(TABLE_BY_KEY[field.table], change.recordId);
+      const table = TABLE_BY_KEY[field.table];
+      const cast = TEXT_ID.has(table) ? "" : "::bigint";
+      const rows = await query<{ previous: unknown }>(
+        `update ${table} u set ${field.fieldId} = $1
+         from ${table} old where old.id = u.id and u.id = $2${cast}
+         returning old.${field.fieldId} as previous`,
+        [change.value, change.recordId],
+      );
+      if (rows.length === 0) continue;
       previous.push({
         editKey: change.editKey,
         recordId: change.recordId,
-        value: record ? numberCell(record, field.fieldId) : null,
+        value: moneyOrNull(rows[0].previous),
       });
-    }
-
-    let applied = 0;
-    for (const [tableId, records] of byTable) {
-      const written = await updateRecords(tableId, records);
-      applied += written.length;
+      applied += 1;
     }
 
     invalidateAll();
@@ -97,16 +96,14 @@ export async function applyReset(
 /** Restores every value captured by applyReset. Powers the undo. */
 export async function revertReset(previous: ResetPrevious[]): Promise<MutationResult> {
   try {
-    const byTable = new Map<string, { id: string; fields: Record<string, unknown> }[]>();
     for (const entry of previous) {
       const field = editableField(entry.editKey);
       if (!field) continue;
-      const tableId = TABLE_BY_KEY[field.table];
-      const list = byTable.get(tableId) ?? [];
-      list.push({ id: entry.recordId, fields: { [field.fieldId]: entry.value } });
-      byTable.set(tableId, list);
+      const table = TABLE_BY_KEY[field.table];
+      const cast = TEXT_ID.has(table) ? "" : "::bigint";
+      await query(`update ${table} set ${field.fieldId} = $1 where id = $2${cast}`,
+        [entry.value, entry.recordId]);
     }
-    for (const [tableId, records] of byTable) await updateRecords(tableId, records);
     invalidateAll();
     return { ok: true, data: undefined };
   } catch (error) {

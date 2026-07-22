@@ -1,64 +1,55 @@
 /**
- * Debt module (CLAUDE.md §3, §5). Debt Tracker is the single source; the
- * Net Worth liability rows are a derived rollup, reported here only so the
- * disagreement between the two is visible rather than hidden.
+ * Debt (CLAUDE.md §3, §5). Postgres is the single source; duplicates are
+ * recorded explicitly via debts.duplicate_of rather than guessed from names.
  */
 import "server-only";
 
-import { FIELDS, TABLES } from "@/lib/airtable-fields";
 import { findDuplicates, type DebtRow, type DebtSummary } from "@/lib/debt";
 
-import { listRecords, numberCell, stringCell } from "./airtable";
+import { isoDate, money, sql } from "./db";
 
-const DEBT_FIELDS = [
-  FIELDS.debt.name,
-  FIELDS.debt.type,
-  FIELDS.debt.balanceZar,
-  FIELDS.debt.monthlyZar,
-  FIELDS.debt.interestPct,
-  FIELDS.debt.priority,
-  FIELDS.debt.status,
-  FIELDS.debt.payoffDate,
-] as const;
+type Row = {
+  id: string; name: string; kind: string | null; balance_zar: string;
+  monthly_zar: string; interest_pct: string | null; priority: string | null;
+  status: string | null; target_payoff: string | null; duplicate_of: string | null;
+};
 
 export async function getDebtSummary(): Promise<DebtSummary> {
-  const [debtRecords, netWorthRecords] = await Promise.all([
-    listRecords(TABLES.debtTracker, { fieldIds: DEBT_FIELDS }),
-    listRecords(TABLES.netWorth, {
-      fieldIds: [FIELDS.netWorth.name, FIELDS.netWorth.type, FIELDS.netWorth.valueZar],
-    }),
-  ]);
+  const rows = await sql<Row>`
+    select id::text, name, kind, balance_zar, monthly_zar, interest_pct,
+           priority, status, target_payoff::text, duplicate_of::text
+    from debts where not archived order by balance_zar desc`;
 
-  const rows: DebtRow[] = debtRecords.map((record) => ({
-    recordId: record.id,
-    name: stringCell(record, FIELDS.debt.name) ?? "—",
-    type: stringCell(record, FIELDS.debt.type),
-    balanceZar: numberCell(record, FIELDS.debt.balanceZar) ?? 0,
-    monthlyZar: numberCell(record, FIELDS.debt.monthlyZar) ?? 0,
-    interestPct: numberCell(record, FIELDS.debt.interestPct),
-    priority: stringCell(record, FIELDS.debt.priority),
-    status: stringCell(record, FIELDS.debt.status),
-    payoffDate: stringCell(record, FIELDS.debt.payoffDate),
+  const debts: DebtRow[] = rows.map((r) => ({
+    recordId: r.id,
+    name: r.name,
+    type: r.kind,
+    balanceZar: money(r.balance_zar),
+    monthlyZar: money(r.monthly_zar),
+    interestPct: r.interest_pct === null ? null : money(r.interest_pct),
+    priority: r.priority,
+    status: r.status,
+    payoffDate: isoDate(r.target_payoff),
   }));
 
-  const netWorthLiabilitiesZar = netWorthRecords
-    .filter((record) => stringCell(record, FIELDS.netWorth.type) === "Liability")
-    .reduce((total, record) => total + (numberCell(record, FIELDS.netWorth.valueZar) ?? 0), 0);
+  // Explicitly marked duplicates, plus any exact name collisions.
+  const marked = rows.filter((r) => r.duplicate_of !== null);
+  const overcount = marked.reduce((total, r) => total + money(r.balance_zar), 0);
+  const totalZar = debts.reduce((total, d) => total + d.balanceZar, 0);
 
-  const duplicates = findDuplicates(rows);
-  const totalZar = rows.reduce((total, row) => total + row.balanceZar, 0);
-  const overcount = duplicates.reduce(
-    (total, group) => total + (group.countedZar - group.dedupedZar),
-    0,
-  );
+  const nameGroups = findDuplicates(debts);
+  const heuristicOvercount = nameGroups.reduce(
+    (total, g) => total + (g.countedZar - g.dedupedZar), 0);
 
   return {
-    rows: rows.sort((a, b) => b.balanceZar - a.balanceZar),
+    rows: debts,
     totalZar,
-    dedupedTotalZar: totalZar - overcount,
-    monthlyZar: rows.reduce((total, row) => total + row.monthlyZar, 0),
-    duplicates,
-    netWorthLiabilitiesZar,
-    discrepancyZar: totalZar - netWorthLiabilitiesZar,
+    dedupedTotalZar: totalZar - overcount - heuristicOvercount,
+    monthlyZar: debts.reduce((total, d) => total + d.monthlyZar, 0),
+    duplicates: nameGroups,
+    // Postgres holds liabilities in one place, so there is no second source to
+    // disagree with. Kept at parity so the UI needs no change.
+    netWorthLiabilitiesZar: totalZar,
+    discrepancyZar: 0,
   };
 }

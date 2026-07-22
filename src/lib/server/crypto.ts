@@ -19,34 +19,17 @@ import type {
   WalletGroup,
 } from "@/lib/crypto/types";
 
-import {
-  FIELDS,
-  TABLES,
-  cell,
-  listRecords,
-  numberCell,
-  stringCell,
-  type AirtableRecord,
-} from "./airtable";
 import { resolveCoinIds, type ResolvedId } from "./coin-ids";
+import { money, moneyOrNull, sql } from "./db";
 import { getPrices } from "./prices";
 
-const HOLDING_FIELDS = [
-  FIELDS.holdings.coin,
-  FIELDS.holdings.symbol,
-  FIELDS.holdings.wallet,
-  FIELDS.holdings.quantity,
-  FIELDS.holdings.investedZar,
-  FIELDS.holdings.priceZar,
-  FIELDS.holdings.valueZar,
-  FIELDS.holdings.category,
-  FIELDS.holdings.m1,
-  FIELDS.holdings.m2,
-  FIELDS.holdings.m3,
-  FIELDS.holdings.m4,
-  FIELDS.holdings.m5,
-  FIELDS.holdings.archived,
-] as const;
+type HoldingRow = {
+  id: string; symbol: string; coin: string | null; wallet: string;
+  quantity: string; invested_zar: string; stored_price_zar: string | null;
+  category: string | null;
+  milestone_1: string | null; milestone_2: string | null; milestone_3: string | null;
+  milestone_4: string | null; milestone_5: string | null;
+};
 
 /** Unknown wallets sort last but are never dropped — see Tangem Cold Wallet. */
 function walletRank(wallet: string): number {
@@ -91,25 +74,23 @@ function aggregateCore5(holdings: Holding[]): Core5Position[] {
 }
 
 export async function getPortfolio(): Promise<Portfolio> {
-  const allRecords = await listRecords(TABLES.holdings, { fieldIds: HOLDING_FIELDS });
+  // Archived positions leave the app but stay in the table (§9b).
+  const records = await sql<HoldingRow>`
+    select id::text, symbol, coin, wallet, quantity, invested_zar, stored_price_zar,
+           category, milestone_1, milestone_2, milestone_3, milestone_4, milestone_5
+    from holdings where not archived order by symbol`;
+  const [{ n: archived }] = await sql<{ n: string }>`
+    select count(*)::text as n from holdings where archived`;
+  const archivedCount = Number(archived);
 
-  // Archived positions leave the app but stay in Airtable (§9b).
-  const records = allRecords.filter(
-    (record) => cell(record, FIELDS.holdings.archived) !== true,
-  );
-  const archivedCount = allRecords.length - records.length;
-
-  const symbols = records
-    .map((record) => stringCell(record, FIELDS.holdings.symbol)?.toUpperCase())
-    .filter((symbol): symbol is string => Boolean(symbol));
+  const symbols = records.map((r) => r.symbol.toUpperCase());
 
   const idsBySymbol = await resolveCoinIds(symbols);
 
   // Only request prices for coins actually held.
   const wanted = new Set<string>();
   for (const record of records) {
-    const symbol = stringCell(record, FIELDS.holdings.symbol)?.toUpperCase();
-    const resolved = symbol ? idsBySymbol.get(symbol) : undefined;
+    const resolved = idsBySymbol.get(record.symbol.toUpperCase());
     if (resolved) wanted.add(resolved.coingeckoId);
   }
 
@@ -120,11 +101,11 @@ export async function getPortfolio(): Promise<Portfolio> {
   /** Ids the app guessed rather than read from Airtable — must be confirmed. */
   const inferredIds: ResolvedId[] = [];
 
-  const holdings: Holding[] = records.map((record: AirtableRecord) => {
-    const symbol = (stringCell(record, FIELDS.holdings.symbol) ?? "—").toUpperCase();
-    const wallet = stringCell(record, FIELDS.holdings.wallet) ?? "Unassigned";
-    const quantity = numberCell(record, FIELDS.holdings.quantity) ?? 0;
-    const investedZar = numberCell(record, FIELDS.holdings.investedZar) ?? 0;
+  const holdings: Holding[] = records.map((record) => {
+    const symbol = record.symbol.toUpperCase();
+    const wallet = record.wallet;
+    const quantity = money(record.quantity);
+    const investedZar = money(record.invested_zar);
 
     const resolved = idsBySymbol.get(symbol);
     const live = resolved ? snapshot.prices.get(resolved.coingeckoId) : undefined;
@@ -142,7 +123,7 @@ export async function getPortfolio(): Promise<Portfolio> {
       priceSource = "live";
     } else {
       // §5: coins with no provider id (ECNMG, MISC) use the stored value.
-      const stored = numberCell(record, FIELDS.holdings.priceZar);
+      const stored = moneyOrNull(record.stored_price_zar);
       if (stored !== null && stored > 0) {
         priceZar = stored;
         priceSource = "airtable-fallback";
@@ -158,18 +139,15 @@ export async function getPortfolio(): Promise<Portfolio> {
       pnlZar !== null && investedZar > 0 ? (pnlZar / investedZar) * 100 : null;
 
     const milestones = parseMilestones({
-      m1: stringCell(record, FIELDS.holdings.m1),
-      m2: stringCell(record, FIELDS.holdings.m2),
-      m3: stringCell(record, FIELDS.holdings.m3),
-      m4: stringCell(record, FIELDS.holdings.m4),
-      m5: stringCell(record, FIELDS.holdings.m5),
+      m1: record.milestone_1, m2: record.milestone_2, m3: record.milestone_3,
+      m4: record.milestone_4, m5: record.milestone_5,
     });
     const assessment = assessMilestones(milestones, priceZar);
 
     return {
       recordId: record.id,
       symbol,
-      coin: stringCell(record, FIELDS.holdings.coin),
+      coin: record.coin,
       wallet,
       quantity,
       priceZar,
@@ -182,7 +160,7 @@ export async function getPortfolio(): Promise<Portfolio> {
       pnlPct,
       weightPct: null, // filled once the total is known
       isCore5: (CORE_5 as readonly string[]).includes(symbol),
-      category: stringCell(record, FIELDS.holdings.category),
+      category: record.category,
       milestones,
       milestoneStatuses: assessment.all,
       nextMilestone: assessment.next,

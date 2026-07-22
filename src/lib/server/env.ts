@@ -10,6 +10,7 @@ import "server-only";
 
 /** Secrets that must never reach the browser under any name. */
 const SECRET_KEYS = [
+  "DATABASE_URL",
   "AIRTABLE_TOKEN",
   "PRICE_API_KEY",
   "AUTH_SECRET",
@@ -56,8 +57,15 @@ export class MissingEnvError extends Error {
  * time (which would make the setup screen itself unreachable).
  */
 export const env = {
+  /**
+   * Only the backup script still reads Airtable — the app itself is entirely
+   * on Postgres. Kept so `npm run backup` can archive the frozen base.
+   */
   get airtableToken(): string {
     return requireEnv("AIRTABLE_TOKEN");
+  },
+  get databaseUrl(): string {
+    return requireEnv("DATABASE_URL");
   },
   get airtableBaseId(): string {
     return read("AIRTABLE_BASE_ID") ?? "appL4V6tbsGRJ7WxQ";
@@ -88,7 +96,7 @@ export type ConfigStatus = {
 /** Drives the setup screen so a fresh clone explains itself instead of 500ing. */
 export function getConfigStatus(): ConfigStatus {
   const missing: string[] = [];
-  if (!read("AIRTABLE_TOKEN")) missing.push("AIRTABLE_TOKEN");
+  if (!read("DATABASE_URL")) missing.push("DATABASE_URL");
   if (!read("AUTH_SECRET")) missing.push("AUTH_SECRET");
   if (!read("APP_PASSWORD")) missing.push("APP_PASSWORD");
   return { ready: missing.length === 0, missing };

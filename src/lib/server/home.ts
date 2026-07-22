@@ -17,11 +17,10 @@ import "server-only";
 
 import { getBudgetCycle } from "@/lib/budget";
 import { toLocalISODate } from "@/lib/crypto/history";
-import { spendContribution } from "@/lib/transactions";
 
 import { getAccounts } from "./accounts";
 import { getBudgetSummary } from "./budget";
-import { getTransactions } from "./transactions";
+import { money, sql } from "./db";
 
 export type HomeCard = {
   id: string;
@@ -67,39 +66,33 @@ export type HomeSummary = {
 };
 
 export async function getHome(): Promise<HomeSummary> {
-  const [accounts, budget, transactions] = await Promise.all([
+  const todayIso0 = toLocalISODate(new Date());
+  const [accounts, budget, recentRows, todayRow, catRows, descRows] = await Promise.all([
     getAccounts(),
     getBudgetSummary(),
-    getTransactions(),
+    sql<{ id: string; occurred_on: string; description: string; amount_zar: string;
+          category: string | null; account_label: string | null; type: string }>`
+      select t.id::text, t.occurred_on::text, t.description, t.amount_zar,
+             t.category, a.label as account_label, t.type::text
+      from transactions t left join accounts a on a.id = t.account_id
+      order by t.occurred_on desc, t.id desc limit 8`,
+    sql<{ spend: string; n: string }>`
+      select coalesce(sum(-amount_zar) filter (where type='expense'),0) as spend,
+             count(*)::text as n
+      from transactions where occurred_on = ${todayIso0}::date`,
+    // Smart defaults from actual behaviour over the last 60 days.
+    sql<{ category: string }>`
+      select category from transactions
+      where type='expense' and category is not null
+        and occurred_on >= current_date - 60
+      group by category order by count(*) desc limit 6`,
+    sql<{ description: string }>`
+      select description from transactions
+      where occurred_on >= current_date - 60
+      group by description order by count(*) desc limit 40`,
   ]);
 
   const cycle = getBudgetCycle();
-  const todayIso = toLocalISODate(new Date());
-
-  const todays = transactions.filter((t) => t.date?.slice(0, 10) === todayIso);
-  const todaySpend = todays
-    .filter((t) => t.type === "expense")
-    .reduce((sum, t) => sum + spendContribution(t.amountZar, t.category, t.description), 0);
-
-  // Smart defaults from actual behaviour, not a guess: the account most
-  // recently used, and the categories used most in the last 60 days.
-  const recentWindow = transactions.filter((t) => {
-    if (!t.date) return false;
-    const days = (Date.parse(todayIso) - Date.parse(t.date.slice(0, 10))) / 86_400_000;
-    return days >= 0 && days <= 60;
-  });
-
-  const categoryCounts = new Map<string, number>();
-  const descriptionCounts = new Map<string, number>();
-  for (const t of recentWindow) {
-    if (t.type === "expense" && t.category) {
-      categoryCounts.set(t.category, (categoryCounts.get(t.category) ?? 0) + 1);
-    }
-    const description = t.description?.trim();
-    if (description && description !== "—") {
-      descriptionCounts.set(description, (descriptionCounts.get(description) ?? 0) + 1);
-    }
-  }
 
   return {
     available: {
@@ -126,28 +119,22 @@ export async function getHome(): Promise<HomeSummary> {
       cycleStart: cycle.start,
       cycleEnd: cycle.end,
     },
-    today: { spendZar: todaySpend, count: todays.length },
-    recent: transactions.slice(0, 8).map((t) => ({
-      recordId: t.recordId,
-      date: t.date,
+    today: { spendZar: money(todayRow[0]?.spend), count: Number(todayRow[0]?.n ?? 0) },
+    recent: recentRows.map((t) => ({
+      recordId: t.id,
+      date: String(t.occurred_on).slice(0, 10),
       description: t.description,
-      amountZar: t.amountZar,
+      amountZar: money(t.amount_zar),
       category: t.category,
-      accountLabel: t.accountLabel,
+      accountLabel: t.account_label,
       type: t.type,
     })),
     defaults: {
-      accountLabel: transactions.find((t) => t.accountLabel)?.accountLabel ?? null,
-      categories: [...categoryCounts.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 6)
-        .map(([category]) => category),
+      accountLabel: recentRows.find((t) => t.account_label)?.account_label ?? null,
+      categories: catRows.map((r) => r.category),
       // Most-repeated descriptions first: "Checkers Sixty60" should not be
       // typed for the hundredth time.
-      descriptions: [...descriptionCounts.entries()]
-        .sort((a, b) => b[1] - a[1])
-        .slice(0, 40)
-        .map(([description]) => description),
+      descriptions: descRows.map((r) => r.description),
     },
   };
 }

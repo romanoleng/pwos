@@ -9,7 +9,6 @@ import {
   type PreviewResult,
 } from "@/app/actions/snapshot";
 import { Money } from "@/components/ui/Money";
-import { FIELDS } from "@/lib/airtable-fields";
 import { formatDate } from "@/lib/format";
 
 type Stage =
@@ -113,37 +112,31 @@ export function SnapshotButton() {
     <div className="w-full rounded-xl border border-line-2 bg-surface-2 p-4">
       <p className="text-sm font-medium">Write this to Airtable?</p>
       <p className="mt-1 text-xs text-muted">
-        Creates one new row in <span className="text-ink">Daily Crypto Report</span>
-        {preview.snapshots ? (
-          <>
-            {" "}
-            and one in <span className="text-ink">Snapshots</span>
-          </>
-        ) : null}
-        , dated {formatDate(preview.date)}. Nothing existing is changed or deleted.
+        Writes one row to <span className="text-ink">portfolio_snapshots</span>
+, dated {formatDate(preview.date)}. Nothing existing is changed or deleted.
       </p>
 
       <dl className="mt-3 space-y-1.5 border-t border-line pt-3 text-xs">
         <Row label="Total value">
-          <Money value={Number(report[FIELDS.dailyCryptoReport.totalValueZar])} variant="whole" />
+          <Money value={Number(report.value_zar)} variant="whole" />
         </Row>
         <Row label="Total invested">
           <Money
-            value={Number(report[FIELDS.dailyCryptoReport.totalInvestedZar])}
+            value={Number(report.invested_zar)}
             variant="whole"
           />
         </Row>
         <Row label="P&L">
-          <Money value={Number(report[FIELDS.dailyCryptoReport.pnlZar])} variant="whole" signed />
+          <Money value={Number(report.pnl_zar)} variant="whole" signed />
         </Row>
         <Row label="R2m progress">
           <span className="tnum">
-            {Number(report[FIELDS.dailyCryptoReport.r2mProgressPct])}%
+            {Number(report.freedom_pct)}%
           </span>
         </Row>
         <Row label="Milestones hit">
           <span className="tnum">
-            {Number(report[FIELDS.dailyCryptoReport.milestonesHitCount])}
+            {Number(report.milestones_hit)}
           </span>
         </Row>
         {preview.usdRate ? (

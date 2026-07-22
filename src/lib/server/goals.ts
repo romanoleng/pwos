@@ -1,41 +1,25 @@
-/**
- * Goals (CLAUDE.md §5) — the freedom goal, savings goals and kids' accounts.
- */
+/** Goals (CLAUDE.md §5) — freedom goal, savings goals, kids' accounts. */
 import "server-only";
 
-import { FREEDOM_TARGET_ZAR, FREEDOM_TARGET_LABEL } from "@/lib/constants";
-import { TABLES } from "@/lib/airtable-fields";
+import { FREEDOM_TARGET_LABEL, FREEDOM_TARGET_ZAR } from "@/lib/constants";
 
-import { listRecords, numberCell, stringCell } from "./airtable";
+import { isoDate, money, moneyOrNull, sql } from "./db";
 import { getNetWorth } from "./networth";
 
 export type Goal = {
-  recordId: string;
-  name: string;
-  currentZar: number;
-  targetZar: number | null;
-  monthlyZar: number;
-  progressPct: number | null;
-  status: string | null;
-  priority: string | null;
-  targetDate: string | null;
-  /** Months to target at the current contribution rate. */
-  monthsToTarget: number | null;
+  recordId: string; name: string; currentZar: number; targetZar: number | null;
+  monthlyZar: number; progressPct: number | null; status: string | null;
+  priority: string | null; targetDate: string | null; monthsToTarget: number | null;
 };
 
 export type KidAccount = {
-  recordId: string;
-  account: string;
-  child: string | null;
-  institution: string | null;
-  balanceZar: number;
-  monthlyZar: number;
+  recordId: string; account: string; child: string | null;
+  institution: string | null; balanceZar: number; monthlyZar: number;
 };
 
 export type GoalsSummary = {
   freedom: { targetZar: number; label: string; currentZar: number; progressPct: number };
-  goals: Goal[];
-  kids: KidAccount[];
+  goals: Goal[]; kids: KidAccount[];
   totals: { savedZar: number; targetZar: number; monthlyZar: number; kidsZar: number };
 };
 
@@ -45,48 +29,42 @@ function monthsToTarget(current: number, target: number | null, monthly: number)
 }
 
 export async function getGoals(): Promise<GoalsSummary> {
-  const [goalRecords, kidRecords, netWorth] = await Promise.all([
-    listRecords(TABLES.savingsGoals),
-    listRecords(TABLES.kidsAccounts),
+  const [goalRows, kidRows, netWorth] = await Promise.all([
+    sql<{ id: string; name: string; current_zar: string; target_zar: string | null;
+          monthly_zar: string; priority: string | null; status: string | null; target_date: string | null }>`
+      select id::text, name, current_zar, target_zar, monthly_zar, priority, status, target_date::text
+      from goals where not archived order by current_zar desc`,
+    sql<{ id: string; account: string; child: string | null; institution: string | null;
+          balance_zar: string; monthly_zar: string }>`
+      select id::text, account, child, institution, balance_zar, monthly_zar
+      from kids_accounts order by balance_zar desc`,
     getNetWorth(),
   ]);
 
-  const goals: Goal[] = goalRecords.map((record) => {
-    const currentZar = numberCell(record, "fldSmsn73477TEYE0") ?? 0;
-    const targetZar = numberCell(record, "fldcDGPSwZKG4ALbJ");
-    const monthlyZar = numberCell(record, "fld64sfkThfhk7isF") ?? 0;
+  const goals: Goal[] = goalRows.map((r) => {
+    const currentZar = money(r.current_zar);
+    const targetZar = moneyOrNull(r.target_zar);
+    const monthlyZar = money(r.monthly_zar);
     return {
-      recordId: record.id,
-      name: stringCell(record, "fldCDKjnCjOW6sUu1") ?? "—",
-      currentZar,
-      targetZar,
-      monthlyZar,
+      recordId: r.id, name: r.name, currentZar, targetZar, monthlyZar,
       progressPct: targetZar && targetZar > 0 ? (currentZar / targetZar) * 100 : null,
-      status: stringCell(record, "flda0qgDfdFeY7O04"),
-      priority: stringCell(record, "fldiHd4MmHDsHOWyU"),
-      targetDate: stringCell(record, "fldjQC4N5wCQludnZ"),
+      status: r.status, priority: r.priority, targetDate: isoDate(r.target_date),
       monthsToTarget: monthsToTarget(currentZar, targetZar, monthlyZar),
     };
   });
 
-  const kids: KidAccount[] = kidRecords.map((record) => ({
-    recordId: record.id,
-    account: stringCell(record, "fldYSUjwg09Rejvkc") ?? "—",
-    child: stringCell(record, "fldRe1SuyyfoDl3J7"),
-    institution: stringCell(record, "fldb7f793z9kWEehF"),
-    balanceZar: numberCell(record, "fldP70Dc7YXA3A0KB") ?? 0,
-    monthlyZar: numberCell(record, "fldbKtVU7GGxGsLbX") ?? 0,
+  const kids: KidAccount[] = kidRows.map((r) => ({
+    recordId: r.id, account: r.account, child: r.child,
+    institution: r.institution, balanceZar: money(r.balance_zar), monthlyZar: money(r.monthly_zar),
   }));
 
   return {
     freedom: {
-      targetZar: FREEDOM_TARGET_ZAR,
-      label: FREEDOM_TARGET_LABEL,
+      targetZar: FREEDOM_TARGET_ZAR, label: FREEDOM_TARGET_LABEL,
       currentZar: netWorth.assetsZar,
       progressPct: (netWorth.assetsZar / FREEDOM_TARGET_ZAR) * 100,
     },
-    goals: goals.sort((a, b) => b.currentZar - a.currentZar),
-    kids: kids.sort((a, b) => b.balanceZar - a.balanceZar),
+    goals, kids,
     totals: {
       savedZar: goals.reduce((t, g) => t + g.currentZar, 0),
       targetZar: goals.reduce((t, g) => t + (g.targetZar ?? 0), 0),

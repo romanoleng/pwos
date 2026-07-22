@@ -4,17 +4,18 @@
  * Every number the UI can change is declared here, once. The browser sends a
  * registry KEY plus a value — never a table id, field id, or column name.
  *
- * That matters: a generic "update table X field Y" action would let anything
- * running in the page rewrite any cell in the base, including milestone plans
- * and cost bases. The allow-list means an attacker-controlled or buggy client
- * can only ever set values the server already agreed are editable.
+ * That matters: a generic "update table X column Y" action would let anything
+ * running in the page rewrite any row in the database, including milestone
+ * plans and cost bases. The allow-list means an attacker-controlled or buggy
+ * client can only ever set values the server already agreed are editable.
  */
 
 export type EditableKind = "currency" | "number" | "text" | "date";
 
 /** Tables the registry may reference. Mirrors TABLES in airtable-fields. */
 export type EditableTable =
-  | "netWorth"
+  | "accounts"
+  | "assets"
   | "debtTracker"
   | "savingsGoals"
   | "kidsAccounts"
@@ -24,6 +25,7 @@ export type EditableTable =
 export type EditableField = {
   key: string;
   table: EditableTable;
+  /** Postgres column. Still an allow-list: the client only ever sends `key`. */
   fieldId: string;
   label: string;
   kind: EditableKind;
@@ -36,16 +38,24 @@ export type EditableField = {
 export const EDITABLE: Record<string, EditableField> = {
   "netWorth.value": {
     key: "netWorth.value",
-    table: "netWorth",
-    fieldId: "fldqBv7liYBBOQ3Lz",
+    table: "accounts",
+    fieldId: "balance_zar",
     label: "Value",
     kind: "currency",
     invalidates: ["accounts", "networth", "wealth"],
   },
+  "asset.value": {
+    key: "asset.value",
+    table: "assets",
+    fieldId: "value_zar",
+    label: "Value",
+    kind: "currency",
+    invalidates: ["networth", "wealth"],
+  },
   "debt.balance": {
     key: "debt.balance",
     table: "debtTracker",
-    fieldId: "fldyDq6KrUTl0MQgt",
+    fieldId: "balance_zar",
     label: "Outstanding balance",
     kind: "currency",
     min: 0,
@@ -54,7 +64,7 @@ export const EDITABLE: Record<string, EditableField> = {
   "debt.monthly": {
     key: "debt.monthly",
     table: "debtTracker",
-    fieldId: "fldRylhwh9GUkXciS",
+    fieldId: "monthly_zar",
     label: "Monthly payment",
     kind: "currency",
     min: 0,
@@ -63,7 +73,7 @@ export const EDITABLE: Record<string, EditableField> = {
   "budget.budgeted": {
     key: "budget.budgeted",
     table: "budget",
-    fieldId: "fldl87k7XXfFuzN2K",
+    fieldId: "budgeted_zar",
     label: "Budgeted",
     kind: "currency",
     min: 0,
@@ -72,7 +82,7 @@ export const EDITABLE: Record<string, EditableField> = {
   "goal.balance": {
     key: "goal.balance",
     table: "savingsGoals",
-    fieldId: "fldSmsn73477TEYE0",
+    fieldId: "current_zar",
     label: "Current balance",
     kind: "currency",
     min: 0,
@@ -81,7 +91,7 @@ export const EDITABLE: Record<string, EditableField> = {
   "goal.target": {
     key: "goal.target",
     table: "savingsGoals",
-    fieldId: "fldcDGPSwZKG4ALbJ",
+    fieldId: "target_zar",
     label: "Target",
     kind: "currency",
     min: 0,
@@ -90,7 +100,7 @@ export const EDITABLE: Record<string, EditableField> = {
   "goal.monthly": {
     key: "goal.monthly",
     table: "savingsGoals",
-    fieldId: "fld64sfkThfhk7isF",
+    fieldId: "monthly_zar",
     label: "Monthly contribution",
     kind: "currency",
     min: 0,
@@ -99,7 +109,7 @@ export const EDITABLE: Record<string, EditableField> = {
   "kids.balance": {
     key: "kids.balance",
     table: "kidsAccounts",
-    fieldId: "fldP70Dc7YXA3A0KB",
+    fieldId: "balance_zar",
     label: "Balance",
     kind: "currency",
     min: 0,

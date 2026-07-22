@@ -10,7 +10,7 @@ import "server-only";
 import { toLocalISODate } from "@/lib/crypto/history";
 import type { Portfolio } from "@/lib/crypto/types";
 
-import { FIELDS, TABLES, assertFields, createRecords } from "./airtable";
+import { sql } from "./db";
 
 export type SnapshotPreview = {
   /** ISO date in Africa/Johannesburg — the key both tables are stamped with. */
@@ -81,58 +81,31 @@ export function buildSnapshotPreview(
   const topLoser = portfolio.losers[0] ?? null;
 
   const dailyCryptoReport: Record<string, unknown> = {
-    [FIELDS.dailyCryptoReport.date]: date,
-    [FIELDS.dailyCryptoReport.totalValueZar]: round(totals.valueZar),
-    [FIELDS.dailyCryptoReport.totalInvestedZar]: round(totals.investedZar),
-    [FIELDS.dailyCryptoReport.pnlZar]: round(totals.pnlZar),
-    [FIELDS.dailyCryptoReport.r2mProgressPct]: round(totals.freedomProgressPct, 2),
-    [FIELDS.dailyCryptoReport.r3mProgressPct]: round(
-      (totals.valueZar / 3_000_000) * 100,
-      2,
-    ),
-    [FIELDS.dailyCryptoReport.milestonesHitCount]: milestoneHits.length,
-    [FIELDS.dailyCryptoReport.milestonesHitDetail]: milestoneHits
-      .map(
-        (h) =>
-          `${h.symbol} (${h.wallet}) M${h.lastHitMilestone?.milestone.level}: ${h.lastHitMilestone?.milestone.raw}`,
-      )
+    snapshot_on: date,
+    value_zar: round(totals.valueZar),
+    invested_zar: round(totals.investedZar),
+    pnl_zar: round(totals.pnlZar),
+    freedom_pct: round(totals.freedomProgressPct, 2),
+    milestones_hit: milestoneHits.length,
+    milestones_detail: milestoneHits
+      .map((h) => `${h.symbol} (${h.wallet}) M${h.lastHitMilestone?.milestone.level}: ${h.lastHitMilestone?.milestone.raw}`)
       .join("\n"),
   };
 
   if (topGainer) {
-    dailyCryptoReport[FIELDS.dailyCryptoReport.topGainer] = topGainer.symbol;
-    dailyCryptoReport[FIELDS.dailyCryptoReport.topGainerPct] = round(
-      topGainer.change24hPct,
-      2,
-    );
-    dailyCryptoReport[FIELDS.dailyCryptoReport.topGainerPriceZar] = round(
-      topGainer.priceZar,
-      4,
-    );
+    dailyCryptoReport.top_gainer = topGainer.symbol;
+    dailyCryptoReport.top_gainer_pct = round(topGainer.change24hPct, 2);
   }
   if (topLoser) {
-    dailyCryptoReport[FIELDS.dailyCryptoReport.topLoser] = topLoser.symbol;
-    dailyCryptoReport[FIELDS.dailyCryptoReport.topLoserPct] = round(
-      topLoser.change24hPct,
-      2,
-    );
-    dailyCryptoReport[FIELDS.dailyCryptoReport.topLoserPriceZar] = round(
-      topLoser.priceZar,
-      4,
-    );
+    dailyCryptoReport.top_loser = topLoser.symbol;
+    dailyCryptoReport.top_loser_pct = round(topLoser.change24hPct, 2);
   }
 
-  const snapshots =
-    rate === null
-      ? null
-      : {
-          [FIELDS.snapshots.date]: date,
-          [FIELDS.snapshots.totalValueUsd]: round(totals.valueZar / rate),
-          [FIELDS.snapshots.totalInvestedUsd]: round(totals.investedZar / rate),
-          [FIELDS.snapshots.totalPnlUsd]: round(totals.pnlZar / rate),
-          [FIELDS.snapshots.totalReturnPct]: round(totals.pnlPct ?? 0, 2),
-          [FIELDS.snapshots.notes]: `Written by PWOS. USD converted at ${rate.toFixed(4)} ZAR/USD (${basis}).`,
-        };
+  const snapshots = rate === null ? null : {
+    usd_rate: round(rate, 4),
+    value_usd: round(totals.valueZar / rate),
+    invested_usd: round(totals.investedZar / rate),
+  };
 
   return { date, usdRate: rate, usdRateBasis: basis, dailyCryptoReport, snapshots, warnings };
 }
@@ -151,27 +124,24 @@ export type SnapshotResult = {
  * Performs the write. Callers must have shown the preview and taken an explicit
  * confirmation first — see SnapshotButton.
  */
+/**
+ * Writes the snapshot. Callers must have shown the preview and taken an
+ * explicit confirmation first — see SnapshotButton.
+ *
+ * One row per day: re-running replaces rather than duplicating.
+ */
 export async function writeSnapshot(preview: SnapshotPreview): Promise<SnapshotResult> {
-  // Fail loudly if the schema moved under us, before writing anything.
-  await assertFields(
-    TABLES.dailyCryptoReport,
-    Object.keys(preview.dailyCryptoReport),
-  );
-  if (preview.snapshots) {
-    await assertFields(TABLES.snapshots, Object.keys(preview.snapshots));
-  }
+  const d = preview.dailyCryptoReport as Record<string, number | string>;
+  await sql`
+    insert into portfolio_snapshots
+      (snapshot_on, value_zar, invested_zar, pnl_zar, freedom_pct, milestones_hit, detail)
+    values (${preview.date}::date, ${d.value_zar}, ${d.invested_zar}, ${d.pnl_zar},
+            ${d.freedom_pct}, ${d.milestones_hit},
+            ${JSON.stringify({ ...d, usd: preview.snapshots })}::jsonb)
+    on conflict (snapshot_on) do update set
+      value_zar = excluded.value_zar, invested_zar = excluded.invested_zar,
+      pnl_zar = excluded.pnl_zar, freedom_pct = excluded.freedom_pct,
+      milestones_hit = excluded.milestones_hit, detail = excluded.detail`;
 
-  const [report] = await createRecords(TABLES.dailyCryptoReport, [
-    { fields: preview.dailyCryptoReport },
-  ]);
-
-  let snapshotId: string | null = null;
-  if (preview.snapshots) {
-    const [snapshot] = await createRecords(TABLES.snapshots, [
-      { fields: preview.snapshots },
-    ]);
-    snapshotId = snapshot?.id ?? null;
-  }
-
-  return { dailyCryptoReportId: report?.id ?? null, snapshotId };
+  return { dailyCryptoReportId: preview.date, snapshotId: preview.date };
 }

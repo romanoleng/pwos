@@ -1,36 +1,26 @@
-/**
- * Portfolio value history (CLAUDE.md §5, charts).
- *
- * Reads Daily Crypto Report, not Snapshots. Verified 2026-07-21: Daily Crypto
- * Report holds 34 real rows in ZAR, while Snapshots holds a single row whose
- * value columns are empty and whose notes describe cash transactions. Charting
- * Snapshots would draw an empty axis.
- */
+/** Portfolio value history (CLAUDE.md §5) — now a first-class table. */
 import "server-only";
 
-import { buildHistorySeries, type HistoryPoint, type RawHistoryRow } from "@/lib/crypto/history";
+import type { HistoryPoint } from "@/lib/crypto/history";
 
-import { FIELDS, TABLES, listRecords, numberCell, stringCell } from "./airtable";
+import { money, sql } from "./db";
 
 export async function getPortfolioHistory(): Promise<HistoryPoint[]> {
-  const records = await listRecords(TABLES.dailyCryptoReport, {
-    fieldIds: [
-      FIELDS.dailyCryptoReport.date,
-      FIELDS.dailyCryptoReport.totalValueZar,
-      FIELDS.dailyCryptoReport.totalInvestedZar,
-      FIELDS.dailyCryptoReport.pnlZar,
-      FIELDS.dailyCryptoReport.r2mProgressPct,
-    ],
+  const rows = await sql<{
+    snapshot_on: string; value_zar: string; invested_zar: string;
+    pnl_zar: string; freedom_pct: string | null;
+  }>`select snapshot_on::text, value_zar, invested_zar, pnl_zar, freedom_pct
+     from portfolio_snapshots order by snapshot_on`;
+
+  return rows.map((r) => {
+    const date = String(r.snapshot_on).slice(0, 10);
+    return {
+      date,
+      t: Date.parse(`${date}T00:00:00Z`),
+      valueZar: money(r.value_zar),
+      investedZar: money(r.invested_zar),
+      pnlZar: money(r.pnl_zar),
+      freedomProgressPct: money(r.freedom_pct),
+    };
   });
-
-  const rows: RawHistoryRow[] = records.map((record) => ({
-    date: stringCell(record, FIELDS.dailyCryptoReport.date),
-    createdTime: record.createdTime,
-    valueZar: numberCell(record, FIELDS.dailyCryptoReport.totalValueZar),
-    investedZar: numberCell(record, FIELDS.dailyCryptoReport.totalInvestedZar),
-    pnlZar: numberCell(record, FIELDS.dailyCryptoReport.pnlZar),
-    progressPct: numberCell(record, FIELDS.dailyCryptoReport.r2mProgressPct),
-  }));
-
-  return buildHistorySeries(rows);
 }

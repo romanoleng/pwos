@@ -1,24 +1,16 @@
 /**
- * Reports (CLAUDE.md §5) — a basic monthly summary in V1.
- *
- * Built entirely from the typed ledger, so transfers and contributions are
- * separated from real spending rather than lumped together.
+ * Reports (CLAUDE.md §5).
+ * Aggregated in SQL — the month grouping the Airtable version did in memory.
  */
 import "server-only";
 
 import { getBudgetCycle } from "@/lib/budget";
-import { spendContribution } from "@/lib/transactions";
 
-import { getTransactions } from "./transactions";
+import { money, sql } from "./db";
 
 export type MonthReport = {
-  month: string;
-  incomeZar: number;
-  spendZar: number;
-  transferZar: number;
-  contributionZar: number;
-  netZar: number;
-  transactionCount: number;
+  month: string; incomeZar: number; spendZar: number; transferZar: number;
+  contributionZar: number; netZar: number; transactionCount: number;
   topCategories: { category: string; amountZar: number }[];
 };
 
@@ -28,75 +20,51 @@ export type ReportsSummary = {
 };
 
 export async function getReports(): Promise<ReportsSummary> {
-  const transactions = await getTransactions();
   const cycle = getBudgetCycle();
 
-  const byMonth = new Map<string, MonthReport & { categories: Map<string, number> }>();
+  const [months, categories, current] = await Promise.all([
+    sql<{ month: string; income: string; spend: string; transfer: string; contribution: string; n: string }>`
+      select to_char(occurred_on, 'YYYY-MM')                                   as month,
+             coalesce(sum(amount_zar) filter (where type='income'), 0)         as income,
+             coalesce(sum(-amount_zar) filter (where type='expense'), 0)       as spend,
+             coalesce(sum(abs(amount_zar)) filter (where type='transfer'), 0)  as transfer,
+             coalesce(sum(abs(amount_zar)) filter (where type='contribution'), 0) as contribution,
+             count(*)::text                                                    as n
+      from transactions group by 1 order by 1 desc`,
+    sql<{ month: string; category: string; amount: string }>`
+      select to_char(occurred_on,'YYYY-MM') as month,
+             coalesce(category, original_category, 'Uncategorised') as category,
+             sum(-amount_zar) as amount
+      from transactions where type='expense'
+      group by 1,2 order by 1 desc, 3 desc`,
+    sql<{ spend: string; income: string }>`
+      select coalesce(sum(-amount_zar) filter (where type='expense'), 0) as spend,
+             coalesce(sum(amount_zar)  filter (where type='income'), 0)  as income
+      from transactions
+      where occurred_on >= ${cycle.start}::date and occurred_on < ${cycle.end}::date`,
+  ]);
 
-  for (const txn of transactions) {
-    if (!txn.date) continue;
-    const month = txn.date.slice(0, 7);
-    const entry =
-      byMonth.get(month) ??
-      {
-        month,
-        incomeZar: 0,
-        spendZar: 0,
-        transferZar: 0,
-        contributionZar: 0,
-        netZar: 0,
-        transactionCount: 0,
-        topCategories: [],
-        categories: new Map<string, number>(),
-      };
-
-    entry.transactionCount += 1;
-
-    if (txn.type === "income") entry.incomeZar += txn.amountZar;
-    else if (txn.type === "transfer") entry.transferZar += Math.abs(txn.amountZar);
-    else if (txn.type === "contribution") entry.contributionZar += Math.abs(txn.amountZar);
-    else {
-      const spend = spendContribution(txn.amountZar, txn.category, txn.description);
-      entry.spendZar += spend;
-      if (txn.category) {
-        entry.categories.set(txn.category, (entry.categories.get(txn.category) ?? 0) + spend);
-      }
-    }
-
-    byMonth.set(month, entry);
+  const byMonth = new Map<string, { category: string; amountZar: number }[]>();
+  for (const c of categories) {
+    const list = byMonth.get(c.month) ?? [];
+    if (list.length < 5) list.push({ category: c.category, amountZar: money(c.amount) });
+    byMonth.set(c.month, list);
   }
 
-  const months = [...byMonth.values()]
-    .map((entry) => ({
-      month: entry.month,
-      incomeZar: entry.incomeZar,
-      spendZar: entry.spendZar,
-      transferZar: entry.transferZar,
-      contributionZar: entry.contributionZar,
-      netZar: entry.incomeZar - entry.spendZar,
-      transactionCount: entry.transactionCount,
-      topCategories: [...entry.categories.entries()]
-        .map(([category, amountZar]) => ({ category, amountZar }))
-        .sort((a, b) => b.amountZar - a.amountZar)
-        .slice(0, 5),
-    }))
-    .sort((a, b) => b.month.localeCompare(a.month));
-
-  const inCycle = transactions.filter(
-    (t) => t.date && t.date >= cycle.start && t.date < cycle.end,
-  );
-
   return {
-    months,
+    months: months.map((m) => ({
+      month: m.month,
+      incomeZar: money(m.income),
+      spendZar: money(m.spend),
+      transferZar: money(m.transfer),
+      contributionZar: money(m.contribution),
+      netZar: money(m.income) - money(m.spend),
+      transactionCount: Number(m.n),
+      topCategories: byMonth.get(m.month) ?? [],
+    })),
     currentCycle: {
-      start: cycle.start,
-      end: cycle.end,
-      spendZar: inCycle
-        .filter((t) => t.type === "expense")
-        .reduce((sum, t) => sum + spendContribution(t.amountZar, t.category, t.description), 0),
-      incomeZar: inCycle
-        .filter((t) => t.type === "income")
-        .reduce((sum, t) => sum + t.amountZar, 0),
+      start: cycle.start, end: cycle.end,
+      spendZar: money(current[0]?.spend), incomeZar: money(current[0]?.income),
     },
   };
 }

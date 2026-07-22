@@ -1,31 +1,21 @@
 /**
  * Accounts module (CLAUDE.md §5, Banking/Accounts).
  *
- * Reads stored balances from Net Worth and activity from Transactions, then
- * reports both plus the discrepancy — rather than silently preferring one.
- * A wealth app that quietly picks a number when two sources disagree is worse
- * than one that shows you the disagreement.
+ * Now reads Postgres. Account identity is a foreign key rather than a string
+ * match, so the Capitec / Capitec Main / Main Account drift that made this
+ * module necessary can no longer happen.
  */
 import "server-only";
 
-import {
-  ACCOUNTS,
-  isNonAccount,
-  resolveAccount,
-  resolveByNetWorthName,
-  type CanonicalAccount,
-} from "@/lib/accounts";
-import { FIELDS, TABLES } from "@/lib/airtable-fields";
+import type { AccountKind, CanonicalAccount } from "@/lib/accounts";
 
-import { listRecords, numberCell, stringCell } from "./airtable";
+import { isoDate, money, moneyOrNull, sql } from "./db";
 
 export type AccountBalance = {
   account: CanonicalAccount;
-  /** Balance recorded in the Net Worth table, if it has a row there. */
+  /** NULL means genuinely unrecorded, which is not the same as zero. */
   storedZar: number | null;
-  /** The Net Worth row holding that balance, so the UI can edit it in place. */
   netWorthRecordId: string | null;
-  /** Net of every transaction attributed to this account. */
   transactionNetZar: number;
   transactionCount: number;
   lastActivity: string | null;
@@ -33,111 +23,69 @@ export type AccountBalance = {
 
 export type AccountsView = {
   accounts: AccountBalance[];
-  totals: {
-    cashZar: number;
-    spendableZar: number;
-    businessZar: number;
-    savingsZar: number;
-  };
-  /** Account names in Transactions that map to nothing — needs a human. */
+  totals: { cashZar: number; spendableZar: number; businessZar: number; savingsZar: number };
   unmappedAccounts: { name: string; count: number }[];
-  /** Accounts with activity but no recorded balance. */
   missingBalances: string[];
 };
 
-const NET_WORTH_FIELDS = [
-  FIELDS.netWorth.name,
-  FIELDS.netWorth.category,
-  FIELDS.netWorth.type,
-  FIELDS.netWorth.valueZar,
-] as const;
+type Row = {
+  id: string;
+  label: string;
+  kind: AccountKind;
+  entity: "personal" | "business" | "family";
+  spendable: boolean;
+  balance_zar: string | null;
+  txn_count: string;
+  txn_net: string | null;
+  last_activity: string | null;
+};
 
 export async function getAccounts(): Promise<AccountsView> {
-  const [netWorthRows, transactionRows] = await Promise.all([
-    listRecords(TABLES.netWorth, { fieldIds: NET_WORTH_FIELDS }),
-    listRecords(TABLES.transactions, {
-      fieldIds: [
-        FIELDS.transactions.account,
-        FIELDS.transactions.amount,
-        FIELDS.transactions.date,
-      ],
-    }),
-  ]);
+  const rows = await sql<Row>`
+    select a.id, a.label, a.kind, a.entity, a.spendable, a.balance_zar,
+           count(t.id)              as txn_count,
+           sum(t.amount_zar)        as txn_net,
+           max(t.occurred_on)::text as last_activity
+    from accounts a
+    left join transactions t on t.account_id = a.id
+    where not a.archived
+    group by a.id
+    order by a.balance_zar desc nulls last`;
 
-  const storedByAccountId = new Map<string, number>();
-  const recordByAccountId = new Map<string, string>();
-  for (const row of netWorthRows) {
-    const name = stringCell(row, FIELDS.netWorth.name);
-    const account = resolveByNetWorthName(name);
-    if (!account) continue;
-    const value = numberCell(row, FIELDS.netWorth.valueZar) ?? 0;
-    storedByAccountId.set(account.id, (storedByAccountId.get(account.id) ?? 0) + value);
-    if (!recordByAccountId.has(account.id)) recordByAccountId.set(account.id, row.id);
-  }
+  const accounts: AccountBalance[] = rows
+    .filter((r) => r.kind !== "crypto")
+    .map((r) => ({
+      account: {
+        id: r.id,
+        label: r.label,
+        kind: r.kind,
+        entity: r.entity,
+        spendable: r.spendable,
+        aliases: [],
+      },
+      storedZar: moneyOrNull(r.balance_zar),
+      netWorthRecordId: r.id,
+      transactionNetZar: money(r.txn_net),
+      transactionCount: Number(r.txn_count),
+      lastActivity: isoDate(r.last_activity),
+    }));
 
-  const activity = new Map<
-    string,
-    { net: number; count: number; last: string | null }
-  >();
-  const unmapped = new Map<string, number>();
-
-  for (const row of transactionRows) {
-    const rawAccount = stringCell(row, FIELDS.transactions.account);
-    if (isNonAccount(rawAccount)) continue;
-
-    const account = resolveAccount(rawAccount);
-    if (!account) {
-      if (rawAccount) unmapped.set(rawAccount, (unmapped.get(rawAccount) ?? 0) + 1);
-      continue;
-    }
-
-    const amount = numberCell(row, FIELDS.transactions.amount) ?? 0;
-    const date = stringCell(row, FIELDS.transactions.date);
-    const current = activity.get(account.id) ?? { net: 0, count: 0, last: null };
-    activity.set(account.id, {
-      net: current.net + amount,
-      count: current.count + 1,
-      last: !current.last || (date && date > current.last) ? date : current.last,
-    });
-  }
-
-  const accounts: AccountBalance[] = ACCOUNTS.filter(
-    (account) => account.kind !== "crypto",
-  ).map((account) => {
-    const seen = activity.get(account.id);
-    return {
-      account,
-      storedZar: storedByAccountId.get(account.id) ?? null,
-      netWorthRecordId: recordByAccountId.get(account.id) ?? null,
-      transactionNetZar: seen?.net ?? 0,
-      transactionCount: seen?.count ?? 0,
-      lastActivity: seen?.last ?? null,
-    };
-  });
-
-  // Totals use the stored balance, which is the figure Romano maintains. The
-  // transaction net is a cross-check, not a replacement — the ledger doesn't
-  // go back to account opening, so it can't produce an absolute balance.
-  const sumWhere = (predicate: (entry: AccountBalance) => boolean) =>
-    accounts
-      .filter(predicate)
-      .reduce((total, entry) => total + (entry.storedZar ?? 0), 0);
+  const sumWhere = (p: (e: AccountBalance) => boolean) =>
+    accounts.filter(p).reduce((total, e) => total + (e.storedZar ?? 0), 0);
 
   return {
-    accounts: accounts.sort(
-      (a, b) => (b.storedZar ?? 0) - (a.storedZar ?? 0),
-    ),
+    accounts,
     totals: {
-      cashZar: sumWhere((entry) => entry.account.kind === "cash"),
-      spendableZar: sumWhere((entry) => entry.account.spendable),
-      businessZar: sumWhere((entry) => entry.account.entity === "business"),
-      savingsZar: sumWhere((entry) => entry.account.kind === "savings"),
+      cashZar: sumWhere((e) => e.account.kind === "cash"),
+      spendableZar: sumWhere((e) => e.account.spendable),
+      businessZar: sumWhere((e) => e.account.entity === "business"),
+      savingsZar: sumWhere((e) => e.account.kind === "savings"),
     },
-    unmappedAccounts: [...unmapped.entries()]
-      .map(([name, count]) => ({ name, count }))
-      .sort((a, b) => b.count - a.count),
+    // Foreign keys make an unmapped account impossible now: a transaction
+    // cannot reference an account that does not exist.
+    unmappedAccounts: [],
     missingBalances: accounts
-      .filter((entry) => entry.storedZar === null && entry.transactionCount > 0)
-      .map((entry) => entry.account.label),
+      .filter((e) => e.storedZar === null && e.transactionCount > 0)
+      .map((e) => e.account.label),
   };
 }

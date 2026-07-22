@@ -2,87 +2,91 @@
 
 import { revalidateTag } from "next/cache";
 
-import { TABLES } from "@/lib/airtable-fields";
 import { editableField, validateEditable } from "@/lib/editable";
-import { getRecord, numberCell, updateRecords } from "@/lib/server/airtable";
+import { moneyOrNull, query } from "@/lib/server/db";
 
 import type { MutationResult } from "./holdings";
 
 /**
  * The single mutation entry point for editable numbers (CLAUDE.md §9b).
  *
- * The client passes a registry key, a record id and a value. It never names a
- * table or a field — see src/lib/editable.ts for why that boundary matters.
+ * The client sends a registry key, a record id and a value — never a table or
+ * column name. See src/lib/editable.ts for why that boundary matters.
  */
 
 export type EditResult = { previousValue: number | null; key: string; recordId: string };
 
+/** Registry table → real table. Both sides are fixed, never client input. */
 const TABLE_BY_KEY = {
-  netWorth: TABLES.netWorth,
-  debtTracker: TABLES.debtTracker,
-  savingsGoals: TABLES.savingsGoals,
-  kidsAccounts: TABLES.kidsAccounts,
-  budget: TABLES.budget,
-  holdings: TABLES.holdings,
+  accounts: "accounts",
+  assets: "assets",
+  debtTracker: "debts",
+  savingsGoals: "goals",
+  kidsAccounts: "kids_accounts",
+  budget: "budgets",
+  holdings: "holdings",
 } as const;
+
+/** accounts.id is text; every other table uses bigint. */
+const TEXT_ID = new Set(["accounts"]);
+
+function target(key: string) {
+  const field = editableField(key);
+  if (!field) return null;
+  const table = TABLE_BY_KEY[field.table];
+  return { field, table, cast: TEXT_ID.has(table) ? "" : "::bigint" };
+}
 
 export async function updateEditableValue(
   key: string,
   recordId: string,
   value: number,
 ): Promise<MutationResult<EditResult>> {
-  const field = editableField(key);
-  if (!field) return { ok: false, error: "That field isn't editable." };
+  const t = target(key);
+  if (!t) return { ok: false, error: "That field isn't editable." };
 
-  const invalid = validateEditable(field, value);
+  const invalid = validateEditable(t.field, value);
   if (invalid) return { ok: false, error: invalid };
-
-  if (!/^rec[A-Za-z0-9]{14}$/.test(recordId)) {
+  if (!/^[A-Za-z0-9_-]{1,40}$/.test(recordId)) {
     return { ok: false, error: "Invalid record." };
   }
 
-  const tableId = TABLE_BY_KEY[field.table];
-
   try {
-    // Capture the previous value before writing, so undo restores what was
-    // actually there rather than what the client believed.
-    const existing = await getRecord(tableId, recordId);
-    if (!existing) return { ok: false, error: "That record no longer exists." };
-    const previousValue = numberCell(existing, field.fieldId);
+    // Return the prior value from the same statement, so undo restores exactly
+    // what was there and nothing can change in between.
+    const rows = await query<{ previous: unknown }>(
+      `update ${t.table} u set ${t.field.fieldId} = $1
+       from ${t.table} old where old.id = u.id and u.id = $2${t.cast}
+       returning old.${t.field.fieldId} as previous`,
+      [value, recordId],
+    );
+    if (rows.length === 0) return { ok: false, error: "That record no longer exists." };
 
-    await updateRecords(tableId, [{ id: recordId, fields: { [field.fieldId]: value } }]);
-    for (const tag of field.invalidates) revalidateTag(tag, "max");
-
-    return { ok: true, data: { previousValue, key, recordId } };
+    for (const tag of t.field.invalidates) revalidateTag(tag, "max");
+    return { ok: true, data: { previousValue: moneyOrNull(rows[0].previous), key, recordId } };
   } catch (error) {
     console.error("[updateEditableValue]", key, error);
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : "Could not save.",
-    };
+    return { ok: false, error: error instanceof Error ? error.message : "Could not save." };
   }
 }
 
-/** Restores a previous value captured by updateEditableValue. Powers Undo. */
 export async function revertEditableValue(
   key: string,
   recordId: string,
   previousValue: number | null,
 ): Promise<MutationResult> {
-  const field = editableField(key);
-  if (!field) return { ok: false, error: "That field isn't editable." };
+  const t = target(key);
+  if (!t) return { ok: false, error: "That field isn't editable." };
 
   try {
-    await updateRecords(TABLE_BY_KEY[field.table], [
-      { id: recordId, fields: { [field.fieldId]: previousValue } },
-    ]);
-    for (const tag of field.invalidates) revalidateTag(tag, "max");
+    await query(
+      `update ${t.table} set ${t.field.fieldId} = $1 where id = $2${t.cast}`,
+      [previousValue, recordId],
+    );
+    for (const tag of t.field.invalidates) revalidateTag(tag, "max");
     return { ok: true, data: undefined };
   } catch (error) {
     console.error("[revertEditableValue]", key, error);
-    return {
-      ok: false,
-      error: error instanceof Error ? error.message : "Could not undo.",
-    };
+    return { ok: false, error: error instanceof Error ? error.message : "Could not undo." };
   }
 }

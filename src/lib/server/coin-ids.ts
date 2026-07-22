@@ -20,9 +20,7 @@
  */
 import "server-only";
 
-import { FIELDS, TABLES } from "@/lib/airtable-fields";
-
-import { listRecords, stringCell } from "./airtable";
+import { sql } from "./db";
 import { env } from "./env";
 
 export type IdSource = "market-data" | "alias" | "inferred";
@@ -127,15 +125,14 @@ export async function resolveCoinIds(
   const wanted = [...new Set(symbols.map((s) => s.toUpperCase()).filter(Boolean))];
   const resolved = new Map<string, ResolvedId>();
 
-  const records = await listRecords(TABLES.marketData, {
-    fieldIds: [FIELDS.marketData.symbol, FIELDS.marketData.coingeckoId],
-  });
+  const records = await sql<{ symbol: string; coingecko_id: string }>`
+    select distinct upper(symbol) as symbol, coingecko_id
+    from holdings where coingecko_id is not null`;
 
   for (const record of records) {
-    const symbol = stringCell(record, FIELDS.marketData.symbol)?.toUpperCase();
-    const id = stringCell(record, FIELDS.marketData.coingeckoId);
-    if (symbol && id && wanted.includes(symbol)) {
-      resolved.set(symbol, { symbol, coingeckoId: id, source: "market-data" });
+    const symbol = record.symbol.toUpperCase();
+    if (wanted.includes(symbol)) {
+      resolved.set(symbol, { symbol, coingeckoId: record.coingecko_id, source: "market-data" });
     }
   }
 

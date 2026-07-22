@@ -5,8 +5,6 @@
  */
 import { NextResponse } from "next/server";
 
-import { AirtableError } from "@/lib/server/airtable";
-
 import { MissingEnvError } from "@/lib/server/env";
 import { getPortfolioHistory } from "@/lib/server/history";
 
@@ -34,8 +32,7 @@ export async function GET() {
         // Upstream status only — no token, no request detail. Turns a blank
         // failure into a diagnosable one: 401 means the Airtable token is
         // being rejected, 429 means rate limiting.
-        upstreamStatus: error instanceof AirtableError ? error.status : undefined,
-        upstream: error instanceof AirtableError ? "airtable" : "unknown",
+        upstream: "database",
       },
       { status: 502 },
     );
