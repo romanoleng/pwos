@@ -15,6 +15,50 @@ import { getCurrentCycle } from "./cycle";
 
 import { money, sql } from "./db";
 
+/**
+ * What a fresh cycle would look like under each starting option.
+ *
+ * Only computed when the cycle is empty, and shown before either button is
+ * pressed: seeding from actuals is only as honest as the logging behind it, so
+ * the two totals need to be visible side by side rather than discovered after.
+ */
+async function previewCycleStart(cycleStart: string): Promise<BudgetSummary["cycleStart"]> {
+  const previous = await sql<{ cycle_start: string }>`
+    select cycle_start::text from budgets where cycle_start < ${cycleStart}::date
+    order by cycle_start desc limit 1`;
+  if (previous.length === 0) return null;
+  const from = previous[0].cycle_start;
+
+  const [[copy], [seed]] = await Promise.all([
+    sql<{ n: string; t: string }>`
+      select count(*)::text n, coalesce(sum(b.budgeted_zar), 0)::text t
+      from budgets b join categories c on c.name = b.category and c.kind = 'expense'
+      where b.cycle_start = ${from}::date`,
+    sql<{ n: string; t: string }>`
+      with spend as (
+        select t.category, sum(-t.amount_zar) as actual_zar from transactions t
+        join categories c on c.name = t.category and c.kind = 'expense'
+        where t.type = 'expense' and t.occurred_on >= ${from}::date
+          and t.occurred_on < ${cycleStart}::date
+        group by t.category having sum(-t.amount_zar) > 0
+      ),
+      prior as (
+        select b.category, b.budgeted_zar from budgets b
+        join categories c on c.name = b.category and c.kind = 'expense'
+        where b.cycle_start = ${from}::date
+      )
+      select count(*)::text n,
+             coalesce(sum(round(coalesce(spend.actual_zar, prior.budgeted_zar) / 10) * 10), 0)::text t
+      from spend full outer join prior on prior.category = spend.category`,
+  ]);
+
+  return {
+    from,
+    copyLines: Number(copy.n), copyTotalZar: money(copy.t),
+    seedLines: Number(seed.n), seedTotalZar: money(seed.t),
+  };
+}
+
 export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSummary> {
   const cycle = await getCurrentCycle(now);
 
@@ -24,12 +68,13 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
              coalesce(sum(-t.amount_zar), 0) as actual_zar,
              count(t.id)                     as txn_count
       from budgets b
+      join categories c on c.name = b.category
       left join transactions t
         on t.category = b.category
        and t.type = 'expense'
        and t.occurred_on >= ${cycle.start}::date
        and t.occurred_on <  ${cycle.end}::date
-      where b.cycle_start = ${cycle.start}::date
+      where b.cycle_start = ${cycle.start}::date and c.kind = 'expense'
       group by b.id, b.category, b.kind, b.budgeted_zar
       order by actual_zar desc`,
 
@@ -57,7 +102,8 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
     // Categories with no line yet — what the "add" picker can still offer.
     sql<{ name: string; kind: string }>`
       select c.name, c.kind::text from categories c
-      where not exists (
+      where c.kind = 'expense'
+        and not exists (
         select 1 from budgets b
         where b.cycle_start = ${cycle.start}::date and b.category = c.name)
       order by c.kind, c.sort_order, c.name`,
@@ -92,5 +138,6 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
     })),
     dailyAllowanceZar: cycle.remainingDays > 0 ? remainingZar / cycle.remainingDays : null,
     availableCategories: spare,
+    cycleStart: budgetLines.length === 0 ? await previewCycleStart(cycle.start) : null,
   };
 }

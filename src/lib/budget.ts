@@ -149,6 +149,12 @@ export type BudgetSummary = {
   dailyAllowanceZar: number | null;
   /** Categories that could still be given a line this cycle. */
   availableCategories: { name: string; kind: string }[];
+  /** Set only when the cycle has no lines yet: what each starting option gives. */
+  cycleStart: {
+    from: string;
+    copyLines: number; copyTotalZar: number;
+    seedLines: number; seedTotalZar: number;
+  } | null;
 };
 
 /**

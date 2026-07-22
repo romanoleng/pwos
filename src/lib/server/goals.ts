@@ -22,6 +22,12 @@ export type KidAccount = {
 export type GoalsSummary = {
   freedom: { targetZar: number; label: string; currentZar: number; progressPct: number };
   goals: Goal[]; kids: KidAccount[];
+  /**
+   * What he plans to put away this cycle. These left the budget — putting money
+   * away isn't spending it — but they're still a monthly commitment, so they
+   * live beside the goals they fund.
+   */
+  planned: { recordId: string; category: string; plannedZar: number; actualZar: number }[];
   totals: {
     savedZar: number; targetZar: number; monthlyZar: number;
     kidsZar: number; kidsMonthlyZar: number;
@@ -35,7 +41,7 @@ function monthsToTarget(current: number, target: number | null, monthly: number)
 }
 
 export async function getGoals(): Promise<GoalsSummary> {
-  const [goalRows, kidRows, netWorth] = await Promise.all([
+  const [goalRows, kidRows, netWorth, plannedRows] = await Promise.all([
     sql<{ id: string; name: string; current_zar: string; target_zar: string | null;
           monthly_zar: string; priority: string | null; status: string | null; target_date: string | null }>`
       select id::text, name, current_zar, target_zar, monthly_zar, priority, status, target_date::text
@@ -45,6 +51,17 @@ export async function getGoals(): Promise<GoalsSummary> {
       select id::text, account, child, institution, account_type, balance_zar, monthly_zar
       from kids_accounts order by child, monthly_zar desc, balance_zar desc`,
     getNetWorth(),
+    sql<{ id: string; category: string; budgeted_zar: string; actual_zar: string }>`
+      select b.id::text, b.category, b.budgeted_zar,
+             coalesce(sum(-t.amount_zar), 0) as actual_zar
+      from budgets b
+      join categories c on c.name = b.category and c.kind = 'contribution'
+      left join transactions t
+        on t.category = b.category and t.type = 'contribution'
+       and t.occurred_on >= b.cycle_start
+      where b.cycle_start = (select max(cycle_start) from budgets)
+      group by b.id, b.category, b.budgeted_zar
+      order by b.budgeted_zar desc`,
   ]);
 
   const goals: Goal[] = goalRows.map((r) => {
@@ -72,6 +89,10 @@ export async function getGoals(): Promise<GoalsSummary> {
       progressPct: (netWorth.assetsZar / FREEDOM_TARGET_ZAR) * 100,
     },
     goals, kids,
+    planned: plannedRows.map((r) => ({
+      recordId: r.id, category: r.category,
+      plannedZar: money(r.budgeted_zar), actualZar: money(r.actual_zar),
+    })),
     totals: {
       savedZar: goals.reduce((t, g) => t + g.currentZar, 0),
       targetZar: goals.reduce((t, g) => t + (g.targetZar ?? 0), 0),

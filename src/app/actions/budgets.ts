@@ -37,6 +37,8 @@ export async function createBudgetLine(input: {
   category: string;
   budgetedZar: number;
   cycleStart?: string;
+  /** How predictable the line is: "Fixed" or "Variable". Not the money's kind. */
+  kind?: string;
 }): Promise<MutationResult<{ recordId: string }>> {
   const category = input.category.trim();
   if (!category) return { ok: false, error: "Pick a category." };
@@ -52,6 +54,11 @@ export async function createBudgetLine(input: {
     if (known.length === 0) {
       return { ok: false, error: `${category} isn't a category yet.` };
     }
+    if (known[0].kind !== "expense") {
+      // The budget tracks what he spends to live. Money put away is planned on
+      // Goals against the thing it funds.
+      return { ok: false, error: `${category} is money put away — plan it on Goals.` };
+    }
 
     const existing = await sql<{ id: string }>`
       select id::text from budgets
@@ -63,7 +70,7 @@ export async function createBudgetLine(input: {
 
     const created = await sql<{ id: string }>`
       insert into budgets (cycle_start, category, budgeted_zar, kind)
-      values (${cycleStart}::date, ${category}, ${input.budgetedZar}, ${known[0].kind})
+      values (${cycleStart}::date, ${category}, ${input.budgetedZar}, ${input.kind ?? null})
       returning id::text`;
 
     invalidate();
@@ -158,6 +165,81 @@ export async function copyBudgetsForward(): Promise<
   } catch (error) {
     console.error("[copyBudgetsForward]", error);
     return { ok: false, error: error instanceof Error ? error.message : "Couldn't copy them." };
+  }
+}
+
+/**
+ * Open a new cycle using what the last one actually cost.
+ *
+ * A budget copied forward repeats last month's guesses. Seeding from real spend
+ * lets the numbers converge on the truth over a few cycles, which is the point
+ * of tracking at all.
+ *
+ * The catch, and it's why the caller shows both figures: this is only as good
+ * as the logging behind it. A cycle where half the spending never got entered
+ * seeds a budget that's too low.
+ */
+export async function seedBudgetsFromActuals(): Promise<
+  MutationResult<{ created: number; from: string; totalZar: number }>
+> {
+  const cycle = await getCurrentCycle();
+  try {
+    const already = await sql<{ n: string }>`
+      select count(*)::text as n from budgets where cycle_start = ${cycle.start}::date`;
+    if (Number(already[0].n) > 0) {
+      return { ok: false, error: "This cycle already has budget lines." };
+    }
+
+    const previous = await sql<{ cycle_start: string }>`
+      select cycle_start::text from budgets
+      where cycle_start < ${cycle.start}::date
+      order by cycle_start desc limit 1`;
+    if (previous.length === 0) return { ok: false, error: "There's no earlier cycle to learn from." };
+    const from = previous[0].cycle_start;
+
+    // Every expense category with real spend in the previous cycle, plus the
+    // lines that were budgeted then — a category budgeted but not spent is
+    // still a commitment worth carrying (insurance, a bill not yet due).
+    const created = await sql<{ id: string }>`
+      with spend as (
+        select t.category,
+               sum(-t.amount_zar) as actual_zar
+        from transactions t
+        join categories c on c.name = t.category and c.kind = 'expense'
+        where t.type = 'expense'
+          and t.occurred_on >= ${from}::date
+          and t.occurred_on <  ${cycle.start}::date
+        group by t.category
+        having sum(-t.amount_zar) > 0
+      ),
+      prior as (
+        select b.category, b.kind, b.budgeted_zar
+        from budgets b
+        join categories c on c.name = b.category and c.kind = 'expense'
+        where b.cycle_start = ${from}::date
+      )
+      insert into budgets (cycle_start, category, budgeted_zar, kind)
+      select ${cycle.start}::date,
+             coalesce(spend.category, prior.category),
+             -- Rounded to the nearest R10: a budget of R2 421,72 is false
+             -- precision, and it is a target rather than a measurement.
+             round(coalesce(spend.actual_zar, prior.budgeted_zar) / 10) * 10,
+             prior.kind
+      from spend full outer join prior on prior.category = spend.category
+      returning id::text`;
+
+    const total = await sql<{ t: string }>`
+      select coalesce(sum(budgeted_zar), 0) as t from budgets
+      where cycle_start = ${cycle.start}::date`;
+
+    invalidate();
+    return {
+      ok: true,
+      data: { created: created.length, from, totalZar: Number(total[0].t) },
+    };
+  } catch (error) {
+    console.error("[seedBudgetsFromActuals]", error);
+    return { ok: false, error: error instanceof Error ? error.message : "Couldn't seed them." };
   }
 }
 

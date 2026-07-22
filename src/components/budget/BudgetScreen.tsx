@@ -4,7 +4,9 @@ import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
 
-import { copyBudgetsForward, deleteBudgetLine, restoreBudgetLine } from "@/app/actions/budgets";
+import {
+  copyBudgetsForward, deleteBudgetLine, restoreBudgetLine, seedBudgetsFromActuals,
+} from "@/app/actions/budgets";
 import { BudgetLineEditor } from "@/components/budget/BudgetLineEditor";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
@@ -58,16 +60,17 @@ export function BudgetScreen() {
     });
   }
 
-  async function onCopyForward() {
+  async function onStartCycle(how: "seed" | "copy") {
     setBusy(true);
-    const result = await copyBudgetsForward();
+    const result = how === "seed" ? await seedBudgetsFromActuals() : await copyBudgetsForward();
     setBusy(false);
     if (!result.ok) {
       toast.show({ message: result.error, tone: "error" });
       return;
     }
     refresh();
-    toast.show({ message: `${result.data.copied} lines copied forward`, tone: "success" });
+    const count = "created" in result.data ? result.data.created : result.data.copied;
+    toast.show({ message: `${count} budget lines ready to adjust`, tone: "success" });
   }
 
   if (error) {
@@ -199,7 +202,7 @@ export function BudgetScreen() {
       <Card>
         <CardHeader
           title="Categories"
-          description="Tap a budget figure to change it. Spend is computed from your logged transactions."
+          description="What you spend to live. Money you put away is planned on Goals."
           action={
             <button
               type="button"
@@ -214,25 +217,49 @@ export function BudgetScreen() {
         {lines.length === 0 ? (
           <CardBody className="py-8 text-center">
             <p className="text-sm font-medium">No budget set for this cycle yet</p>
-            <p className="mx-auto mt-1.5 max-w-xs text-xs leading-relaxed text-muted">
-              A cycle starts fresh on payday. Copy last cycle&apos;s lines as a
-              starting point, or add them one at a time.
+            <p className="mx-auto mt-1.5 max-w-sm text-xs leading-relaxed text-muted">
+              A cycle starts fresh on payday. Both totals are shown so you can see
+              what you&apos;re choosing — then change any line by tapping it.
             </p>
-            <div className="mt-4 flex flex-wrap justify-center gap-2">
-              <button
-                type="button"
-                onClick={onCopyForward}
-                disabled={busy}
-                className="rounded-lg bg-accent px-3.5 py-2 text-xs font-medium text-white disabled:opacity-60"
-              >
-                Copy last cycle
-              </button>
+            <div className="mx-auto mt-4 flex max-w-sm flex-col gap-2">
+              {data.cycleStart ? (
+                <>
+                  <button
+                    type="button"
+                    onClick={() => void onStartCycle("seed")}
+                    disabled={busy}
+                    className="rounded-lg bg-accent px-3.5 py-2.5 text-left text-xs font-medium text-white disabled:opacity-60"
+                  >
+                    Use what I actually spent ·{" "}
+                    <Money value={data.cycleStart.seedTotalZar} variant="whole" />
+                    <span className="mt-0.5 block text-[11px] font-normal opacity-80">
+                      {data.cycleStart.seedLines} lines from real spending, rounded to R10
+                    </span>
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => void onStartCycle("copy")}
+                    disabled={busy}
+                    className="rounded-lg border border-line px-3.5 py-2.5 text-left text-xs font-medium disabled:opacity-60"
+                  >
+                    Copy last cycle&apos;s budget ·{" "}
+                    <Money value={data.cycleStart.copyTotalZar} variant="whole" />
+                    <span className="mt-0.5 block text-[11px] font-normal text-muted">
+                      {data.cycleStart.copyLines} lines, the amounts you had planned
+                    </span>
+                  </button>
+                  <p className="px-0.5 text-left text-[11px] leading-relaxed text-faint">
+                    Actuals only reflect what you logged. If a cycle was tracked
+                    loosely, seeding from it will set the budget too low.
+                  </p>
+                </>
+              ) : null}
               <button
                 type="button"
                 onClick={() => setAdding(true)}
                 className="rounded-lg border border-line px-3.5 py-2 text-xs font-medium"
               >
-                Add a line
+                Add lines one at a time
               </button>
             </div>
           </CardBody>
