@@ -17,8 +17,14 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <div className="md:pl-60">
         <TopBar />
-        {/* pb-28 keeps content clear of the fixed tab bar on mobile. */}
-        <main className="mx-auto w-full max-w-6xl px-4 pt-5 pb-28 md:px-8 md:py-8">
+        {/* Bottom padding must clear the FAB, not just the tab bar: the FAB's
+            bottom edge sits 4.5rem (+ safe inset) up, it is 3.5rem tall, and
+            1rem of breathing room keeps the last row's amount readable beside
+            it. 7rem (the old pb-28) only cleared the tab bar, so the FAB sat
+            on the final row of every scrolling list. This is the app's only
+            scroll container, so the fix covers every screen the FAB shows on;
+            ≥ md the FAB is hidden and md:py-8 takes over. */}
+        <main className="mx-auto w-full max-w-6xl px-4 pt-5 pb-[calc(9rem+env(safe-area-inset-bottom,0px))] md:px-8 md:py-8">
           {children}
         </main>
       </div>

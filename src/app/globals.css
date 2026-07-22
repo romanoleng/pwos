@@ -74,6 +74,15 @@
   --color-muted: var(--muted);
   --color-faint: var(--faint);
 
+  /* Section header rows in grouped lists. Neutral by design — the purple is
+     reserved for active nav, the amber for "Not recorded"/"Not set" states.
+     Aliased to --raise rather than --surface-2: the surface→surface-2 step
+     measures ≈1.04:1 in dark, which vanishes at low screen brightness, while
+     surface→raise holds ≈1.10:1 dark / 1.14:1 light — the strongest neutral
+     step the ladder offers. The tint reinforces grouping; the 12px child
+     indent (CollapsibleSection) is the primary signal. */
+  --color-section-head: var(--raise);
+
   --color-accent: var(--accent);
   --color-tabbar: var(--tabbar);
   --color-tabbar-ink: var(--tabbar-ink);

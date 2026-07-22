@@ -83,12 +83,14 @@ export function CollapsibleSection({
 
   return (
     <Card>
-      <div className="flex items-center gap-1 border-b border-line px-2 py-2.5 pr-4">
+      {/* rounded-t is the card's 12px radius minus its 1px border, so the
+          tint fills the corner instead of overpainting it. */}
+      <div className="flex items-center gap-1 rounded-t-[11px] border-b border-line bg-section-head px-2 py-2.5 pr-4">
         <button
           type="button"
           onClick={() => toggleSection(id)}
           aria-expanded={open}
-          className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2 py-1 text-left transition-colors hover:bg-surface-2"
+          className="flex min-w-0 flex-1 items-center gap-2 rounded-lg px-2 py-1 text-left transition-colors hover:bg-line"
         >
           <ChevronDown
             size={16}
@@ -118,8 +120,13 @@ export function CollapsibleSection({
           A collapse that doesn't collapse is worse than one that doesn't
           animate, so this stays blunt and certain — the open state fades in,
           which is enough to stop the jump. */}
+      {/* pl-3: child rows sit 12px in from the header — the indent is the
+          primary grouping signal; the header tint only reinforces it, because
+          the tint alone is too weak at low screen brightness. Row dividers
+          (divide-line, in each child list) start at the indent with the rows,
+          so they read as part of the group. */}
       {open ? (
-        <div className="animate-[fade-in_160ms_ease-out]">{children}</div>
+        <div className="animate-[fade-in_160ms_ease-out] pl-3">{children}</div>
       ) : null}
 
       {!open ? (
