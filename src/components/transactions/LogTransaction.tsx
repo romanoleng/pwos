@@ -23,16 +23,6 @@ import { isMoveCategory } from "@/lib/transactions";
  * time, and one-tap chips for the categories actually used recently.
  */
 
-const ACCOUNT_OPTIONS = [
-  "Capitec Main",
-  "GOtyme Bank",
-  "TymeBank",
-  "ABSA",
-  "Capitec Business",
-  "Capitec Savings",
-  "Cash",
-];
-
 const EXPENSE_CATEGORIES = [
   "Groceries",
   "Petrol",
@@ -73,6 +63,7 @@ export function LogTransaction({
   defaultAccount,
   suggestedCategories = [],
   recentDescriptions = [],
+  accounts = [],
   editing,
 }: {
   open: boolean;
@@ -82,12 +73,16 @@ export function LogTransaction({
   suggestedCategories?: string[];
   /** Past descriptions, offered as autocomplete so common ones are one tap. */
   recentDescriptions?: string[];
+  /** Real accounts from the database, so this list can never drift from it. */
+  accounts?: { label: string; kind: string }[];
   /** When present the sheet edits this entry instead of creating one. */
   editing?: EditingTransaction;
 }) {
   const toast = useToast();
-  const [direction, setDirection] = useState<"out" | "in">(
-    editing ? (editing.amountZar < 0 ? "out" : "in") : "out",
+  const [direction, setDirection] = useState<"out" | "in" | "move">(
+    editing
+      ? isMoveCategory(editing.category) ? "move" : editing.amountZar < 0 ? "out" : "in"
+      : "out",
   );
   const [category, setCategory] = useState(editing?.category ?? "");
   const [saving, setSaving] = useState(false);
@@ -96,14 +91,17 @@ export function LogTransaction({
   const [pending, setPending] = useState<FormData | null>(null);
 
   const categories =
-    direction === "out"
-      ? [...EXPENSE_CATEGORIES, ...MOVE_CATEGORY_OPTIONS]
-      : [...IN_CATEGORIES, ...MOVE_CATEGORY_OPTIONS];
+    direction === "move"
+      ? MOVE_CATEGORY_OPTIONS
+      : direction === "out"
+        ? EXPENSE_CATEGORIES
+        : IN_CATEGORIES;
 
   const chips = suggestedCategories.filter((c) => categories.includes(c)).slice(0, 6);
 
   // A transfer needs somewhere to land — §5 requires both legs to move.
-  const needsDestination = isMoveCategory(category) && direction === "out";
+  const needsDestination = direction === "move";
+  const accountOptions = accounts.length > 0 ? accounts.map((a) => a.label) : [];
 
   function reset() {
     setCategory("");
@@ -120,8 +118,8 @@ export function LogTransaction({
     const payload = {
       description: String(formData.get("description") ?? ""),
       amountZar: Number(formData.get("amount")),
-      direction,
-      category: chosenCategory,
+      direction: direction === "move" ? "out" : direction,
+      category: chosenCategory || "Transfer",
       account: String(formData.get("account") ?? ""),
       toAccount: String(formData.get("toAccount") ?? "") || undefined,
       date: String(formData.get("date") ?? ""),
@@ -207,7 +205,7 @@ export function LogTransaction({
         reset();
         onClose();
       }}
-      title={editing ? "Edit entry" : "Log a transaction"}
+      title={editing ? "Edit entry" : direction === "move" ? "Move money" : "Log a transaction"}
       description={
         editing
           ? "Balances are adjusted to match the change."
@@ -215,16 +213,21 @@ export function LogTransaction({
       }
     >
       <form action={(formData) => submit(formData, false)}>
-        <div className="mb-4 grid grid-cols-2 gap-2">
+        <div className="mb-4 grid grid-cols-3 gap-2">
           <DirectionButton
             active={direction === "out"}
-            onClick={() => setDirection("out")}
-            label="Money out"
+            onClick={() => { setDirection("out"); setCategory(""); }}
+            label="Spent"
           />
           <DirectionButton
             active={direction === "in"}
-            onClick={() => setDirection("in")}
-            label="Money in"
+            onClick={() => { setDirection("in"); setCategory(""); }}
+            label="Received"
+          />
+          <DirectionButton
+            active={direction === "move"}
+            onClick={() => { setDirection("move"); setCategory("Transfer"); }}
+            label="Transfer"
           />
         </div>
 
@@ -243,7 +246,7 @@ export function LogTransaction({
           />
         </Field>
 
-        <Field label="Description">
+        <Field label={direction === "move" ? "What for" : "Description"}>
           <input
             name="description"
             required
@@ -251,7 +254,7 @@ export function LogTransaction({
             list="pwos-descriptions"
             defaultValue={editing?.description ?? ""}
             className={inputClass}
-            placeholder="Checkers Sixty60"
+            placeholder={direction === "move" ? "Moving to savings" : "Checkers Sixty60"}
           />
           {/* Past descriptions as suggestions — the same shop gets typed a lot. */}
           <datalist id="pwos-descriptions">
@@ -305,14 +308,14 @@ export function LogTransaction({
             required
             className={inputClass}
             defaultValue={
-              editing?.accountLabel && ACCOUNT_OPTIONS.includes(editing.accountLabel)
+              editing?.accountLabel && accountOptions.includes(editing.accountLabel)
                 ? editing.accountLabel
-                : defaultAccount && ACCOUNT_OPTIONS.includes(defaultAccount)
+                : defaultAccount && accountOptions.includes(defaultAccount)
                   ? defaultAccount
-                  : "Capitec Main"
+                  : accountOptions[0]
             }
           >
-            {ACCOUNT_OPTIONS.map((account) => (
+            {accountOptions.map((account) => (
               <option key={account} value={account}>
                 {account}
               </option>
@@ -325,9 +328,11 @@ export function LogTransaction({
             label="To account"
             hint="Both sides move: this one is credited as the other is debited."
           >
-            <select name="toAccount" className={inputClass} defaultValue="">
-              <option value="">Not tracked here</option>
-              {ACCOUNT_OPTIONS.map((account) => (
+            <select name="toAccount" className={inputClass} defaultValue="" required>
+              <option value="" disabled>
+                Where is it going?
+              </option>
+              {accountOptions.map((account) => (
                 <option key={account} value={account}>
                   {account}
                 </option>

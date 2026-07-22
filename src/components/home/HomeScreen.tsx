@@ -231,6 +231,7 @@ export function HomeScreen() {
         defaultAccount={defaults.accountLabel ?? undefined}
         suggestedCategories={defaults.categories}
         recentDescriptions={defaults.descriptions}
+        accounts={defaults.accounts}
       />
     </div>
   );

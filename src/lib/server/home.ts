@@ -62,12 +62,14 @@ export type HomeSummary = {
     categories: string[];
     /** Past descriptions, most frequent first, for autocomplete. */
     descriptions: string[];
+    /** Real accounts from the database — never a hardcoded list. */
+    accounts: { label: string; kind: string }[];
   };
 };
 
 export async function getHome(): Promise<HomeSummary> {
   const todayIso0 = toLocalISODate(new Date());
-  const [accounts, budget, recentRows, todayRow, catRows, descRows] = await Promise.all([
+  const [accounts, budget, recentRows, todayRow, catRows, descRows, accountRows] = await Promise.all([
     getAccounts(),
     getBudgetSummary(),
     sql<{ id: string; occurred_on: string; description: string; amount_zar: string;
@@ -90,6 +92,9 @@ export async function getHome(): Promise<HomeSummary> {
       select description from transactions
       where occurred_on >= current_date - 60
       group by description order by count(*) desc limit 40`,
+    sql<{ label: string; kind: string }>`
+      select label, kind::text from accounts
+      where not archived order by kind, label`,
   ]);
 
   const cycle = getBudgetCycle();
@@ -135,6 +140,7 @@ export async function getHome(): Promise<HomeSummary> {
       // Most-repeated descriptions first: "Checkers Sixty60" should not be
       // typed for the hundredth time.
       descriptions: descRows.map((r) => r.description),
+      accounts: accountRows,
     },
   };
 }
