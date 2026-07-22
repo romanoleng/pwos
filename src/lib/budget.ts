@@ -149,6 +149,17 @@ export type BudgetSummary = {
   dailyAllowanceZar: number | null;
   /** Categories that could still be given a line this cycle. */
   availableCategories: { name: string; kind: string }[];
+  /**
+   * The income side of the plan. `unallocatedZar` is what hasn't been given a
+   * job yet — negative means more is planned than is expected to arrive.
+   */
+  plan: {
+    expectedIncomeZar: number;
+    receivedIncomeZar: number;
+    allocatedZar: number;
+    puttingAwayZar: number;
+    unallocatedZar: number;
+  };
   /** Set only when the cycle has no lines yet: what each starting option gives. */
   cycleStart: {
     from: string;

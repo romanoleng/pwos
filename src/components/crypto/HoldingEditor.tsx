@@ -11,6 +11,7 @@ import {
 } from "@/app/actions/holdings";
 import { Field, SlideOver, inputClass } from "@/components/ui/SlideOver";
 import { useToast } from "@/components/ui/Toast";
+import { parseAmount } from "@/lib/amount";
 import { WALLET_ORDER } from "@/lib/constants";
 import type { Holding } from "@/lib/crypto/types";
 
@@ -46,8 +47,9 @@ export function HoldingEditor({
     setSaving(true);
     setError(null);
 
-    const quantity = Number(formData.get("quantity"));
-    const investedZar = Number(formData.get("investedZar"));
+    // Text inputs now, so the comma decimal survives — see lib/amount.ts.
+    const quantity = parseAmount(String(formData.get("quantity") ?? "")) ?? Number.NaN;
+    const investedZar = parseAmount(String(formData.get("investedZar") ?? "")) ?? Number.NaN;
     const wallet = String(formData.get("wallet") ?? "");
     const notes = String(formData.get("notes") ?? "");
 
@@ -143,9 +145,8 @@ export function HoldingEditor({
         <Field label="Quantity" hint="How many coins you hold.">
           <input
             name="quantity"
-            type="number"
-            step="any"
-            min="0"
+            type="text"
+            inputMode="decimal"
             required
             defaultValue={editing?.quantity ?? ""}
             className={inputClass}
@@ -156,9 +157,8 @@ export function HoldingEditor({
         <Field label="Total invested (ZAR)" hint="Your cost basis, not the current value.">
           <input
             name="investedZar"
-            type="number"
-            step="any"
-            min="0"
+            type="text"
+            inputMode="decimal"
             required
             defaultValue={editing?.investedZar ?? ""}
             className={inputClass}

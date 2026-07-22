@@ -6,12 +6,15 @@ import useSWR from "swr";
 
 import {
   copyBudgetsForward, deleteBudgetLine, restoreBudgetLine, seedBudgetsFromActuals,
+  setExpectedIncome,
 } from "@/app/actions/budgets";
 import { BudgetLineEditor } from "@/components/budget/BudgetLineEditor";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { AmountInput } from "@/components/ui/AmountInput";
 import { EditableAmount } from "@/components/ui/EditableAmount";
 import { useToast } from "@/components/ui/Toast";
 import { Money, Percent } from "@/components/ui/Money";
+import { parseAmount } from "@/lib/amount";
 import { spendPace, type BudgetSummary } from "@/lib/budget";
 import { formatDate, formatPercent } from "@/lib/format";
 
@@ -30,8 +33,21 @@ export function BudgetScreen() {
   });
   const toast = useToast();
   const [adding, setAdding] = useState(false);
+  const [incomeDraft, setIncomeDraft] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const refresh = () => void mutate();
+
+  async function saveIncome(raw: string) {
+    const value = parseAmount(raw);
+    setIncomeDraft(null);
+    if (value === null || value === plan.expectedIncomeZar) return;
+    const result = await setExpectedIncome(value);
+    if (!result.ok) {
+      toast.show({ message: result.error, tone: "error" });
+      return;
+    }
+    refresh();
+  }
 
   async function onRemove(recordId: string, category: string) {
     setBusy(true);
@@ -92,13 +108,72 @@ export function BudgetScreen() {
     );
   }
 
-  const { cycle, lines, totals, unbudgetedZar, unbudgetedCategories, dailyAllowanceZar } =
+  const { cycle, lines, totals, unbudgetedZar, unbudgetedCategories, dailyAllowanceZar, plan } =
     data;
   const pace = spendPace(data);
   const overspent = totals.remainingZar < 0;
 
+  const overAllocated = plan.unallocatedZar < 0;
+
   return (
     <div className="space-y-4">
+      <Card>
+        <CardBody>
+          <div className="flex items-center justify-between gap-3">
+            <div>
+              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
+                Expected in this cycle
+              </p>
+              {incomeDraft === null ? (
+                <button
+                  type="button"
+                  onClick={() => setIncomeDraft(String(plan.expectedIncomeZar))}
+                  className="mt-1 block text-xl font-semibold tracking-tight hover:text-accent"
+                >
+                  <Money value={plan.expectedIncomeZar} variant="whole" />
+                </button>
+              ) : (
+                <AmountInput
+                  autoFocus
+                  value={incomeDraft}
+                  onChange={setIncomeDraft}
+                  ariaLabel="Expected income this cycle"
+                  className="tnum mt-1 h-9 w-40 rounded-lg border border-accent bg-surface-2 px-2 text-lg outline-none"
+                />
+              )}
+              <p className="mt-1 text-[11px] text-faint">
+                <Money value={plan.receivedIncomeZar} variant="whole" /> received so far
+              </p>
+            </div>
+            <div className="text-right">
+              <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
+                {overAllocated ? "Over-allocated" : "Still to allocate"}
+              </p>
+              <Money
+                value={Math.abs(plan.unallocatedZar)}
+                variant="whole"
+                className={`mt-1 block text-xl font-semibold tracking-tight ${
+                  overAllocated ? "text-loss" : "text-gain"
+                }`}
+              />
+              <p className="mt-1 text-[11px] text-faint">
+                <Money value={plan.allocatedZar} variant="whole" /> to spend ·{" "}
+                <Money value={plan.puttingAwayZar} variant="whole" /> away
+              </p>
+            </div>
+          </div>
+          {incomeDraft !== null ? (
+            <button
+              type="button"
+              onClick={() => void saveIncome(incomeDraft)}
+              className="mt-3 rounded-lg bg-accent px-3 py-1.5 text-xs font-medium text-white"
+            >
+              Save expected income
+            </button>
+          ) : null}
+        </CardBody>
+      </Card>
+
       <Card>
         <CardBody>
           <div className="flex flex-wrap items-baseline justify-between gap-2">

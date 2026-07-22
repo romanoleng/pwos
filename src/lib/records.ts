@@ -15,6 +15,8 @@
  * deleted row takes all of that with it.
  */
 
+import { parseAmount } from "./amount.ts";
+
 export type RecordKind =
   | "account"
   | "asset"
@@ -161,8 +163,8 @@ export function validateRecord(
     }
 
     if (field.kind === "currency") {
-      const numeric = Number(text);
-      if (!Number.isFinite(numeric)) return { error: `${field.label} must be a number.` };
+      const numeric = parseAmount(text as string | number);
+      if (numeric === null) return { error: `${field.label} must be a number.` };
       // Same guard as editable.ts: an extra zero is a common, costly slip.
       if (Math.abs(numeric) > 1_000_000_000) return { error: `${field.label} looks too large.` };
       values[field.name] = numeric;

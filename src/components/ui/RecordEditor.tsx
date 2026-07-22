@@ -3,6 +3,7 @@
 import { useState } from "react";
 
 import { createRecord } from "@/app/actions/records";
+import { AmountInput } from "@/components/ui/AmountInput";
 import { Field, SlideOver, inputClass } from "@/components/ui/SlideOver";
 import { useToast } from "@/components/ui/Toast";
 import { RECORD_TYPES, type RecordKind } from "@/lib/records";
@@ -84,14 +85,10 @@ export function RecordEditor({
                 ))}
               </select>
             ) : field.kind === "currency" ? (
-              <input
+              <AmountInput
                 name={field.name}
-                type="number"
-                inputMode="decimal"
-                step="0.01"
                 required={field.required}
-                className={inputClass}
-                placeholder={field.placeholder ?? "0.00"}
+                placeholder={field.placeholder ?? "0,00"}
               />
             ) : (
               <input

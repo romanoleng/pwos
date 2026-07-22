@@ -9,10 +9,12 @@ import {
   restoreTransaction,
   updateTransaction,
 } from "@/app/actions/transactions";
+import { AmountInput } from "@/components/ui/AmountInput";
 import { Field, SlideOver, inputClass } from "@/components/ui/SlideOver";
 import { useToast } from "@/components/ui/Toast";
 import { toLocalISODate } from "@/lib/crypto/history";
 import { formatMoneyWhole } from "@/lib/format";
+import { parseAmount } from "@/lib/amount";
 import { destinationFrom, isMoveCategory } from "@/lib/transactions";
 
 /**
@@ -108,7 +110,7 @@ export function LogTransaction({
     const chosenCategory = category || String(formData.get("category") ?? "");
     const payload = {
       description: String(formData.get("description") ?? ""),
-      amountZar: Number(formData.get("amount")),
+      amountZar: parseAmount(String(formData.get("amount") ?? "")) ?? Number.NaN,
       direction: direction === "move" ? "out" : direction,
       category: chosenCategory || "Transfer",
       account: String(formData.get("account") ?? ""),
@@ -224,14 +226,10 @@ export function LogTransaction({
         </div>
 
         <Field label="Amount (ZAR)" hint="Just the number — the direction sets the sign.">
-          <input
+          <AmountInput
             name="amount"
-            type="number"
-            step="0.01"
-            min="0"
             required
             autoFocus
-            inputMode="decimal"
             defaultValue={editing ? Math.abs(editing.amountZar) : ""}
             className={`${inputClass} h-14 text-2xl tabular-nums`}
             placeholder="0,00"

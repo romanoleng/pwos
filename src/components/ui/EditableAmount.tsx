@@ -6,6 +6,7 @@ import { useState } from "react";
 import { revertEditableValue, updateEditableValue } from "@/app/actions/edit";
 import { Money } from "@/components/ui/Money";
 import { useToast } from "@/components/ui/Toast";
+import { parseAmount } from "@/lib/amount";
 import { editableField, validateEditable } from "@/lib/editable";
 
 /**
@@ -38,7 +39,7 @@ export function EditableAmount({
 
   async function commit() {
     if (!field) return;
-    const numeric = Number(draft);
+    const numeric = parseAmount(draft) ?? Number.NaN;
     const invalid = validateEditable(field, numeric);
     if (invalid) {
       toast.show({ message: invalid, tone: "error" });
@@ -82,9 +83,9 @@ export function EditableAmount({
     return (
       <input
         autoFocus
-        type="number"
-        step="0.01"
+        type="text"
         inputMode="decimal"
+        pattern="[0-9\s.,\-Rr]*"
         value={draft}
         disabled={saving}
         onChange={(event) => setDraft(event.target.value)}

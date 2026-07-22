@@ -6,10 +6,12 @@ import useSWR from "swr";
 
 import { archiveRecord, restoreRecord } from "@/app/actions/records";
 import { applyReset, revertReset, type ResetPrevious } from "@/app/actions/reset";
+import { AmountInput } from "@/components/ui/AmountInput";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { RecordEditor } from "@/components/ui/RecordEditor";
 import { useToast } from "@/components/ui/Toast";
+import { parseAmount } from "@/lib/amount";
 import { formatDate } from "@/lib/format";
 import type { RecordKind } from "@/lib/records";
 import type { ResetState } from "@/lib/server/reset";
@@ -51,8 +53,8 @@ export function ResetScreen() {
         const key = `${row.editKey}:${row.recordId}`;
         const raw = draft[key];
         if (raw === undefined || raw.trim() === "") continue;
-        const value = Number(raw);
-        if (!Number.isFinite(value)) continue;
+        const value = parseAmount(raw);
+        if (value === null) continue;
         if (value === row.currentZar) continue;
         out.push({
           key,
@@ -219,10 +221,9 @@ export function ResetScreen() {
             {group.rows.map((row) => {
               const key = `${row.editKey}:${row.recordId}`;
               const value = draft[key] ?? "";
-              const changed =
-                value.trim() !== "" &&
-                Number.isFinite(Number(value)) &&
-                Number(value) !== row.currentZar;
+              const parsed = parseAmount(value);
+              const changed = parsed !== null && parsed !== row.currentZar;
+              const invalid = value.trim() !== "" && parsed === null;
               return (
                 <li key={key} className="flex items-center gap-3 px-4 py-2.5">
                   <div className="min-w-0 flex-1">
@@ -247,18 +248,19 @@ export function ResetScreen() {
                       ) : null}
                     </p>
                   </div>
-                  <input
-                    type="number"
-                    step="0.01"
-                    inputMode="decimal"
+                  <AmountInput
                     value={value}
-                    onChange={(event) =>
-                      setDraft((current) => ({ ...current, [key]: event.target.value }))
+                    onChange={(next) =>
+                      setDraft((current) => ({ ...current, [key]: next }))
                     }
                     placeholder="—"
                     aria-label={`New value for ${row.label}`}
                     className={`tnum h-9 w-32 shrink-0 rounded-lg border bg-surface-2 px-2 text-right text-sm outline-none transition-colors ${
-                      changed ? "border-accent text-ink" : "border-line placeholder:text-faint"
+                      invalid
+                        ? "border-loss text-loss"
+                        : changed
+                          ? "border-accent text-ink"
+                          : "border-line placeholder:text-faint"
                     }`}
                   />
                 </li>

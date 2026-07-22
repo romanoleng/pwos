@@ -278,3 +278,34 @@ export async function createCategory(input: {
     return { ok: false, error: error instanceof Error ? error.message : "Couldn't add it." };
   }
 }
+
+/**
+ * What Romano expects to come in this cycle.
+ *
+ * Stored per cycle rather than as a global setting: he's paid by clients, so
+ * what he expects in July is a genuinely different question from June, and
+ * June's plan has to stay as it was once the month is over.
+ */
+export async function setExpectedIncome(
+  expectedIncomeZar: number,
+  cycleStart?: string,
+): Promise<MutationResult<{ expectedIncomeZar: number }>> {
+  if (!Number.isFinite(expectedIncomeZar) || expectedIncomeZar < 0) {
+    return { ok: false, error: "Expected income can't be negative." };
+  }
+  if (expectedIncomeZar > 1_000_000_000) return { ok: false, error: "That looks too large." };
+
+  const start = cycleStart || (await getCurrentCycle()).start;
+  try {
+    await sql`
+      insert into cycle_plans (cycle_start, expected_income_zar)
+      values (${start}::date, ${expectedIncomeZar})
+      on conflict (cycle_start)
+      do update set expected_income_zar = excluded.expected_income_zar, updated_at = now()`;
+    invalidate();
+    return { ok: true, data: { expectedIncomeZar } };
+  } catch (error) {
+    console.error("[setExpectedIncome]", error);
+    return { ok: false, error: error instanceof Error ? error.message : "Couldn't save it." };
+  }
+}

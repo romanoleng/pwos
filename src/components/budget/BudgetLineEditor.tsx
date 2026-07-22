@@ -3,6 +3,8 @@
 import { useState } from "react";
 
 import { createBudgetLine, createCategory } from "@/app/actions/budgets";
+import { parseAmount } from "@/lib/amount";
+import { AmountInput } from "@/components/ui/AmountInput";
 import { Field, SlideOver, inputClass } from "@/components/ui/SlideOver";
 import { useToast } from "@/components/ui/Toast";
 
@@ -40,7 +42,7 @@ export function BudgetLineEditor({
     setSaving(true);
     setError(null);
 
-    const budgetedZar = Number(formData.get("budgetedZar"));
+    const budgetedZar = parseAmount(String(formData.get("budgetedZar") ?? "")) ?? Number.NaN;
     let name = String(formData.get("category") ?? "");
 
     if (name === NEW_CATEGORY) {
@@ -133,16 +135,7 @@ export function BudgetLineEditor({
         ) : null}
 
         <Field label="Monthly amount" hint="Change it any time by tapping it on the list.">
-          <input
-            name="budgetedZar"
-            type="number"
-            inputMode="decimal"
-            step="0.01"
-            min="0"
-            required
-            className={inputClass}
-            placeholder="0.00"
-          />
+          <AmountInput name="budgetedZar" required placeholder="0,00" />
         </Field>
 
         {error ? <p className="mt-1 text-xs text-loss">{error}</p> : null}

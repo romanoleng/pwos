@@ -62,7 +62,7 @@ async function previewCycleStart(cycleStart: string): Promise<BudgetSummary["cyc
 export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSummary> {
   const cycle = await getCurrentCycle(now);
 
-  const [lines, unbudgeted, income, spare] = await Promise.all([
+  const [lines, unbudgeted, income, spare, plan, puttingAway] = await Promise.all([
     sql<{ id: string; category: string; kind: string | null; budgeted_zar: string; actual_zar: string; txn_count: string }>`
       select b.id::text, b.category, b.kind, b.budgeted_zar,
              coalesce(sum(-t.amount_zar), 0) as actual_zar,
@@ -107,6 +107,16 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
         select 1 from budgets b
         where b.cycle_start = ${cycle.start}::date and b.category = c.name)
       order by c.kind, c.sort_order, c.name`,
+
+    sql<{ expected_income_zar: string }>`
+      select expected_income_zar from cycle_plans where cycle_start = ${cycle.start}::date`,
+
+    // Contributions left the budget, but they still lay claim to the income,
+    // so leaving them out would overstate what's free.
+    sql<{ total: string }>`
+      select coalesce(sum(b.budgeted_zar), 0) as total from budgets b
+      join categories c on c.name = b.category and c.kind = 'contribution'
+      where b.cycle_start = ${cycle.start}::date`,
   ]);
 
   const budgetLines: BudgetLine[] = lines.map((r) => {
@@ -138,6 +148,22 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
     })),
     dailyAllowanceZar: cycle.remainingDays > 0 ? remainingZar / cycle.remainingDays : null,
     availableCategories: spare,
+    plan: (() => {
+      const receivedIncomeZar = money(income[0]?.total);
+      // No plan set yet: fall back to what has actually arrived, so the figures
+      // mean something on day one rather than reading as a R0 income.
+      const expectedIncomeZar = plan.length > 0
+        ? money(plan[0].expected_income_zar)
+        : receivedIncomeZar;
+      const puttingAwayZar = money(puttingAway[0]?.total);
+      return {
+        expectedIncomeZar,
+        receivedIncomeZar,
+        allocatedZar: budgetedZar,
+        puttingAwayZar,
+        unallocatedZar: expectedIncomeZar - budgetedZar - puttingAwayZar,
+      };
+    })(),
     cycleStart: budgetLines.length === 0 ? await previewCycleStart(cycle.start) : null,
   };
 }

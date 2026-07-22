@@ -89,6 +89,10 @@ describe("spendPace", () => {
     dailyAllowanceZar: null,
     availableCategories: [],
     cycleStart: null,
+    plan: {
+      expectedIncomeZar: 0, receivedIncomeZar: 0, allocatedZar: 0,
+      puttingAwayZar: 0, unallocatedZar: 0,
+    },
   };
 
   it("returns 1 when spending tracks the calendar exactly", () => {

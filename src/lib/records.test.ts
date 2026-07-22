@@ -54,8 +54,16 @@ describe("validateRecord", () => {
   });
 
   it("catches an implausible amount", () => {
-    const result = validateRecord(RECORD_TYPES.debt, { name: "X", balance_zar: "1e12" });
+    // A fat-fingered extra zero is the realistic version of this mistake.
+    const result = validateRecord(RECORD_TYPES.debt, { name: "X", balance_zar: "9999999999" });
     assert.deepEqual(result, { error: "Balance owed looks too large." });
+  });
+
+  it("rejects scientific notation rather than reading it as a number", () => {
+    // Nobody types 1e12 into a money field; treating it as 1 000 000 000 000
+    // would be a surprising interpretation of a typo.
+    const result = validateRecord(RECORD_TYPES.debt, { name: "X", balance_zar: "1e12" });
+    assert.deepEqual(result, { error: "Balance owed must be a number." });
   });
 
   it("rejects a select value that isn't offered", () => {

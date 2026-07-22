@@ -10,6 +10,8 @@
  * client can only ever set values the server already agreed are editable.
  */
 
+import { parseAmount } from "./amount.ts";
+
 export type EditableKind = "currency" | "number" | "text" | "date";
 
 /** Tables the registry may reference. Mirrors TABLES in airtable-fields. */
@@ -136,8 +138,8 @@ export function validateEditable(
   value: number | string,
 ): string | null {
   if (field.kind === "currency" || field.kind === "number") {
-    const numeric = typeof value === "number" ? value : Number(value);
-    if (!Number.isFinite(numeric)) return "Enter a number.";
+    const numeric = parseAmount(value);
+    if (numeric === null) return "Enter a number.";
     if (field.min !== undefined && numeric < field.min) {
       return `Can't be less than ${field.min}.`;
     }
