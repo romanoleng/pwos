@@ -6,6 +6,7 @@ import useSWR from "swr";
 
 import { deleteTransaction, restoreTransaction } from "@/app/actions/transactions";
 import { LogTransaction, type EditingTransaction } from "@/components/transactions/LogTransaction";
+import { CalendarView, MonthlyView, SummaryView } from "@/components/transactions/TransactionViews";
 import { useToast } from "@/components/ui/Toast";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
@@ -30,6 +31,13 @@ const TYPE_TONE: Record<TransactionType, string> = {
 };
 
 const TYPES: TransactionType[] = ["expense", "income", "transfer", "contribution"];
+
+const VIEWS = [
+  { key: "list", label: "Daily" },
+  { key: "calendar", label: "Calendar" },
+  { key: "monthly", label: "Monthly" },
+  { key: "summary", label: "Summary" },
+] as const;
 
 export function TransactionsScreen() {
   const { data, error, mutate } = useSWR("/api/transactions", fetcher);
@@ -79,6 +87,8 @@ export function TransactionsScreen() {
     });
   }
   const [query, setQuery] = useState("");
+  const [view, setView] = useState<"list" | "calendar" | "monthly" | "summary">("list");
+  const [dayFilter, setDayFilter] = useState<string | null>(null);
   const [types, setTypes] = useState<TransactionType[]>([]);
 
   const all = useMemo(() => data?.transactions ?? [], [data]);
@@ -86,13 +96,14 @@ export function TransactionsScreen() {
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return all.filter((row) => {
+      if (dayFilter && row.date?.slice(0, 10) !== dayFilter) return false;
       if (types.length > 0 && !types.includes(row.type)) return false;
       if (!needle) return true;
       return `${row.description} ${row.category ?? ""} ${row.accountLabel ?? ""}`
         .toLowerCase()
         .includes(needle);
     });
-  }, [all, query, types]);
+  }, [all, query, types, dayFilter]);
 
   // Negate rather than Math.abs: a refund sits in a spending category with a
   // positive amount ("Reversal - Purchase at Pick n Pay", +R508), and must
@@ -143,6 +154,29 @@ export function TransactionsScreen() {
           <Plus size={15} strokeWidth={2} />
           Log
         </button>
+      </div>
+
+      <div
+        role="tablist"
+        aria-label="How to view transactions"
+        className="scrollbar-none flex gap-1 overflow-x-auto rounded-lg border border-line bg-surface p-1"
+      >
+        {VIEWS.map((option) => (
+          <button
+            key={option.key}
+            type="button"
+            role="tab"
+            aria-selected={view === option.key}
+            onClick={() => setView(option.key)}
+            className={`flex-1 shrink-0 rounded-md px-3 py-1.5 text-xs font-medium transition-colors ${
+              view === option.key
+                ? "bg-accent text-white"
+                : "text-muted hover:bg-surface-2 hover:text-ink"
+            }`}
+          >
+            {option.label}
+          </button>
+        ))}
       </div>
 
       <div className="flex flex-wrap gap-1.5">
@@ -218,10 +252,48 @@ export function TransactionsScreen() {
         </p>
       ) : null}
 
+      {view === "calendar" ? (
+        <CalendarView
+          rows={visible}
+          // Tapping a day narrows the list to it, then drops you back into it —
+          // a calendar you can't drill into is just decoration.
+          onPickDay={(date) => {
+            setQuery("");
+            setDayFilter(date);
+            setView("list");
+          }}
+        />
+      ) : view === "monthly" ? (
+        <MonthlyView rows={visible} />
+      ) : view === "summary" ? (
+        <SummaryView
+          rows={visible}
+          onPickCategory={(category) => {
+            setDayFilter(null);
+            setQuery(category);
+            setView("list");
+          }}
+        />
+      ) : (
       <Card>
         <CardHeader
           title="Ledger"
-          description={`${visible.length} of ${all.length} entries`}
+          description={
+            dayFilter
+              ? `${visible.length} on ${formatDate(dayFilter)}`
+              : `${visible.length} of ${all.length} entries`
+          }
+          action={
+            dayFilter ? (
+              <button
+                type="button"
+                onClick={() => setDayFilter(null)}
+                className="rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium hover:bg-surface-2"
+              >
+                Clear day
+              </button>
+            ) : null
+          }
         />
         {!data ? (
           <CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody>
@@ -324,8 +396,9 @@ export function TransactionsScreen() {
           </ul>
         )}
       </Card>
+      )}
 
-      {visible.length > 200 ? (
+      {view === "list" && visible.length > 200 ? (
         <p className="text-center text-[11px] text-faint">
           Showing the 200 most recent of {visible.length}. Narrow the search to see more.
         </p>
