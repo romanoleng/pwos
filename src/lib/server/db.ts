@@ -17,10 +17,38 @@ import { MissingEnvError } from "./env";
 
 let cached: ReturnType<typeof neon> | null = null;
 
+/**
+ * A database error's message can embed the connection string, which would put
+ * the password in an HTTP response. Redact anything URL-shaped before the
+ * message travels anywhere.
+ */
+export function safeDbError(error: unknown): string {
+  const raw = error instanceof Error ? `${error.name}: ${error.message}` : String(error);
+  return raw
+    .replace(/postgres(ql)?:\/\/[^\s"']+/gi, "postgresql://[redacted]")
+    .replace(/:[^:@\s]+@/g, ":[redacted]@")
+    .slice(0, 200);
+}
+
 function client() {
   if (cached) return cached;
   const url = process.env.DATABASE_URL?.trim();
   if (!url) throw new MissingEnvError("DATABASE_URL");
+
+  // Catch a malformed value here rather than at first query, where the error
+  // is far less obvious.
+  let parsed: URL;
+  try {
+    parsed = new URL(url);
+  } catch {
+    throw new Error(
+      `DATABASE_URL is not a valid URL (length ${url.length}). Check it was pasted whole and once.`,
+    );
+  }
+  if (!parsed.protocol.startsWith("postgres")) {
+    throw new Error(`DATABASE_URL has protocol "${parsed.protocol}", expected postgresql:`);
+  }
+
   cached = neon(url);
   return cached;
 }

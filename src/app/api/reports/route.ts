@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 
+import { safeDbError } from "@/lib/server/db";
+
 import { getReports } from "@/lib/server/reports";
 export const dynamic = "force-dynamic";
 /** Reads several Airtable tables; needs more than the default cold-start budget. */
@@ -13,10 +15,10 @@ export async function GET() {
       {
         error: "upstream",
         message: "Could not build reports.",
-        // Upstream status only — no token, no request detail. Turns a blank
-        // failure into a diagnosable one: 401 means the Airtable token is
-        // being rejected, 429 means rate limiting.
+        // The reason, with any connection string redacted. A blank failure
+        // costs far more to diagnose than a named one.
         upstream: "database",
+        reason: safeDbError(error),
       },
       { status: 502 },
     );
