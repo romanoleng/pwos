@@ -1,5 +1,8 @@
 "use client";
 
+import { ChevronRight, Shapes } from "lucide-react";
+import Link from "next/link";
+
 import { ThemeToggle } from "@/components/theme";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { SignOutButton } from "@/components/shell/SignOutButton";
@@ -9,6 +12,30 @@ import { formatMoneyWhole } from "@/lib/format";
 export function SettingsScreen() {
   return (
     <div className="space-y-4">
+      <Card>
+        <CardHeader
+          title="Manage"
+          description="The lists the rest of the app reads from."
+        />
+        <ul className="divide-y divide-line">
+          <li>
+            <Link
+              href="/settings/categories"
+              className="flex items-center gap-3 px-4 py-3 transition-colors hover:bg-surface-2"
+            >
+              <Shapes size={16} strokeWidth={1.75} className="shrink-0 text-muted" />
+              <span className="min-w-0 flex-1">
+                <span className="block text-sm font-medium">Categories</span>
+                <span className="mt-0.5 block text-[11px] text-faint">
+                  Rename, merge, retire, reorder and pin
+                </span>
+              </span>
+              <ChevronRight size={14} strokeWidth={1.75} className="shrink-0 text-faint" />
+            </Link>
+          </li>
+        </ul>
+      </Card>
+
       <Card>
         <CardHeader title="Appearance" />
         <CardBody className="flex items-center justify-between gap-3">

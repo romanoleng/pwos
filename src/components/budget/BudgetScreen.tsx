@@ -114,6 +114,9 @@ export function BudgetScreen() {
   const overspent = totals.remainingZar < 0;
 
   const overAllocated = plan.unallocatedZar < 0;
+  // How far through the cycle we are, as a percentage — the marker's position.
+  const throughPct =
+    cycle.totalDays > 0 ? (cycle.elapsedDays / cycle.totalDays) * 100 : null;
 
   return (
     <div className="space-y-4">
@@ -277,7 +280,15 @@ export function BudgetScreen() {
       <Card>
         <CardHeader
           title="Categories"
-          description="What you spend to live. Money you put away is planned on Goals."
+          description={
+            throughPct === null
+              ? "What you spend to live. Money you put away is planned on Goals."
+              : `The mark on each bar is where you are in the cycle — ${Math.round(
+                  throughPct,
+                )}% through, ${cycle.remainingDays} ${
+                  cycle.remainingDays === 1 ? "day" : "days"
+                } left.`
+          }
           action={
             <button
               type="button"
@@ -340,8 +351,13 @@ export function BudgetScreen() {
           </CardBody>
         ) : (
           <ul className="divide-y divide-line">
-            {lines.map((line) => {
+            {lines
+              .filter((line) => line.budgetedZar > 0 || line.actualZar > 0)
+              .map((line) => {
               const over = line.remainingZar < 0;
+              // Spending faster than the days are passing, by enough to matter.
+              const ahead =
+                throughPct !== null && line.budgetedZar > 0 && line.usedPct > throughPct + 5;
               return (
                 <li key={line.recordId} className="px-4 py-3">
                   <div className="flex items-baseline justify-between gap-3">
@@ -368,11 +384,26 @@ export function BudgetScreen() {
                     </p>
                   </div>
 
-                  <div className="mt-2 h-1 w-full overflow-hidden rounded-full bg-raise">
+                  {/* The marker sits where you are in the cycle, so the bar
+                      answers "am I ahead or behind" rather than just "how much
+                      is left". It matters more here than in a calendar-month
+                      app: a 27-day cycle followed by a 34-day one can't be
+                      eyeballed. */}
+                  <div className="relative mt-2 h-1.5 w-full rounded-full bg-raise">
                     <div
-                      className={`h-full rounded-full ${over ? "bg-loss" : "bg-accent"}`}
+                      className={`h-full rounded-full ${
+                        over ? "bg-loss" : ahead ? "bg-warn" : "bg-accent"
+                      }`}
                       style={{ width: `${Math.min(100, Math.max(0, line.usedPct))}%` }}
                     />
+                    {throughPct !== null && line.budgetedZar > 0 ? (
+                      <span
+                        aria-hidden
+                        title={`You're ${Math.round(throughPct)}% through the cycle`}
+                        className="absolute -top-0.5 h-2.5 w-0.5 rounded-full bg-ink/70"
+                        style={{ left: `${Math.min(100, throughPct)}%` }}
+                      />
+                    ) : null}
                   </div>
 
                   <p className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-faint">
