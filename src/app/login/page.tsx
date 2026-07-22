@@ -16,15 +16,15 @@ export default async function LoginPage({
 
   return (
     <main className="grid min-h-dvh place-items-center px-5">
-      <div className="w-full max-w-[20rem]">
-        <div className="mb-7 flex items-center gap-2.5">
-          <span className="grid size-8 place-items-center rounded-lg bg-accent/15 text-xs font-semibold tracking-tight text-accent">
-            P
+      <div className="w-full max-w-[21rem]">
+        {/* Centred and given room to breathe: this is the one screen seen
+            before any data loads, so it sets the tone for the whole app. */}
+        <div className="mb-9 text-center">
+          <span className="mx-auto grid size-12 place-items-center rounded-2xl bg-accent/15 text-base font-semibold tracking-tight text-accent">
+            ML
           </span>
-          <div>
-            <p className="text-sm font-semibold tracking-tight">PWOS</p>
-            <p className="text-xs text-muted">Personal Wealth Operating System</p>
-          </div>
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight">Mr Leng</h1>
+          <p className="mt-1 text-sm text-muted">Personal Wealth Operating System</p>
         </div>
 
         {configured ? (
