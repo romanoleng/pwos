@@ -1,14 +1,16 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, Repeat as RepeatIcon } from "lucide-react";
 import { useState } from "react";
 
 import {
   createTransaction,
+  createTransactionSeries,
   deleteTransaction,
   restoreTransaction,
   updateTransaction,
 } from "@/app/actions/transactions";
+import { MAX_MONTHS, MIN_MONTHS, type ScheduleMode } from "@/lib/schedule";
 import { AmountInput } from "@/components/ui/AmountInput";
 import { Field, SlideOver, inputClass } from "@/components/ui/SlideOver";
 import { useToast } from "@/components/ui/Toast";
@@ -83,6 +85,11 @@ export function LogTransaction({
   const [error, setError] = useState<string | null>(null);
   const [duplicate, setDuplicate] = useState<string | null>(null);
   const [pending, setPending] = useState<FormData | null>(null);
+  // Rep/Inst. (reference pattern, 2026-07-22): one submission can become a
+  // monthly series. "once" is the default and the only mode while editing.
+  const [scheduleMode, setScheduleMode] = useState<ScheduleMode>("once");
+  const [scheduleMonths, setScheduleMonths] = useState(3);
+  const [scheduleSheet, setScheduleSheet] = useState(false);
 
   const wantKind =
     direction === "move" ? ["transfer", "contribution"] : direction === "out" ? ["expense"] : ["income"];
@@ -101,6 +108,9 @@ export function LogTransaction({
     setDuplicate(null);
     setPending(null);
     setError(null);
+    setScheduleMode("once");
+    setScheduleMonths(3);
+    setScheduleSheet(false);
   }
 
   async function submit(formData: FormData, confirmDuplicate: boolean) {
@@ -134,6 +144,53 @@ export function LogTransaction({
       if (result.data.warning) {
         toast.show({ message: result.data.warning, tone: "error", durationMs: 9000 });
       }
+      return;
+    }
+
+    // A repeat or instalment becomes a whole series server-side — one call,
+    // one database transaction, every entry or none.
+    if (scheduleMode !== "once") {
+      const series = await createTransactionSeries({
+        description: payload.description,
+        amountZar: payload.amountZar,
+        direction: direction === "in" ? "in" : "out",
+        category: payload.category,
+        account: payload.account,
+        date: payload.date,
+        notes: payload.notes,
+        schedule: { mode: scheduleMode, months: scheduleMonths },
+      });
+      setSaving(false);
+      if (!series.ok) {
+        setError(series.error);
+        return;
+      }
+
+      const { recordIds, count, monthlyZar, balanceMoved, warning } = series.data;
+      reset();
+      onClose();
+      onSaved();
+      const noun = scheduleMode === "instalment" ? "instalments" : "months";
+      const parts = [
+        `${count} ${noun} of ${formatMoneyWhole(monthlyZar)}`,
+        balanceMoved
+          ? `${balanceMoved.accountLabel} now ${formatMoneyWhole(balanceMoved.newBalanceZar)}`
+          : null,
+      ].filter(Boolean);
+      toast.show({
+        message: `Logged · ${parts.join(" · ")}`,
+        tone: "success",
+        onUndo: async () => {
+          // The whole series goes, newest first; each future entry knows its
+          // balance never moved, so nothing is falsely refunded.
+          for (const id of [...recordIds].reverse()) {
+            await deleteTransaction(id);
+          }
+          onSaved();
+          toast.show({ message: `Removed all ${count} entries`, tone: "neutral" });
+        },
+      });
+      if (warning) toast.show({ message: warning, tone: "error", durationMs: 9000 });
       return;
     }
 
@@ -229,7 +286,12 @@ export function LogTransaction({
           />
           <DirectionButton
             active={direction === "move"}
-            onClick={() => { setDirection("move"); setCategory("Transfer"); }}
+            onClick={() => {
+              setDirection("move");
+              setCategory("Transfer");
+              // A repeating transfer needs both legs scheduled — not built yet.
+              setScheduleMode("once");
+            }}
             label="Transfer"
           />
         </div>
@@ -327,17 +389,41 @@ export function LogTransaction({
             </select>
           </Field>
 
-          <Field label="Date">
+          {/* Not a <label>: the Rep/Inst button lives in the heading row, and
+              inside a label its taps would also activate the date input. */}
+          <div className="mb-4">
+            <span className="flex items-center justify-between text-xs font-medium text-muted">
+              <span>Date</span>
+              {!editing && direction !== "move" ? (
+                <button
+                  type="button"
+                  onClick={() => setScheduleSheet(true)}
+                  aria-haspopup="dialog"
+                  className={`-my-1 flex items-center gap-1 rounded-md px-1.5 py-1 text-[11px] transition-colors ${
+                    scheduleMode === "once"
+                      ? "text-faint hover:text-ink"
+                      : "bg-accent/15 font-medium text-accent"
+                  }`}
+                >
+                  <RepeatIcon size={11} strokeWidth={2} />
+                  {scheduleMode === "once"
+                    ? "Once"
+                    : scheduleMode === "repeat"
+                      ? `Repeats × ${scheduleMonths}`
+                      : `Instalments ÷ ${scheduleMonths}`}
+                </button>
+              ) : null}
+            </span>
             <input
               name="date"
               type="date"
               defaultValue={editing?.date?.slice(0, 10) ?? toLocalISODate(new Date())}
               className={inputClass}
             />
-          </Field>
+          </div>
         </div>
 
-        {direction === "in" && !editing ? (
+        {direction === "in" && !editing && scheduleMode === "once" ? (
           <label className="mt-1 flex items-start gap-2.5 rounded-lg border border-line bg-surface-2 px-3 py-2.5">
             <input
               type="checkbox"
@@ -436,12 +522,169 @@ export function LogTransaction({
             disabled={saving}
             className="h-12 w-full rounded-lg bg-accent text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60 md:h-10"
           >
-            {saving ? "Saving…" : editing ? "Save changes" : "Log it"}
+            {saving
+              ? "Saving…"
+              : editing
+                ? "Save changes"
+                : scheduleMode === "repeat"
+                  ? `Log ${scheduleMonths} months`
+                  : scheduleMode === "instalment"
+                    ? `Log ${scheduleMonths} instalments`
+                    : "Log it"}
           </button>
         ) : null}
         </div>
       </form>
+
+      {scheduleSheet ? (
+        <SchedulePicker
+          mode={scheduleMode}
+          months={scheduleMonths}
+          direction={direction === "in" ? "in" : "out"}
+          onPick={(mode, months) => {
+            setScheduleMode(mode);
+            setScheduleMonths(months);
+            setScheduleSheet(false);
+          }}
+          onClose={() => setScheduleSheet(false)}
+        />
+      ) : null}
     </SlideOver>
+  );
+}
+
+/**
+ * The small sheet the Rep/Inst. button pops (straight from the reference app:
+ * Installment / Repeat / Cancel), adapted to en-ZA and to how each mode
+ * treats the amount — that difference is the whole reason two modes exist,
+ * so each option says it in its own words.
+ */
+function SchedulePicker({
+  mode,
+  months,
+  direction,
+  onPick,
+  onClose,
+}: {
+  mode: ScheduleMode;
+  months: number;
+  direction: "out" | "in";
+  onPick: (mode: ScheduleMode, months: number) => void;
+  onClose: () => void;
+}) {
+  const [draftMode, setDraftMode] = useState<ScheduleMode>(mode);
+  const [draftMonths, setDraftMonths] = useState(months);
+
+  const clamp = (value: number) =>
+    Math.min(MAX_MONTHS, Math.max(MIN_MONTHS, Math.trunc(value) || MIN_MONTHS));
+
+  return (
+    <div className="fixed inset-0 z-50" role="dialog" aria-modal="true" aria-label="Repeat or instalment">
+      <button
+        type="button"
+        aria-label="Close"
+        onClick={onClose}
+        className="absolute inset-0 animate-[backdrop-in_150ms_ease-out] bg-black/50"
+      />
+      <div className="pb-safe absolute inset-x-0 bottom-0 animate-[sheet-up_240ms_cubic-bezier(0.32,0.72,0,1)] rounded-t-2xl border-t border-line-2 bg-surface p-4 md:mx-auto md:max-w-md">
+        <ModeRow
+          label="Once"
+          hint="Just this entry."
+          active={draftMode === "once"}
+          onClick={() => onPick("once", draftMonths)}
+        />
+        <ModeRow
+          label="Repeat monthly"
+          hint={
+            direction === "in"
+              ? "This amount arrives every month — salary, rental income."
+              : "This amount leaves every month — rent, subscriptions."
+          }
+          active={draftMode === "repeat"}
+          onClick={() => setDraftMode("repeat")}
+        />
+        <ModeRow
+          label="Instalment"
+          hint="Split this amount over the months — Payflex, lay-by."
+          active={draftMode === "instalment"}
+          onClick={() => setDraftMode("instalment")}
+        />
+
+        {draftMode !== "once" ? (
+          <div className="mt-3 border-t border-line pt-3">
+            <p className="text-xs font-medium text-muted">
+              {draftMode === "repeat" ? "For how many months?" : "Over how many months?"}
+            </p>
+            <div className="mt-2 flex items-center gap-1.5">
+              {[3, 6, 12, 24].map((preset) => (
+                <button
+                  key={preset}
+                  type="button"
+                  onClick={() => setDraftMonths(preset)}
+                  className={`h-9 flex-1 rounded-lg border text-sm transition-colors ${
+                    draftMonths === preset
+                      ? "border-accent/50 bg-accent/15 text-ink"
+                      : "border-line text-muted"
+                  }`}
+                >
+                  {preset}
+                </button>
+              ))}
+              <input
+                type="number"
+                min={MIN_MONTHS}
+                max={MAX_MONTHS}
+                value={draftMonths}
+                onChange={(event) => setDraftMonths(clamp(Number(event.target.value)))}
+                aria-label="Months"
+                className="tnum h-9 w-16 rounded-lg border border-line bg-surface-2 px-2 text-center text-base outline-none focus:border-accent sm:text-sm"
+              />
+            </div>
+            <button
+              type="button"
+              onClick={() => onPick(draftMode, clamp(draftMonths))}
+              className="mt-3 h-11 w-full rounded-lg bg-accent text-sm font-medium text-white"
+            >
+              Done
+            </button>
+          </div>
+        ) : null}
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-2 h-11 w-full rounded-lg border border-line text-sm text-muted"
+        >
+          Cancel
+        </button>
+      </div>
+    </div>
+  );
+}
+
+function ModeRow({
+  label,
+  hint,
+  active,
+  onClick,
+}: {
+  label: string;
+  hint: string;
+  active: boolean;
+  onClick: () => void;
+}) {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-pressed={active}
+      className={`mb-1.5 block w-full rounded-xl border px-3.5 py-2.5 text-left transition-colors ${
+        active ? "border-accent/50 bg-accent/10" : "border-line hover:border-line-2"
+      }`}
+    >
+      <span className="block text-sm font-medium">{label}</span>
+      <span className="mt-0.5 block text-[11px] leading-snug text-faint">{hint}</span>
+    </button>
   );
 }
 

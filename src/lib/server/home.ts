@@ -18,6 +18,7 @@ import "server-only";
 import { toLocalISODate } from "@/lib/crypto/history";
 
 import { getAccounts } from "./accounts";
+import { applyDueScheduledMoves } from "./scheduled";
 import { getBudgetSummary } from "./budget";
 import { resolvePeriod, type PeriodKind } from "@/lib/period";
 
@@ -88,6 +89,10 @@ export type HomeSummary = {
 export async function getHome(
   periodKind: PeriodKind = "cycle",
 ): Promise<HomeSummary> {
+  // Home is the most-opened screen, so it is where scheduled entries whose
+  // date has arrived get their balances applied — before anything is read.
+  await applyDueScheduledMoves();
+
   const todayIso = toLocalISODate(new Date());
   const [accounts, budget, recentRows, todayRow, scheduledRow, catRows, descRows, accountRows, allCatRows, kidRows] =
     await Promise.all([

@@ -66,6 +66,22 @@ export async function sql<T = Record<string, unknown>>(
   return (await client()(strings, ...values)) as T[];
 }
 
+/**
+ * Multi-statement write in ONE transaction and one round trip.
+ *
+ * The HTTP driver treats every sql`` call as its own transaction — a bare
+ * begin/rollback pair does nothing (learned the hard way, see CLAUDE.md).
+ * `neon`'s transaction() is the only atomic multi-statement path: the builder
+ * receives the raw lazy tag, and the queries it returns are sent together —
+ * all applied or none.
+ */
+export async function atomic<T = Record<string, unknown>>(
+  build: (lazy: ReturnType<typeof neon>) => ReturnType<ReturnType<typeof neon>>[],
+): Promise<T[][]> {
+  const c = client();
+  return (await c.transaction(build(c) as never)) as T[][];
+}
+
 /** Postgres numerics arrive as strings to preserve precision; parse explicitly. */
 export function money(value: unknown): number {
   if (value === null || value === undefined) return 0;

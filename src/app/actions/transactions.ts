@@ -3,8 +3,15 @@
 import { revalidateTag } from "next/cache";
 
 import { toLocalISODate } from "@/lib/crypto/history";
+import { expandSchedule, type Schedule } from "@/lib/schedule";
 import { isMoveCategory } from "@/lib/transactions";
-import { money, sql } from "@/lib/server/db";
+import { atomic, money, sql } from "@/lib/server/db";
+import {
+  applyDueScheduledMoves,
+  consumePendingMove,
+  ensureScheduleTable,
+  hasPendingMove,
+} from "@/lib/server/scheduled";
 
 import type { MutationResult } from "./holdings";
 
@@ -77,6 +84,10 @@ export async function createTransaction(
   const occurredOn = input.date || toLocalISODate(new Date());
 
   try {
+    // Any scheduled entry whose date has arrived lands before this log, so
+    // the balance the toast reports is never missing an overdue instalment.
+    await applyDueScheduledMoves();
+
     const from = await accountId(input.account);
     if (!from) return { ok: false, error: `Unknown account: ${input.account}` };
     const to = input.toAccount ? await accountId(input.toAccount) : null;
@@ -187,6 +198,143 @@ export async function createTransaction(
   }
 }
 
+export type CreatedSeries = {
+  recordIds: string[];
+  count: number;
+  firstDate: string;
+  lastDate: string;
+  /** The recurring figure: the monthly amount, or the standard instalment. */
+  monthlyZar: number;
+  balanceMoved: CreatedTransaction["balanceMoved"];
+  warning: string | null;
+};
+
+/**
+ * Repeat / instalment logging (the Rep/Inst. pattern, 2026-07-22).
+ *
+ * One submission becomes N monthly entries in a single database transaction —
+ * all land or none do. Entries dated today move the balance now; future ones
+ * queue their delta in pending_balance_moves and the sweep applies each when
+ * its date arrives. Transfers are excluded: a repeating transfer needs both
+ * legs scheduled, which is V1.1 territory.
+ */
+export async function createTransactionSeries(
+  input: Omit<NewTransaction, "confirmDuplicate" | "toAccount" | "toKidAccount" | "startsCycle"> & {
+    schedule: Schedule;
+  },
+): Promise<MutationResult<CreatedSeries>> {
+  const description = input.description.trim();
+  if (!description) return { ok: false, error: "Give it a description." };
+  if (!Number.isFinite(input.amountZar) || input.amountZar <= 0) {
+    return { ok: false, error: "Amount must be greater than zero." };
+  }
+  if (!input.category) return { ok: false, error: "Pick a category." };
+  if (isMoveCategory(input.category)) {
+    return { ok: false, error: "Repeats and instalments can't be transfers yet." };
+  }
+  if (!input.account) return { ok: false, error: "Pick an account." };
+
+  try {
+    const from = await accountId(input.account);
+    if (!from) return { ok: false, error: `Unknown account: ${input.account}` };
+
+    const todayIso = toLocalISODate(new Date());
+    const startDate = input.date || todayIso;
+    const entries = expandSchedule({
+      schedule: input.schedule,
+      startDate,
+      amountZar: input.amountZar,
+      description,
+    });
+
+    const sign = input.direction === "out" ? -1 : 1;
+    const type = input.direction === "in" ? "income" : "expense";
+    const dueNowTotal = entries
+      .filter((e) => e.date <= todayIso)
+      .reduce((total, e) => total + sign * e.amountZar, 0);
+
+    if (entries.some((e) => e.date > todayIso)) await ensureScheduleTable();
+
+    // One batch, one transaction: every entry, every queue row, and the
+    // balance move for anything already due — or nothing at all.
+    const results = await atomic<{ id?: string; label?: string; balance_zar?: string | null }>(
+      (lazy) => {
+        const queries = entries.map((entry) => {
+          const signed = sign * entry.amountZar;
+          if (entry.date <= todayIso) {
+            return lazy`
+              insert into transactions
+                (occurred_on, description, amount_zar, type, category, account_id, notes, starts_cycle)
+              values (${entry.date}::date, ${entry.description}, ${signed},
+                      ${type}::transaction_type, ${input.category}, ${from},
+                      ${input.notes || null}, false)
+              returning id::text`;
+          }
+          // Future entry: ledger row + queued balance move, atomically paired.
+          return lazy`
+            with t as (
+              insert into transactions
+                (occurred_on, description, amount_zar, type, category, account_id, notes, starts_cycle)
+              values (${entry.date}::date, ${entry.description}, ${signed},
+                      ${type}::transaction_type, ${input.category}, ${from},
+                      ${input.notes || null}, false)
+              returning id
+            )
+            insert into pending_balance_moves (transaction_id, account_id, delta_zar, apply_on)
+            select id, ${from}::text, ${signed}, ${entry.date}::date from t
+            returning transaction_id::text as id`;
+        });
+        if (dueNowTotal !== 0) {
+          queries.push(lazy`
+            update accounts set balance_zar = coalesce(balance_zar, 0) + ${dueNowTotal}
+            where id = ${from} and balance_zar is not null
+            returning label, balance_zar`);
+        }
+        return queries;
+      },
+    );
+
+    const recordIds = results
+      .slice(0, entries.length)
+      .map((rows) => rows[0]?.id)
+      .filter((id): id is string => typeof id === "string");
+    const moved = dueNowTotal !== 0 ? results[entries.length]?.[0] : undefined;
+
+    invalidate();
+    return {
+      ok: true,
+      data: {
+        recordIds,
+        count: entries.length,
+        firstDate: entries[0].date,
+        lastDate: entries[entries.length - 1].date,
+        // For instalments the first absorbs the rounding remainder, so the
+        // figure worth reporting is the standard one.
+        monthlyZar: entries[entries.length - 1].amountZar,
+        balanceMoved:
+          moved?.label !== undefined
+            ? {
+                accountLabel: moved.label,
+                deltaZar: dueNowTotal,
+                newBalanceZar: money(moved.balance_zar),
+              }
+            : null,
+        warning:
+          dueNowTotal !== 0 && moved?.label === undefined
+            ? `${input.account} has no balance recorded, so nothing was deducted. The entries are saved.`
+            : null,
+      },
+    };
+  } catch (error) {
+    console.error("[createTransactionSeries]", error);
+    const message = error instanceof Error ? error.message : "Could not log the series.";
+    if (message.includes("transactions_no_exact_duplicate")) {
+      return { ok: false, error: "One of the entries would duplicate an existing one — nothing was logged." };
+    }
+    return { ok: false, error: message };
+  }
+}
+
 export type DeletedTransaction = {
   fields: Record<string, unknown>;
   reversed: { accountName: string; deltaZar: number } | null;
@@ -196,6 +344,11 @@ export async function deleteTransaction(
   recordId: string,
 ): Promise<MutationResult<DeletedTransaction>> {
   try {
+    // A scheduled entry whose date hasn't arrived never moved the balance, so
+    // deleting it must not "refund" anything. Consume the queue row first —
+    // its existence is the proof either way.
+    const neverApplied = await consumePendingMove(recordId);
+
     const rows = await sql<Record<string, unknown>>`
       delete from transactions where id = ${recordId}::bigint
       returning occurred_on::text, description, amount_zar, type::text,
@@ -208,7 +361,7 @@ export async function deleteTransaction(
     const from = row.account_id as string | null;
 
     // Deleting an expense of -R100 puts R100 back.
-    if (from) {
+    if (from && !neverApplied) {
       await sql`update accounts set balance_zar = coalesce(balance_zar, 0) - ${amount}
                 where id = ${from} and balance_zar is not null`;
     }
@@ -243,17 +396,28 @@ export async function restoreTransaction(
 ): Promise<MutationResult> {
   const f = deleted.fields;
   try {
-    await sql`
+    const occurredOn = String(f.occurred_on).slice(0, 10);
+    const created = await sql<{ id: string }>`
       insert into transactions
         (occurred_on, description, amount_zar, type, category, original_category, account_id,
          to_account_id, to_kid_account_id, notes, starts_cycle)
-      values (${String(f.occurred_on).slice(0, 10)}::date, ${f.description as string},
+      values (${occurredOn}::date, ${f.description as string},
               ${money(f.amount_zar)}, ${f.type as string}::transaction_type,
               ${(f.category as string) ?? null}, ${(f.original_category as string) ?? null},
               ${(f.account_id as string) ?? null}, ${(f.to_account_id as string) ?? null},
               ${(f.to_kid_account_id as string) ?? null}::bigint,
-              ${(f.notes as string) ?? null}, ${f.starts_cycle === true})`;
-    if (f.account_id) {
+              ${(f.notes as string) ?? null}, ${f.starts_cycle === true})
+      returning id::text`;
+    // Restoring a still-future entry re-queues its move instead of applying
+    // it early — the same rule as logging it in the first place.
+    const stillFuture = occurredOn > toLocalISODate(new Date());
+    if (f.account_id && stillFuture) {
+      await ensureScheduleTable();
+      await sql`insert into pending_balance_moves (transaction_id, account_id, delta_zar, apply_on)
+                values (${created[0].id}::bigint, ${f.account_id as string}::text,
+                        ${money(f.amount_zar)}, ${occurredOn}::date)
+                on conflict (transaction_id) do nothing`;
+    } else if (f.account_id) {
       await sql`update accounts set balance_zar = coalesce(balance_zar, 0) + ${money(f.amount_zar)}
                 where id = ${f.account_id as string} and balance_zar is not null`;
     }
@@ -284,9 +448,19 @@ export async function updateTransaction(
   edit: TransactionEdit,
 ): Promise<MutationResult<{ warning: string | null }>> {
   try {
-    const existing = await sql<{ amount_zar: string; account_id: string | null; type: string }>`
-      select amount_zar, account_id, type::text from transactions where id = ${recordId}::bigint`;
+    const existing = await sql<{
+      amount_zar: string;
+      account_id: string | null;
+      type: string;
+      occurred_on: string;
+    }>`
+      select amount_zar, account_id, type::text, occurred_on::text
+      from transactions where id = ${recordId}::bigint`;
     if (existing.length === 0) return { ok: false, error: "That entry no longer exists." };
+
+    // A scheduled entry's balance move is still queued — editing it edits the
+    // queue row, and the balance arithmetic below must not run at all.
+    const pending = await hasPendingMove(recordId);
 
     const oldAmount = money(existing[0].amount_zar);
     const oldAccount = existing[0].account_id;
@@ -322,6 +496,20 @@ export async function updateTransaction(
         occurred_on = coalesce(${edit.date || null}::date, occurred_on),
         notes       = ${edit.notes ?? null}
       where id = ${recordId}::bigint`;
+
+    if (pending) {
+      // Keep the queued move in step with the edit; the sweep applies it when
+      // the (possibly new) date arrives. No stored balance changes today.
+      await sql`
+        update pending_balance_moves set
+          delta_zar  = ${newAmount},
+          account_id = ${newAccount ?? ""}::text,
+          apply_on   = coalesce(${edit.date || null}::date,
+                                ${String(existing[0].occurred_on).slice(0, 10)}::date)
+        where transaction_id = ${recordId}::bigint`;
+      invalidate();
+      return { ok: true, data: { warning: null } };
+    }
 
     // Reverse the old effect, apply the new one.
     if (oldAccount && newAccount && oldAccount === newAccount) {
