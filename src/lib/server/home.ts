@@ -58,6 +58,8 @@ export type HomeSummary = {
     cycleEnd: string;
   };
   today: { spendZar: number; count: number };
+  /** Entries dated ahead of today — logged early, not yet happened. */
+  scheduled: { count: number; nextDate: string | null; totalZar: number };
   /** Whatever range is selected at the top of the screen. */
   period: {
     kind: PeriodKind; start: string | null; end: string; label: string;
@@ -87,7 +89,7 @@ export async function getHome(
   periodKind: PeriodKind = "cycle",
 ): Promise<HomeSummary> {
   const todayIso = toLocalISODate(new Date());
-  const [accounts, budget, recentRows, todayRow, catRows, descRows, accountRows, allCatRows, kidRows] =
+  const [accounts, budget, recentRows, todayRow, scheduledRow, catRows, descRows, accountRows, allCatRows, kidRows] =
     await Promise.all([
     getAccounts(),
     getBudgetSummary(),
@@ -96,11 +98,16 @@ export async function getHome(
       select t.id::text, t.occurred_on::text, t.description, t.amount_zar,
              t.category, a.label as account_label, t.type::text
       from transactions t left join accounts a on a.id = t.account_id
+      where t.occurred_on <= ${todayIso}::date
       order by t.occurred_on desc, t.id desc limit 8`,
     sql<{ spend: string; n: string }>`
       select coalesce(sum(-amount_zar) filter (where type='expense'),0) as spend,
              count(*)::text as n
       from transactions where occurred_on = ${todayIso}::date`,
+    sql<{ n: string; next: string | null; total: string }>`
+      select count(*)::text as n, min(occurred_on)::text as next,
+             coalesce(sum(amount_zar), 0) as total
+      from transactions where occurred_on > ${todayIso}::date`,
     // Pinned categories first — chosen deliberately rather than inferred from
     // frequency, which surfaced duplicate-inflated and debit-order lines while
     // missing the things actually bought in a shop.
@@ -172,6 +179,11 @@ export async function getHome(
       cycleEnd: cycle.end,
     },
     today: { spendZar: money(todayRow[0]?.spend), count: Number(todayRow[0]?.n ?? 0) },
+    scheduled: {
+      count: Number(scheduledRow[0]?.n ?? 0),
+      nextDate: scheduledRow[0]?.next ?? null,
+      totalZar: money(scheduledRow[0]?.total),
+    },
     recent: recentRows.map((t) => ({
       recordId: t.id,
       date: String(t.occurred_on).slice(0, 10),

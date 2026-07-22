@@ -49,7 +49,7 @@ export function HomeScreen() {
     );
   }
 
-  const { available, cards, budget, today, recent, defaults, period } = data;
+  const { available, cards, budget, today, recent, defaults, period, scheduled } = data;
   const usedPct =
     budget.budgetedZar > 0 ? (budget.spentZar / budget.budgetedZar) * 100 : 0;
 
@@ -107,7 +107,7 @@ export function HomeScreen() {
             <button
               type="button"
               onClick={() => setLogging(true)}
-              className="inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-accent px-3.5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
+              className="hidden md:inline-flex shrink-0 items-center gap-1.5 rounded-xl bg-accent px-3.5 py-2.5 text-sm font-medium text-white transition-opacity hover:opacity-90"
             >
               <Plus size={16} strokeWidth={2.25} />
               Log
@@ -178,6 +178,13 @@ export function HomeScreen() {
             </Link>
           }
         />
+        {scheduled.count > 0 ? (
+          <p className="border-b border-line px-4 py-2 text-[11px] text-faint">
+            {scheduled.count === 1 ? "1 entry" : `${scheduled.count} entries`} scheduled
+            ahead{scheduled.nextDate ? ` · lands ${formatDate(scheduled.nextDate)}` : ""} ·{" "}
+            <Money value={scheduled.totalZar} variant="whole" signed />
+          </p>
+        ) : null}
         {recent.length === 0 ? (
           <CardBody className="py-8 text-center">
             <p className="text-sm font-medium">Nothing logged yet</p>
