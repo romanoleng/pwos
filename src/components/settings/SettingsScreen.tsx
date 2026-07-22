@@ -5,7 +5,7 @@ import Link from "next/link";
 
 import { FreshStart } from "@/components/settings/FreshStart";
 import { TabPicker } from "@/components/settings/TabPicker";
-import { ThemeToggle } from "@/components/theme";
+import { ThemePicker } from "@/components/theme";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { SignOutButton } from "@/components/shell/SignOutButton";
 import { CORE_5, FREEDOM_TARGET_LABEL, FREEDOM_TARGET_ZAR, PAYDAY_DAY_OF_MONTH } from "@/lib/constants";
@@ -43,13 +43,12 @@ export function SettingsScreen() {
       <FreshStart defaultDate="2026-07-24" />
 
       <Card>
-        <CardHeader title="Appearance" />
-        <CardBody className="flex items-center justify-between gap-3">
-          <div>
-            <p className="text-sm">Theme</p>
-            <p className="mt-0.5 text-[11px] text-faint">Dark by default. Your choice is remembered on this device.</p>
-          </div>
-          <ThemeToggle />
+        <CardHeader
+          title="Appearance"
+          description="Dark by default. Your choice is remembered on this device; the sidebar sun/moon flips to your last pick on the other side."
+        />
+        <CardBody>
+          <ThemePicker />
         </CardBody>
       </Card>
 
