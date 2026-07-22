@@ -30,8 +30,12 @@ export function BottomTabs() {
   ];
 
   return (
-    <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 bg-tabbar shadow-[0_-1px_12px_rgba(0,0,0,0.28)] md:hidden">
-      <ul className="grid grid-cols-5">
+    // The hairlines are black at low alpha, like the active pill, so they
+    // hold on every theme's accent without a per-theme token: a top hairline
+    // seats the bar against the content, and dividers give each of the five
+    // buttons its own ground instead of five labels floating on one colour.
+    <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 border-t border-black/20 bg-tabbar shadow-[0_-1px_12px_rgba(0,0,0,0.28)] md:hidden">
+      <ul className="grid grid-cols-5 divide-x divide-black/10">
         {items.map((item) => {
           const active = isActivePath(pathname, item.href);
           const Icon = item.icon;
@@ -40,12 +44,14 @@ export function BottomTabs() {
               <Link
                 href={item.href}
                 aria-current={active ? "page" : undefined}
-                className={`flex flex-col items-center gap-0.5 px-1 py-1.5 text-[10px] font-medium transition-colors ${
-                  active ? "text-tabbar-ink" : "text-tabbar-dim"
+                className={`flex flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 text-[10px] transition-transform active:scale-95 ${
+                  active
+                    ? "font-semibold text-tabbar-ink"
+                    : "font-medium text-tabbar-dim"
                 }`}
               >
                 <span
-                  className={`flex h-7 w-12 items-center justify-center rounded-full transition-colors ${
+                  className={`flex h-7 w-13 items-center justify-center rounded-full transition-colors ${
                     active ? "bg-black/15" : ""
                   }`}
                 >
