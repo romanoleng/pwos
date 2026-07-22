@@ -564,7 +564,7 @@ function HoldingsTable({
 
             {open ? (
               <div className="border-t border-line bg-bg/40 px-4 py-3">
-                <div className="mb-3 flex justify-end">
+                <div className="mb-3 flex justify-end gap-2">
                   <button
                     type="button"
                     onClick={() => onEdit(holding)}
@@ -572,6 +572,13 @@ function HoldingsTable({
                   >
                     <Pencil size={12} strokeWidth={1.75} />
                     Edit position
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(null)}
+                    className="rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:text-ink"
+                  >
+                    Collapse
                   </button>
                 </div>
                 <dl className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">

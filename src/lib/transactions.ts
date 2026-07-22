@@ -111,6 +111,15 @@ export function hasSignAnomaly(
 /** Rows that aren't financial at all — a task note got into the table. */
 const NON_FINANCIAL_CATEGORIES = new Set(["System Task"]);
 
+/**
+ * Categories that move money between places you own rather than spending it.
+ * A transfer or contribution needs a destination so both legs move (§5).
+ */
+export function isMoveCategory(category: string | null | undefined): boolean {
+  const clean = category?.trim() ?? "";
+  return TRANSFER_CATEGORIES.has(clean) || CONTRIBUTION_CATEGORIES.has(clean);
+}
+
 export function isNonFinancialCategory(category: string | null | undefined): boolean {
   return category ? NON_FINANCIAL_CATEGORIES.has(category.trim()) : false;
 }

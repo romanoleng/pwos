@@ -1,11 +1,11 @@
 "use client";
 
-import { ChevronDown, Plus, Search, Trash2 } from "lucide-react";
+import { ChevronDown, Pencil, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 
 import { deleteTransaction, restoreTransaction } from "@/app/actions/transactions";
-import { LogTransaction } from "@/components/transactions/LogTransaction";
+import { LogTransaction, type EditingTransaction } from "@/components/transactions/LogTransaction";
 import { useToast } from "@/components/ui/Toast";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
@@ -35,6 +35,7 @@ export function TransactionsScreen() {
   const { data, error, mutate } = useSWR("/api/transactions", fetcher);
   const toast = useToast();
   const [logging, setLogging] = useState(false);
+  const [editing, setEditing] = useState<EditingTransaction | null>(null);
   // Row actions are revealed on tap rather than always shown: a delete button
   // sitting permanently beside every row is easy to hit by accident on a phone.
   const [expanded, setExpanded] = useState<string | null>(null);
@@ -277,6 +278,24 @@ export function TransactionsScreen() {
                     </button>
                     <button
                       type="button"
+                      onClick={() =>
+                        setEditing({
+                          recordId: row.recordId,
+                          description: row.description,
+                          amountZar: row.amountZar,
+                          category: row.category,
+                          accountLabel: row.accountLabel,
+                          date: row.date,
+                          notes: row.notes,
+                        })
+                      }
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-line-2 hover:text-ink"
+                    >
+                      <Pencil size={12} strokeWidth={1.75} />
+                      Edit
+                    </button>
+                    <button
+                      type="button"
                       disabled={busy === row.recordId}
                       onClick={() => remove(row.recordId, row.description)}
                       className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-loss/40 hover:text-loss disabled:opacity-50"
@@ -305,6 +324,20 @@ export function TransactionsScreen() {
         onClose={() => setLogging(false)}
         onSaved={() => void mutate()}
       />
+
+      {editing ? (
+        <LogTransaction
+          key={editing.recordId}
+          open
+          editing={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            setExpanded(null);
+            void mutate();
+          }}
+        />
+      ) : null}
     </div>
   );
 }

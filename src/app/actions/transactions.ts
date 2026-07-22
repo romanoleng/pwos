@@ -5,6 +5,7 @@ import { revalidateTag } from "next/cache";
 import { resolveAccount } from "@/lib/accounts";
 import { FIELDS, TABLES } from "@/lib/airtable-fields";
 import { toLocalISODate } from "@/lib/crypto/history";
+import { isMoveCategory } from "@/lib/transactions";
 import {
   createRecords,
   deleteRecords,
@@ -40,9 +41,16 @@ export type NewTransaction = {
   direction: "out" | "in";
   category: string;
   account: string;
+  /**
+   * Destination for a transfer or contribution. §5 requires both legs to move:
+   * without it, money leaves one account and arrives nowhere.
+   */
+  toAccount?: string;
   /** ISO yyyy-mm-dd. Defaults to today in Africa/Johannesburg. */
   date?: string;
   notes?: string;
+  /** Set once the user has seen and dismissed a duplicate warning. */
+  confirmDuplicate?: boolean;
 };
 
 function invalidate(): void {
@@ -93,12 +101,55 @@ export type CreatedTransaction = {
   recordId: string;
   /** Null when the account has no recorded balance to move. */
   balanceMoved: { accountLabel: string; deltaZar: number; newBalanceZar: number } | null;
+  /** The receiving side of a transfer, when there is one. */
+  destinationMoved: { accountLabel: string; newBalanceZar: number } | null;
   warning: string | null;
 };
 
+export type DuplicateWarning = {
+  kind: "duplicate";
+  message: string;
+  existing: { description: string; amountZar: number; date: string | null };
+};
+
+/**
+ * Looks for an entry that already matches this one — same account, same amount,
+ * same day. Romano logged the same expense twice within a minute; catching it
+ * at the point of entry is far cheaper than finding it in a budget later.
+ *
+ * It warns rather than blocks: two identical coffees on one day is a real
+ * thing, and an app that refuses to record reality is worse than one that asks.
+ */
+async function findLikelyDuplicate(input: NewTransaction, signedAmount: number) {
+  const date = input.date || toLocalISODate(new Date());
+  const rows = await listRecords(TABLES.transactions, {
+    fieldIds: [
+      FIELDS.transactions.description,
+      FIELDS.transactions.amount,
+      FIELDS.transactions.account,
+      FIELDS.transactions.date,
+    ],
+  });
+
+  const match = rows.find((row) => {
+    const rowDate = stringCell(row, FIELDS.transactions.date)?.slice(0, 10);
+    if (rowDate !== date) return false;
+    if (stringCell(row, FIELDS.transactions.account) !== input.account) return false;
+    const amount = numberCell(row, FIELDS.transactions.amount) ?? 0;
+    return Math.abs(amount - signedAmount) < 0.005;
+  });
+
+  if (!match) return null;
+  return {
+    description: stringCell(match, FIELDS.transactions.description) ?? "—",
+    amountZar: numberCell(match, FIELDS.transactions.amount) ?? 0,
+    date: stringCell(match, FIELDS.transactions.date),
+  };
+}
+
 export async function createTransaction(
   input: NewTransaction,
-): Promise<MutationResult<CreatedTransaction>> {
+): Promise<MutationResult<CreatedTransaction> | DuplicateWarning> {
   const description = input.description.trim();
   if (!description) return { ok: false, error: "Give it a description." };
   if (!Number.isFinite(input.amountZar) || input.amountZar <= 0) {
@@ -111,12 +162,20 @@ export async function createTransaction(
   const signed =
     input.direction === "out" ? -Math.abs(input.amountZar) : Math.abs(input.amountZar);
 
-  // Transfers and contributions move money between places you own, so the
-  // *source* account still drops. Only the destination side is unhandled, and
-  // that is called out rather than guessed at.
-  const isMove = input.category === "Transfer" || input.category === "Crypto Swap";
+  const isMove = isMoveCategory(input.category);
 
   try {
+    if (!input.confirmDuplicate) {
+      const existing = await findLikelyDuplicate(input, signed);
+      if (existing) {
+        return {
+          kind: "duplicate",
+          message: `You already logged ${existing.description} for the same amount on ${input.account} today.`,
+          existing,
+        };
+      }
+    }
+
     const [created] = await createRecords(TABLES.transactions, [
       {
         fields: {
@@ -133,6 +192,7 @@ export async function createTransaction(
     ]);
 
     let balanceMoved: CreatedTransaction["balanceMoved"] = null;
+    let destinationMoved: CreatedTransaction["destinationMoved"] = null;
     let warning: string | null = null;
 
     try {
@@ -146,6 +206,20 @@ export async function createTransaction(
       } else {
         warning = `${input.account} has no balance recorded, so nothing was deducted. The entry is saved.`;
       }
+
+      // §5: a transfer moves between accounts. Without this leg the money
+      // leaves the source and arrives nowhere, which quietly destroys net worth.
+      if (isMove && input.toAccount && input.toAccount !== input.account) {
+        const received = await adjustBalance(input.toAccount, Math.abs(input.amountZar));
+        if (received) {
+          destinationMoved = {
+            accountLabel: input.toAccount,
+            newBalanceZar: received.previous + Math.abs(input.amountZar),
+          };
+        } else {
+          warning = `${input.toAccount} has no balance recorded, so the receiving side wasn't credited.`;
+        }
+      }
     } catch (error) {
       // The ledger entry exists; only the balance step failed. Say so plainly —
       // a silent half-write is how a wealth app starts lying.
@@ -155,7 +229,10 @@ export async function createTransaction(
     }
 
     invalidate();
-    return { ok: true, data: { recordId: created.id, balanceMoved, warning } };
+    return {
+      ok: true,
+      data: { recordId: created.id, balanceMoved, destinationMoved, warning },
+    };
   } catch (error) {
     console.error("[createTransaction]", error);
     return {
@@ -211,6 +288,94 @@ export async function deleteTransaction(
     return {
       ok: false,
       error: error instanceof Error ? error.message : "Could not delete it.",
+    };
+  }
+}
+
+export type TransactionEdit = {
+  description?: string;
+  amountZar?: number;
+  direction?: "out" | "in";
+  category?: string;
+  account?: string;
+  date?: string;
+  notes?: string;
+};
+
+/**
+ * Edits an existing entry and keeps balances honest.
+ *
+ * The balance effect of the old version is reversed and the new one applied,
+ * so changing an amount or moving an entry to a different account leaves both
+ * accounts correct. Editing without this would silently desync every balance
+ * the entry ever touched.
+ */
+export async function updateTransaction(
+  recordId: string,
+  edit: TransactionEdit,
+): Promise<MutationResult<{ warning: string | null }>> {
+  try {
+    const record = await getRecord(TABLES.transactions, recordId);
+    if (!record) return { ok: false, error: "That entry no longer exists." };
+
+    const oldAmount = numberCell(record, FIELDS.transactions.amount) ?? 0;
+    const oldAccount = stringCell(record, FIELDS.transactions.account);
+
+    const fields: Record<string, unknown> = {};
+    if (edit.description !== undefined) {
+      const trimmed = edit.description.trim();
+      if (!trimmed) return { ok: false, error: "Give it a description." };
+      fields[FIELDS.transactions.description] = trimmed;
+    }
+    if (edit.category) fields[FIELDS.transactions.category] = edit.category;
+    if (edit.account) fields[FIELDS.transactions.account] = edit.account;
+    if (edit.date) fields[FIELDS.transactions.date] = edit.date;
+    if (edit.notes !== undefined) fields[FIELDS.transactions.notes] = edit.notes;
+
+    let newAmount = oldAmount;
+    if (edit.amountZar !== undefined) {
+      if (!Number.isFinite(edit.amountZar) || edit.amountZar <= 0) {
+        return { ok: false, error: "Amount must be greater than zero." };
+      }
+      const direction = edit.direction ?? (oldAmount < 0 ? "out" : "in");
+      newAmount = direction === "out" ? -Math.abs(edit.amountZar) : Math.abs(edit.amountZar);
+      fields[FIELDS.transactions.amount] = newAmount;
+    }
+    if (edit.category) {
+      fields[FIELDS.transactions.type] = isMoveCategory(edit.category)
+        ? "transfer"
+        : newAmount > 0
+          ? "income"
+          : "expense";
+    }
+
+    if (Object.keys(fields).length === 0) return { ok: false, error: "Nothing to change." };
+
+    await updateRecords(TABLES.transactions, [{ id: recordId, fields }]);
+
+    let warning: string | null = null;
+    try {
+      const newAccount = edit.account ?? oldAccount;
+      if (oldAccount && newAccount && oldAccount === newAccount) {
+        // Same account: apply only the difference.
+        const delta = newAmount - oldAmount;
+        if (delta !== 0) await adjustBalance(newAccount, delta);
+      } else {
+        if (oldAccount) await adjustBalance(oldAccount, -oldAmount);
+        if (newAccount) await adjustBalance(newAccount, newAmount);
+      }
+    } catch (error) {
+      console.error("[updateTransaction] balance step failed", error);
+      warning = "Entry updated, but balances could not be adjusted. Check the Payday reset screen.";
+    }
+
+    invalidate();
+    return { ok: true, data: { warning } };
+  } catch (error) {
+    console.error("[updateTransaction]", error);
+    return {
+      ok: false,
+      error: error instanceof Error ? error.message : "Could not update it.",
     };
   }
 }

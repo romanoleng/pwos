@@ -230,6 +230,7 @@ export function HomeScreen() {
         onSaved={() => void mutate()}
         defaultAccount={defaults.accountLabel ?? undefined}
         suggestedCategories={defaults.categories}
+        recentDescriptions={defaults.descriptions}
       />
     </div>
   );

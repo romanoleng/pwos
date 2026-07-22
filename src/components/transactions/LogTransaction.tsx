@@ -1,22 +1,28 @@
 "use client";
 
+import { AlertTriangle } from "lucide-react";
 import { useState } from "react";
 
-import { createTransaction, deleteTransaction, restoreTransaction } from "@/app/actions/transactions";
+import {
+  createTransaction,
+  deleteTransaction,
+  restoreTransaction,
+  updateTransaction,
+} from "@/app/actions/transactions";
 import { Field, SlideOver, inputClass } from "@/components/ui/SlideOver";
 import { useToast } from "@/components/ui/Toast";
 import { toLocalISODate } from "@/lib/crypto/history";
 import { formatMoneyWhole } from "@/lib/format";
+import { isMoveCategory } from "@/lib/transactions";
 
 /**
- * Daily transaction entry (CLAUDE.md §5).
+ * Transaction entry (CLAUDE.md §5).
  *
- * The highest-frequency action in the app, so it's built for speed: two taps
- * for direction, a positive amount (no remembering a minus sign), and today's
- * date pre-filled in Johannesburg time.
+ * The highest-frequency action in the app, so it is built for speed: two taps
+ * for direction, a positive amount, today's date pre-filled in Johannesburg
+ * time, and one-tap chips for the categories actually used recently.
  */
 
-/** The accounts worth logging against day to day, in likelihood order. */
 const ACCOUNT_OPTIONS = [
   "Capitec Main",
   "GOtyme Bank",
@@ -27,10 +33,6 @@ const ACCOUNT_OPTIONS = [
   "Cash",
 ];
 
-/**
- * A short list beats 48. These are the categories that actually recur, and
- * each maps to a budget line — see CATEGORY_TO_BUDGET.
- */
 const EXPENSE_CATEGORIES = [
   "Groceries",
   "Petrol",
@@ -52,7 +54,17 @@ const EXPENSE_CATEGORIES = [
 
 const IN_CATEGORIES = ["Business Income", "Interest", "Allowance", "Transfer"];
 
-const MOVE_CATEGORIES = ["Transfer", "Savings", "Investments", "Crypto Investment"];
+const MOVE_CATEGORY_OPTIONS = ["Transfer", "Savings", "Investments", "Crypto Investment"];
+
+export type EditingTransaction = {
+  recordId: string;
+  description: string;
+  amountZar: number;
+  category: string | null;
+  accountLabel: string | null;
+  date: string | null;
+  notes: string | null;
+};
 
 export function LogTransaction({
   open,
@@ -60,66 +72,111 @@ export function LogTransaction({
   onSaved,
   defaultAccount,
   suggestedCategories = [],
+  recentDescriptions = [],
+  editing,
 }: {
   open: boolean;
   onClose: () => void;
   onSaved: () => void;
-  /** Last account used — the likeliest one, so it's pre-selected. */
   defaultAccount?: string;
-  /** Most-used categories from the last 60 days, offered as one-tap chips. */
   suggestedCategories?: string[];
+  /** Past descriptions, offered as autocomplete so common ones are one tap. */
+  recentDescriptions?: string[];
+  /** When present the sheet edits this entry instead of creating one. */
+  editing?: EditingTransaction;
 }) {
   const toast = useToast();
-  const [direction, setDirection] = useState<"out" | "in">("out");
-  const [category, setCategory] = useState("");
+  const [direction, setDirection] = useState<"out" | "in">(
+    editing ? (editing.amountZar < 0 ? "out" : "in") : "out",
+  );
+  const [category, setCategory] = useState(editing?.category ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [duplicate, setDuplicate] = useState<string | null>(null);
+  const [pending, setPending] = useState<FormData | null>(null);
 
   const categories =
     direction === "out"
-      ? [...EXPENSE_CATEGORIES, ...MOVE_CATEGORIES]
-      : [...IN_CATEGORIES, ...MOVE_CATEGORIES];
+      ? [...EXPENSE_CATEGORIES, ...MOVE_CATEGORY_OPTIONS]
+      : [...IN_CATEGORIES, ...MOVE_CATEGORY_OPTIONS];
 
-  // Chips come from what Romano actually uses, not a fixed guess. Research on
-  // expense logging is consistent that a short list of recent categories beats
-  // a long dropdown — logging has to take seconds, not willpower.
   const chips = suggestedCategories.filter((c) => categories.includes(c)).slice(0, 6);
 
-  async function onSubmit(formData: FormData) {
+  // A transfer needs somewhere to land — §5 requires both legs to move.
+  const needsDestination = isMoveCategory(category) && direction === "out";
+
+  function reset() {
+    setCategory("");
+    setDuplicate(null);
+    setPending(null);
+    setError(null);
+  }
+
+  async function submit(formData: FormData, confirmDuplicate: boolean) {
     setSaving(true);
     setError(null);
 
     const chosenCategory = category || String(formData.get("category") ?? "");
-
-    const result = await createTransaction({
+    const payload = {
       description: String(formData.get("description") ?? ""),
       amountZar: Number(formData.get("amount")),
       direction,
       category: chosenCategory,
       account: String(formData.get("account") ?? ""),
+      toAccount: String(formData.get("toAccount") ?? "") || undefined,
       date: String(formData.get("date") ?? ""),
       notes: String(formData.get("notes") ?? ""),
-    });
+    };
 
+    if (editing) {
+      const result = await updateTransaction(editing.recordId, payload);
+      setSaving(false);
+      if (!result.ok) {
+        setError(result.error);
+        return;
+      }
+      reset();
+      onClose();
+      onSaved();
+      toast.show({ message: "Entry updated", tone: "success" });
+      if (result.data.warning) {
+        toast.show({ message: result.data.warning, tone: "error", durationMs: 9000 });
+      }
+      return;
+    }
+
+    const result = await createTransaction({ ...payload, confirmDuplicate });
     setSaving(false);
+
+    if ("kind" in result) {
+      // Warn, don't block — two identical coffees in a day is a real thing.
+      setDuplicate(result.message);
+      setPending(formData);
+      return;
+    }
     if (!result.ok) {
       setError(result.error);
       return;
     }
 
-    const { recordId, balanceMoved, warning } = result.data;
-    setCategory("");
+    const { recordId, balanceMoved, destinationMoved, warning } = result.data;
+    reset();
     onClose();
     onSaved();
 
-    // Say what actually happened to the balance, not just "saved". Seeing the
-    // account move is the confirmation that the entry did its job.
-    const message = balanceMoved
-      ? `Logged · ${balanceMoved.accountLabel} now ${formatMoneyWhole(balanceMoved.newBalanceZar)}`
-      : "Logged";
+    // Say what happened to the balance, not just "saved" — seeing the account
+    // move is the confirmation that the entry did its job.
+    const parts = [
+      balanceMoved
+        ? `${balanceMoved.accountLabel} now ${formatMoneyWhole(balanceMoved.newBalanceZar)}`
+        : null,
+      destinationMoved
+        ? `${destinationMoved.accountLabel} now ${formatMoneyWhole(destinationMoved.newBalanceZar)}`
+        : null,
+    ].filter(Boolean);
 
     toast.show({
-      message,
+      message: parts.length > 0 ? `Logged · ${parts.join(" · ")}` : "Logged",
       tone: "success",
       onUndo: async () => {
         const undone = await deleteTransaction(recordId);
@@ -146,11 +203,18 @@ export function LogTransaction({
   return (
     <SlideOver
       open={open}
-      onClose={onClose}
-      title="Log a transaction"
-      description="Writes straight to your Airtable ledger."
+      onClose={() => {
+        reset();
+        onClose();
+      }}
+      title={editing ? "Edit entry" : "Log a transaction"}
+      description={
+        editing
+          ? "Balances are adjusted to match the change."
+          : "Writes straight to your ledger and moves the account."
+      }
     >
-      <form action={onSubmit}>
+      <form action={(formData) => submit(formData, false)}>
         <div className="mb-4 grid grid-cols-2 gap-2">
           <DirectionButton
             active={direction === "out"}
@@ -164,7 +228,6 @@ export function LogTransaction({
           />
         </div>
 
-        {/* Amount first: it is the only value that always has to be typed. */}
         <Field label="Amount (ZAR)" hint="Just the number — the direction sets the sign.">
           <input
             name="amount"
@@ -174,6 +237,7 @@ export function LogTransaction({
             required
             autoFocus
             inputMode="decimal"
+            defaultValue={editing ? Math.abs(editing.amountZar) : ""}
             className={`${inputClass} h-14 text-2xl tabular-nums`}
             placeholder="0,00"
           />
@@ -184,9 +248,17 @@ export function LogTransaction({
             name="description"
             required
             autoComplete="off"
+            list="pwos-descriptions"
+            defaultValue={editing?.description ?? ""}
             className={inputClass}
             placeholder="Checkers Sixty60"
           />
+          {/* Past descriptions as suggestions — the same shop gets typed a lot. */}
+          <datalist id="pwos-descriptions">
+            {recentDescriptions.map((description) => (
+              <option key={description} value={description} />
+            ))}
+          </datalist>
         </Field>
 
         <Field label="Category">
@@ -227,15 +299,17 @@ export function LogTransaction({
           </select>
         </Field>
 
-        <Field label="Account">
+        <Field label={needsDestination ? "From account" : "Account"}>
           <select
             name="account"
             required
             className={inputClass}
             defaultValue={
-              defaultAccount && ACCOUNT_OPTIONS.includes(defaultAccount)
-                ? defaultAccount
-                : "Capitec Main"
+              editing?.accountLabel && ACCOUNT_OPTIONS.includes(editing.accountLabel)
+                ? editing.accountLabel
+                : defaultAccount && ACCOUNT_OPTIONS.includes(defaultAccount)
+                  ? defaultAccount
+                  : "Capitec Main"
             }
           >
             {ACCOUNT_OPTIONS.map((account) => (
@@ -246,11 +320,27 @@ export function LogTransaction({
           </select>
         </Field>
 
+        {needsDestination && !editing ? (
+          <Field
+            label="To account"
+            hint="Both sides move: this one is credited as the other is debited."
+          >
+            <select name="toAccount" className={inputClass} defaultValue="">
+              <option value="">Not tracked here</option>
+              {ACCOUNT_OPTIONS.map((account) => (
+                <option key={account} value={account}>
+                  {account}
+                </option>
+              ))}
+            </select>
+          </Field>
+        ) : null}
+
         <Field label="Date">
           <input
             name="date"
             type="date"
-            defaultValue={toLocalISODate(new Date())}
+            defaultValue={editing?.date?.slice(0, 10) ?? toLocalISODate(new Date())}
             className={inputClass}
           />
         </Field>
@@ -259,10 +349,40 @@ export function LogTransaction({
           <textarea
             name="notes"
             rows={2}
+            defaultValue={editing?.notes ?? ""}
             className={`${inputClass} h-auto py-2`}
             placeholder="Optional"
           />
         </Field>
+
+        {duplicate ? (
+          <div className="mb-3 rounded-lg border border-warn/40 bg-warn/5 px-3 py-2.5">
+            <p className="flex items-start gap-1.5 text-xs text-warn">
+              <AlertTriangle size={13} strokeWidth={2} className="mt-0.5 shrink-0" />
+              {duplicate}
+            </p>
+            <div className="mt-2.5 flex gap-2">
+              <button
+                type="button"
+                disabled={saving}
+                onClick={() => pending && submit(pending, true)}
+                className="rounded-lg bg-accent px-3 py-1.5 text-[11px] font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+              >
+                {saving ? "Logging…" : "Log it anyway"}
+              </button>
+              <button
+                type="button"
+                onClick={() => {
+                  reset();
+                  onClose();
+                }}
+                className="rounded-lg border border-line px-3 py-1.5 text-[11px] text-muted transition-colors hover:text-ink"
+              >
+                Cancel
+              </button>
+            </div>
+          </div>
+        ) : null}
 
         {error ? (
           <p role="alert" className="mb-3 text-xs text-loss">
@@ -270,13 +390,15 @@ export function LogTransaction({
           </p>
         ) : null}
 
-        <button
-          type="submit"
-          disabled={saving}
-          className="h-10 w-full rounded-lg bg-accent text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-        >
-          {saving ? "Logging…" : "Log it"}
-        </button>
+        {!duplicate ? (
+          <button
+            type="submit"
+            disabled={saving}
+            className="h-10 w-full rounded-lg bg-accent text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          >
+            {saving ? "Saving…" : editing ? "Save changes" : "Log it"}
+          </button>
+        ) : null}
       </form>
     </SlideOver>
   );

@@ -1,6 +1,7 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ChevronDown } from "lucide-react";
+import { useState } from "react";
 import useSWR from "swr";
 
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -17,6 +18,7 @@ async function fetcher(url: string): Promise<DebtSummary> {
 
 export function DebtScreen() {
   const { data, error, mutate } = useSWR<DebtSummary>("/api/debt", fetcher);
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   if (error) {
     return (
@@ -102,8 +104,16 @@ export function DebtScreen() {
           description="Highest interest first; ties broken by smallest balance."
         />
         <ul className="divide-y divide-line">
-          {ordered.map((row) => (
-            <li key={row.recordId} className="flex items-center gap-3 px-4 py-3">
+          {ordered.map((row) => {
+            const open = expanded === row.recordId;
+            return (
+            <li key={row.recordId}>
+            <button
+              type="button"
+              onClick={() => setExpanded(open ? null : row.recordId)}
+              aria-expanded={open}
+              className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-2"
+            >
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{row.name}</p>
                 <p className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] text-faint">
@@ -113,24 +123,54 @@ export function DebtScreen() {
                 </p>
               </div>
               <div className="text-right text-sm">
-                <EditableAmount
-                  editKey="debt.balance"
-                  recordId={row.recordId}
-                  value={row.balanceZar}
-                  onSaved={refresh}
-                />
+                <Money value={row.balanceZar} variant="whole" />
                 <p className="text-[11px] text-faint">
+                  <Money value={row.monthlyZar} variant="whole" /> /mo
+                </p>
+              </div>
+              <ChevronDown
+                size={14}
+                strokeWidth={1.75}
+                className={`shrink-0 text-faint transition-transform ${open ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {open ? (
+              <div className="space-y-2.5 border-t border-line bg-bg/40 px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-faint">Outstanding balance</span>
+                  <EditableAmount
+                    editKey="debt.balance"
+                    recordId={row.recordId}
+                    value={row.balanceZar}
+                    onSaved={refresh}
+                    className="text-sm"
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-faint">Monthly payment</span>
                   <EditableAmount
                     editKey="debt.monthly"
                     recordId={row.recordId}
                     value={row.monthlyZar}
                     onSaved={refresh}
+                    className="text-sm"
                   />
-                  {" /mo"}
-                </p>
+                </div>
+                <div className="flex justify-end">
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(null)}
+                    className="rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:text-ink"
+                  >
+                    Collapse
+                  </button>
+                </div>
               </div>
+            ) : null}
             </li>
-          ))}
+            );
+          })}
         </ul>
       </Card>
 

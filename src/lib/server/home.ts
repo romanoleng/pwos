@@ -58,7 +58,12 @@ export type HomeSummary = {
   today: { spendZar: number; count: number };
   recent: HomeTransaction[];
   /** Smart defaults for the log form — last used account, frequent categories. */
-  defaults: { accountLabel: string | null; categories: string[] };
+  defaults: {
+    accountLabel: string | null;
+    categories: string[];
+    /** Past descriptions, most frequent first, for autocomplete. */
+    descriptions: string[];
+  };
 };
 
 export async function getHome(): Promise<HomeSummary> {
@@ -85,9 +90,15 @@ export async function getHome(): Promise<HomeSummary> {
   });
 
   const categoryCounts = new Map<string, number>();
+  const descriptionCounts = new Map<string, number>();
   for (const t of recentWindow) {
-    if (t.type !== "expense" || !t.category) continue;
-    categoryCounts.set(t.category, (categoryCounts.get(t.category) ?? 0) + 1);
+    if (t.type === "expense" && t.category) {
+      categoryCounts.set(t.category, (categoryCounts.get(t.category) ?? 0) + 1);
+    }
+    const description = t.description?.trim();
+    if (description && description !== "—") {
+      descriptionCounts.set(description, (descriptionCounts.get(description) ?? 0) + 1);
+    }
   }
 
   return {
@@ -131,6 +142,12 @@ export async function getHome(): Promise<HomeSummary> {
         .sort((a, b) => b[1] - a[1])
         .slice(0, 6)
         .map(([category]) => category),
+      // Most-repeated descriptions first: "Checkers Sixty60" should not be
+      // typed for the hundredth time.
+      descriptions: [...descriptionCounts.entries()]
+        .sort((a, b) => b[1] - a[1])
+        .slice(0, 40)
+        .map(([description]) => description),
     },
   };
 }
