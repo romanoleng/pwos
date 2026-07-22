@@ -232,6 +232,7 @@ export function HomeScreen() {
         suggestedCategories={defaults.categories}
         recentDescriptions={defaults.descriptions}
         accounts={defaults.accounts}
+        allCategories={defaults.allCategories}
       />
     </div>
   );

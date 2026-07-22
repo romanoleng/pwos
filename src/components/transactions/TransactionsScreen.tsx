@@ -33,7 +33,13 @@ const TYPES: TransactionType[] = ["expense", "income", "transfer", "contribution
 
 export function TransactionsScreen() {
   const { data, error, mutate } = useSWR("/api/transactions", fetcher);
-  const { data: home } = useSWR<{ defaults: { accounts: { label: string; kind: string }[] } }>(
+  const { data: home } = useSWR<{
+    defaults: {
+      accounts: { label: string; kind: string }[];
+      allCategories: { name: string; kind: string }[];
+      categories: string[];
+    };
+  }>(
     "/api/home",
     (url: string) => fetch(url).then((r) => r.json()),
   );
@@ -328,6 +334,8 @@ export function TransactionsScreen() {
         onClose={() => setLogging(false)}
         onSaved={() => void mutate()}
         accounts={home?.defaults.accounts}
+        allCategories={home?.defaults.allCategories}
+        suggestedCategories={home?.defaults.categories}
       />
 
       {editing ? (
@@ -337,6 +345,7 @@ export function TransactionsScreen() {
           editing={editing}
           onClose={() => setEditing(null)}
           accounts={home?.defaults.accounts}
+          allCategories={home?.defaults.allCategories}
           onSaved={() => {
             setEditing(null);
             setExpanded(null);

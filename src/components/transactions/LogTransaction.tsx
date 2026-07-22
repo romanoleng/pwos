@@ -23,27 +23,7 @@ import { isMoveCategory } from "@/lib/transactions";
  * time, and one-tap chips for the categories actually used recently.
  */
 
-const EXPENSE_CATEGORIES = [
-  "Groceries",
-  "Petrol",
-  "Eating Out",
-  "Subscriptions",
-  "Kids",
-  "Medical",
-  "Clothing & Shoes",
-  "Home Maintenance",
-  "Electricity",
-  "Municipal Rates",
-  "Store Account Payments",
-  "Debt Repayment",
-  "Bank Fees",
-  "Smokes",
-  "Betting/Lottery",
-  "Miscellaneous",
-];
-
-const IN_CATEGORIES = ["Business Income", "Interest", "Allowance", "Transfer"];
-
+/** Fallbacks only — the real lists come from the database via props. */
 const MOVE_CATEGORY_OPTIONS = ["Transfer", "Savings", "Investments", "Crypto Investment"];
 
 export type EditingTransaction = {
@@ -64,6 +44,7 @@ export function LogTransaction({
   suggestedCategories = [],
   recentDescriptions = [],
   accounts = [],
+  allCategories = [],
   editing,
 }: {
   open: boolean;
@@ -75,6 +56,8 @@ export function LogTransaction({
   recentDescriptions?: string[];
   /** Real accounts from the database, so this list can never drift from it. */
   accounts?: { label: string; kind: string }[];
+  /** Every category from the database, split by kind for the right mode. */
+  allCategories?: { name: string; kind: string }[];
   /** When present the sheet edits this entry instead of creating one. */
   editing?: EditingTransaction;
 }) {
@@ -90,14 +73,13 @@ export function LogTransaction({
   const [duplicate, setDuplicate] = useState<string | null>(null);
   const [pending, setPending] = useState<FormData | null>(null);
 
-  const categories =
-    direction === "move"
-      ? MOVE_CATEGORY_OPTIONS
-      : direction === "out"
-        ? EXPENSE_CATEGORIES
-        : IN_CATEGORIES;
+  const wantKind =
+    direction === "move" ? ["transfer", "contribution"] : direction === "out" ? ["expense"] : ["income"];
+  const fromDb = allCategories.filter((c) => wantKind.includes(c.kind)).map((c) => c.name);
+  const categories = fromDb.length > 0 ? fromDb : MOVE_CATEGORY_OPTIONS;
 
-  const chips = suggestedCategories.filter((c) => categories.includes(c)).slice(0, 6);
+  // Pinned categories, in the order set in the database.
+  const chips = suggestedCategories.filter((c) => categories.includes(c)).slice(0, 8);
 
   // A transfer needs somewhere to land — §5 requires both legs to move.
   const needsDestination = direction === "move";

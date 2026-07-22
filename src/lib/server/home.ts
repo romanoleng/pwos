@@ -64,12 +64,14 @@ export type HomeSummary = {
     descriptions: string[];
     /** Real accounts from the database — never a hardcoded list. */
     accounts: { label: string; kind: string }[];
+    /** Every category, so the picker matches the database exactly. */
+    allCategories: { name: string; kind: string }[];
   };
 };
 
 export async function getHome(): Promise<HomeSummary> {
   const todayIso0 = toLocalISODate(new Date());
-  const [accounts, budget, recentRows, todayRow, catRows, descRows, accountRows] = await Promise.all([
+  const [accounts, budget, recentRows, todayRow, catRows, descRows, accountRows, allCatRows] = await Promise.all([
     getAccounts(),
     getBudgetSummary(),
     sql<{ id: string; occurred_on: string; description: string; amount_zar: string;
@@ -82,12 +84,11 @@ export async function getHome(): Promise<HomeSummary> {
       select coalesce(sum(-amount_zar) filter (where type='expense'),0) as spend,
              count(*)::text as n
       from transactions where occurred_on = ${todayIso0}::date`,
-    // Smart defaults from actual behaviour over the last 60 days.
-    sql<{ category: string }>`
-      select category from transactions
-      where type='expense' and category is not null
-        and occurred_on >= current_date - 60
-      group by category order by count(*) desc limit 6`,
+    // Pinned categories first — chosen deliberately rather than inferred from
+    // frequency, which surfaced duplicate-inflated and debit-order lines while
+    // missing the things actually bought in a shop.
+    sql<{ name: string }>`
+      select name from categories where pinned order by sort_order`,
     sql<{ description: string }>`
       select description from transactions
       where occurred_on >= current_date - 60
@@ -95,6 +96,8 @@ export async function getHome(): Promise<HomeSummary> {
     sql<{ label: string; kind: string }>`
       select label, kind::text from accounts
       where not archived order by kind, label`,
+    sql<{ name: string; kind: string }>`
+      select name, kind::text from categories order by kind, sort_order, name`,
   ]);
 
   const cycle = getBudgetCycle();
@@ -136,11 +139,12 @@ export async function getHome(): Promise<HomeSummary> {
     })),
     defaults: {
       accountLabel: recentRows.find((t) => t.account_label)?.account_label ?? null,
-      categories: catRows.map((r) => r.category),
+      categories: catRows.map((r) => r.name),
       // Most-repeated descriptions first: "Checkers Sixty60" should not be
       // typed for the hundredth time.
       descriptions: descRows.map((r) => r.description),
       accounts: accountRows,
+      allCategories: allCatRows,
     },
   };
 }
