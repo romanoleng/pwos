@@ -15,6 +15,7 @@ import {
   Landmark,
   MoreHorizontal,
   Receipt,
+  RefreshCw,
   Scale,
   Settings,
   Target,
@@ -52,6 +53,7 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/transactions", label: "Transactions", icon: Receipt },
       { href: "/budgets", label: "Budgets", icon: Wallet },
       { href: "/goals", label: "Goals", icon: Target },
+      { href: "/reset", label: "Reset", icon: RefreshCw, longLabel: "Payday reset" },
     ],
   },
   {
