@@ -2,10 +2,11 @@
 
 import { useState } from "react";
 
-import { createTransaction, voidTransaction } from "@/app/actions/transactions";
+import { createTransaction, deleteTransaction, restoreTransaction } from "@/app/actions/transactions";
 import { Field, SlideOver, inputClass } from "@/components/ui/SlideOver";
 import { useToast } from "@/components/ui/Toast";
 import { toLocalISODate } from "@/lib/crypto/history";
+import { formatMoneyWhole } from "@/lib/format";
 
 /**
  * Daily transaction entry (CLAUDE.md §5).
@@ -106,23 +107,40 @@ export function LogTransaction({
       return;
     }
 
-    const recordId = result.data.recordId;
+    const { recordId, balanceMoved, warning } = result.data;
     setCategory("");
     onClose();
     onSaved();
+
+    // Say what actually happened to the balance, not just "saved". Seeing the
+    // account move is the confirmation that the entry did its job.
+    const message = balanceMoved
+      ? `Logged · ${balanceMoved.accountLabel} now ${formatMoneyWhole(balanceMoved.newBalanceZar)}`
+      : "Logged";
+
     toast.show({
-      message: "Logged",
+      message,
       tone: "success",
       onUndo: async () => {
-        const undone = await voidTransaction(recordId);
+        const undone = await deleteTransaction(recordId);
         onSaved();
-        toast.show(
-          undone.ok
-            ? { message: "Entry voided", tone: "neutral" }
-            : { message: `Couldn't undo: ${undone.error}`, tone: "error" },
-        );
+        if (undone.ok) {
+          const deleted = undone.data;
+          toast.show({
+            message: "Entry removed, balance restored",
+            tone: "neutral",
+            onUndo: async () => {
+              await restoreTransaction(deleted);
+              onSaved();
+            },
+          });
+        } else {
+          toast.show({ message: `Couldn't undo: ${undone.error}`, tone: "error" });
+        }
       },
     });
+
+    if (warning) toast.show({ message: warning, tone: "error", durationMs: 9000 });
   }
 
   return (

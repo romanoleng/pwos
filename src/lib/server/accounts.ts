@@ -23,6 +23,8 @@ export type AccountBalance = {
   account: CanonicalAccount;
   /** Balance recorded in the Net Worth table, if it has a row there. */
   storedZar: number | null;
+  /** The Net Worth row holding that balance, so the UI can edit it in place. */
+  netWorthRecordId: string | null;
   /** Net of every transaction attributed to this account. */
   transactionNetZar: number;
   transactionCount: number;
@@ -63,12 +65,14 @@ export async function getAccounts(): Promise<AccountsView> {
   ]);
 
   const storedByAccountId = new Map<string, number>();
+  const recordByAccountId = new Map<string, string>();
   for (const row of netWorthRows) {
     const name = stringCell(row, FIELDS.netWorth.name);
     const account = resolveByNetWorthName(name);
     if (!account) continue;
     const value = numberCell(row, FIELDS.netWorth.valueZar) ?? 0;
     storedByAccountId.set(account.id, (storedByAccountId.get(account.id) ?? 0) + value);
+    if (!recordByAccountId.has(account.id)) recordByAccountId.set(account.id, row.id);
   }
 
   const activity = new Map<
@@ -104,6 +108,7 @@ export async function getAccounts(): Promise<AccountsView> {
     return {
       account,
       storedZar: storedByAccountId.get(account.id) ?? null,
+      netWorthRecordId: recordByAccountId.get(account.id) ?? null,
       transactionNetZar: seen?.net ?? 0,
       transactionCount: seen?.count ?? 0,
       lastActivity: seen?.last ?? null,

@@ -237,6 +237,32 @@ export async function getRecord(
   }
 }
 
+/**
+ * Deletes records by id.
+ *
+ * Used only where a row is a genuine mistake — a duplicate transaction, say —
+ * rather than something being retired. Retiring is archiving (§9b). Callers
+ * must capture the record first so the action can be undone.
+ */
+export async function deleteRecords(
+  tableId: string,
+  recordIds: string[],
+): Promise<string[]> {
+  if (recordIds.length === 0) return [];
+  const deleted: string[] = [];
+  for (let index = 0; index < recordIds.length; index += 10) {
+    const batch = recordIds.slice(index, index + 10);
+    const params = new URLSearchParams();
+    for (const id of batch) params.append("records[]", id);
+    const result = (await airtableFetch(
+      `/${env.airtableBaseId}/${tableId}?${params}`,
+      { method: "DELETE" },
+    )) as { records: { id: string; deleted: boolean }[] };
+    deleted.push(...result.records.filter((r) => r.deleted).map((r) => r.id));
+  }
+  return deleted;
+}
+
 /** Reads a single-cell value by field id, tolerating Airtable's shapes. */
 export function cell(record: AirtableRecord, fieldId: string): unknown {
   return (record.fields as Record<string, unknown>)[fieldId];

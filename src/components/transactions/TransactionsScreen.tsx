@@ -1,10 +1,12 @@
 "use client";
 
-import { Plus, Search } from "lucide-react";
+import { ChevronDown, Plus, Search, Trash2 } from "lucide-react";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 
+import { deleteTransaction, restoreTransaction } from "@/app/actions/transactions";
 import { LogTransaction } from "@/components/transactions/LogTransaction";
+import { useToast } from "@/components/ui/Toast";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { formatDate } from "@/lib/format";
@@ -31,7 +33,38 @@ const TYPES: TransactionType[] = ["expense", "income", "transfer", "contribution
 
 export function TransactionsScreen() {
   const { data, error, mutate } = useSWR("/api/transactions", fetcher);
+  const toast = useToast();
   const [logging, setLogging] = useState(false);
+  // Row actions are revealed on tap rather than always shown: a delete button
+  // sitting permanently beside every row is easy to hit by accident on a phone.
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+
+  async function remove(recordId: string, description: string) {
+    setBusy(recordId);
+    const result = await deleteTransaction(recordId);
+    setBusy(null);
+    if (!result.ok) {
+      toast.show({ message: result.error, tone: "error" });
+      return;
+    }
+    const deleted = result.data;
+    setExpanded(null);
+    void mutate();
+    toast.show({
+      message: `Deleted "${description}" · balance restored`,
+      tone: "success",
+      onUndo: async () => {
+        const restored = await restoreTransaction(deleted);
+        void mutate();
+        toast.show(
+          restored.ok
+            ? { message: "Entry restored", tone: "neutral" }
+            : { message: `Couldn't restore: ${restored.error}`, tone: "error" },
+        );
+      },
+    });
+  }
   const [query, setQuery] = useState("");
   const [types, setTypes] = useState<TransactionType[]>([]);
 
@@ -185,8 +218,16 @@ export function TransactionsScreen() {
           </CardBody>
         ) : (
           <ul className="divide-y divide-line">
-            {visible.slice(0, 200).map((row) => (
-              <li key={row.recordId} className="flex items-center gap-3 px-4 py-2.5">
+            {visible.slice(0, 200).map((row) => {
+              const open = expanded === row.recordId;
+              return (
+              <li key={row.recordId}>
+              <button
+                type="button"
+                onClick={() => setExpanded(open ? null : row.recordId)}
+                aria-expanded={open}
+                className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-2"
+              >
                 <div className="min-w-0 flex-1">
                   <p className="truncate text-sm">{row.description}</p>
                   <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-faint">
@@ -213,8 +254,42 @@ export function TransactionsScreen() {
                   className="shrink-0 text-sm"
                   tone={row.amountZar < 0 ? "flat" : "gain"}
                 />
+                <ChevronDown
+                  size={14}
+                  strokeWidth={1.75}
+                  className={`shrink-0 text-faint transition-transform ${open ? "rotate-180" : ""}`}
+                />
+              </button>
+
+              {open ? (
+                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-bg/40 px-4 py-2.5">
+                  <p className="text-[11px] text-faint">
+                    {row.type}
+                    {row.notes ? ` · ${row.notes}` : ""}
+                  </p>
+                  <div className="flex gap-2">
+                    <button
+                      type="button"
+                      onClick={() => setExpanded(null)}
+                      className="rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:text-ink"
+                    >
+                      Collapse
+                    </button>
+                    <button
+                      type="button"
+                      disabled={busy === row.recordId}
+                      onClick={() => remove(row.recordId, row.description)}
+                      className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-loss/40 hover:text-loss disabled:opacity-50"
+                    >
+                      <Trash2 size={12} strokeWidth={1.75} />
+                      {busy === row.recordId ? "Deleting…" : "Delete"}
+                    </button>
+                  </div>
+                </div>
+              ) : null}
               </li>
-            ))}
+              );
+            })}
           </ul>
         )}
       </Card>

@@ -1,9 +1,12 @@
 "use client";
 
-import { AlertTriangle } from "lucide-react";
+import { AlertTriangle, ChevronDown, Pencil, Receipt } from "lucide-react";
+import Link from "next/link";
+import { useState } from "react";
 import useSWR from "swr";
 
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { EditableAmount } from "@/components/ui/EditableAmount";
 import { Money } from "@/components/ui/Money";
 import type { AccountsView as AccountsData } from "@/lib/server/accounts";
 import { formatDate } from "@/lib/format";
@@ -28,9 +31,12 @@ const KIND_LABEL: Record<string, string> = {
 };
 
 export function AccountsScreen() {
-  const { data, error } = useSWR<AccountsData>("/api/accounts", fetcher, {
+  const { data, error, mutate } = useSWR<AccountsData>("/api/accounts", fetcher, {
     refreshInterval: 120_000,
   });
+  // Tap a row to reveal its actions. Every expandable surface in the app works
+  // this way and offers an explicit Collapse, so nothing traps you open.
+  const [expanded, setExpanded] = useState<string | null>(null);
 
   if (error) {
     return (
@@ -114,8 +120,16 @@ export function AccountsScreen() {
           description="Balance as recorded, with ledger activity as a cross-check."
         />
         <ul className="divide-y divide-line">
-          {accounts.map((entry) => (
-            <li key={entry.account.id} className="flex items-center gap-3 px-4 py-3">
+          {accounts.map((entry) => {
+            const open = expanded === entry.account.id;
+            return (
+            <li key={entry.account.id}>
+            <button
+              type="button"
+              onClick={() => setExpanded(open ? null : entry.account.id)}
+              aria-expanded={open}
+              className="flex w-full items-center gap-3 px-4 py-3 text-left transition-colors hover:bg-surface-2"
+            >
               <div className="min-w-0 flex-1">
                 <p className="flex flex-wrap items-center gap-1.5 text-sm font-medium">
                   {entry.account.label}
@@ -155,8 +169,60 @@ export function AccountsScreen() {
                   </p>
                 ) : null}
               </div>
+              <ChevronDown
+                size={14}
+                strokeWidth={1.75}
+                className={`shrink-0 text-faint transition-transform ${open ? "rotate-180" : ""}`}
+              />
+            </button>
+
+            {open ? (
+              <div className="space-y-3 border-t border-line bg-bg/40 px-4 py-3">
+                <div className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-faint">Balance</span>
+                  {entry.netWorthRecordId ? (
+                    <EditableAmount
+                      editKey="netWorth.value"
+                      recordId={entry.netWorthRecordId}
+                      value={entry.storedZar}
+                      onSaved={() => void mutate()}
+                      className="text-sm"
+                    />
+                  ) : (
+                    <span className="text-[11px] text-warn">
+                      No Net Worth row — add one in Airtable to track it
+                    </span>
+                  )}
+                </div>
+
+                <div className="flex flex-wrap gap-2">
+                  <Link
+                    href={`/transactions?account=${encodeURIComponent(entry.account.label)}`}
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-line-2 hover:text-ink"
+                  >
+                    <Receipt size={12} strokeWidth={1.75} />
+                    See its transactions
+                  </Link>
+                  <Link
+                    href="/reset"
+                    className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-line-2 hover:text-ink"
+                  >
+                    <Pencil size={12} strokeWidth={1.75} />
+                    Update all balances
+                  </Link>
+                  <button
+                    type="button"
+                    onClick={() => setExpanded(null)}
+                    className="rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:text-ink"
+                  >
+                    Collapse
+                  </button>
+                </div>
+              </div>
+            ) : null}
             </li>
-          ))}
+            );
+          })}
         </ul>
       </Card>
 
