@@ -296,10 +296,37 @@ export function TransactionsScreen() {
           }
         />
         {!data ? (
-          <CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody>
+          <CardBody className="space-y-3 py-6">
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} className="flex items-center justify-between gap-3">
+                <div
+                  className="h-3 animate-pulse rounded bg-raise"
+                  style={{ width: `${60 - i * 9}%` }}
+                />
+                <div className="h-3 w-16 animate-pulse rounded bg-raise" />
+              </div>
+            ))}
+          </CardBody>
+        ) : all.length === 0 ? (
+          // A brand-new ledger — the state every screen shows after the fresh
+          // start, so it should read as a beginning, not an error.
+          <CardBody className="py-10 text-center">
+            <p className="text-sm font-medium">Ready when you are</p>
+            <p className="mx-auto mt-1.5 max-w-xs text-xs leading-relaxed text-muted">
+              Log your first transaction and the calendar, monthly view and
+              summary all start filling in on their own.
+            </p>
+            <button
+              type="button"
+              onClick={() => setLogging(true)}
+              className="mt-4 rounded-lg bg-accent px-4 py-2 text-sm font-medium text-white transition-transform active:scale-95"
+            >
+              Log the first one
+            </button>
+          </CardBody>
         ) : visible.length === 0 ? (
           <CardBody className="py-10 text-center text-sm text-muted">
-            Nothing matches that.
+            Nothing matches that filter.
           </CardBody>
         ) : (
           <ul className="divide-y divide-line">

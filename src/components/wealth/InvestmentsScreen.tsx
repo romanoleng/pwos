@@ -3,6 +3,7 @@
 import Link from "next/link";
 import useSWR from "swr";
 
+import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
 import { Money } from "@/components/ui/Money";
@@ -24,7 +25,7 @@ export function InvestmentsScreen() {
   // Kids' accounts come from the goals payload, which already reads them.
   const { data: goals, mutate: mutateGoals } = useSWR<GoalsSummary>("/api/goals", fetcher);
   if (error) return <Card><CardBody className="text-sm text-loss">Couldn&apos;t load investments.</CardBody></Card>;
-  if (!data) return <Card><CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody></Card>;
+  if (!data) return <LoadingCard rows={3} />;
 
   const refresh = () => {
     void mutate();

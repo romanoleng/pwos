@@ -7,6 +7,7 @@ import useSWR from "swr";
 import { archiveRecord, restoreRecord } from "@/app/actions/records";
 import { applyReset, revertReset, type ResetPrevious } from "@/app/actions/reset";
 import { AmountInput } from "@/components/ui/AmountInput";
+import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { RecordEditor } from "@/components/ui/RecordEditor";
@@ -73,7 +74,7 @@ export function ResetScreen() {
     return <Card><CardBody className="text-sm text-loss">Couldn&apos;t load the reset screen.</CardBody></Card>;
   }
   if (!data) {
-    return <Card><CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody></Card>;
+    return <LoadingCard rows={4} />;
   }
 
   async function onArchive(kind: RecordKind, recordId: string, label: string) {

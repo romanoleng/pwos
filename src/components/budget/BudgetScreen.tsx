@@ -9,6 +9,7 @@ import {
   setExpectedIncome,
 } from "@/app/actions/budgets";
 import { BudgetLineEditor } from "@/components/budget/BudgetLineEditor";
+import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { AmountInput } from "@/components/ui/AmountInput";
 import { EditableAmount } from "@/components/ui/EditableAmount";
@@ -102,9 +103,7 @@ export function BudgetScreen() {
 
   if (!data) {
     return (
-      <Card>
-        <CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody>
-      </Card>
+      <LoadingCard rows={4} />
     );
   }
 

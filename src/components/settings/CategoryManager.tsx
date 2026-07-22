@@ -8,6 +8,7 @@ import {
   archiveCategory, mergeCategories, renameCategory, reorderCategory,
   setCategoryPinned, undoMerge,
 } from "@/app/actions/categories";
+import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody } from "@/components/ui/Card";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money } from "@/components/ui/Money";
@@ -57,9 +58,7 @@ export function CategoryManager() {
   }
   if (!data) {
     return (
-      <Card>
-        <CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody>
-      </Card>
+      <LoadingCard rows={4} />
     );
   }
 

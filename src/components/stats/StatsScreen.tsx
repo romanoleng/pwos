@@ -3,6 +3,7 @@
 import { useState } from "react";
 import useSWR from "swr";
 
+import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { PeriodBar, usePeriodKind } from "@/components/ui/PeriodBar";
@@ -31,6 +32,7 @@ export function StatsScreen() {
   const periodKind = usePeriodKind();
   const { data, error } = useSWR<StatsSummary>(`/api/stats?period=${periodKind}`, fetcher, {
     refreshInterval: 120_000,
+    keepPreviousData: true,
   });
   const [side, setSide] = useState<"expense" | "income">("expense");
 
@@ -43,13 +45,12 @@ export function StatsScreen() {
   }
   if (!data) {
     return (
-      <Card>
-        <CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody>
-      </Card>
+      <LoadingCard rows={4} />
     );
   }
 
   const { income, expense, months, previous, period } = data;
+  const empty = income.count === 0 && expense.count === 0;
   const showing = side === "income" ? income : expense;
   const previousTotal =
     previous === null ? null : side === "income" ? previous.incomeZar : previous.expenseZar;
@@ -62,6 +63,18 @@ export function StatsScreen() {
           period.start ? formatDate(period.start) : "the beginning"
         } → today`}
       />
+
+      {empty ? (
+        <Card>
+          <CardBody className="py-10 text-center">
+            <p className="text-sm font-medium">Nothing here yet</p>
+            <p className="mx-auto mt-1.5 max-w-xs text-xs leading-relaxed text-muted">
+              From your first log, this screen fills in by itself — who paid
+              you, where it went, and how the months compare.
+            </p>
+          </CardBody>
+        </Card>
+      ) : null}
 
       {/* Both figures always visible; the toggle only chooses which one the
           breakdown is about. Hiding income behind a tab would make the two
@@ -93,6 +106,13 @@ export function StatsScreen() {
                 signed
                 className={data.netZar < 0 ? "text-loss" : "text-gain"}
               />
+              {income.totalZar > 0 && data.netZar > 0 ? (
+                <>
+                  {" · kept "}
+                  {((data.netZar / income.totalZar) * 100).toFixed(0)}% of what
+                  came in
+                </>
+              ) : null}
               {delta !== null ? (
                 <>
                   {" · "}

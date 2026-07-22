@@ -6,6 +6,7 @@ import { useState } from "react";
 import useSWR from "swr";
 
 import { LogTransaction } from "@/components/transactions/LogTransaction";
+import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { PeriodBar, usePeriodKind } from "@/components/ui/PeriodBar";
@@ -28,6 +29,7 @@ async function fetcher(url: string): Promise<HomeSummary> {
 export function HomeScreen() {
   const periodKind = usePeriodKind();
   const { data, error, mutate } = useSWR<HomeSummary>(`/api/home?period=${periodKind}`, fetcher, {
+    keepPreviousData: true,
     refreshInterval: 120_000,
   });
   const [logging, setLogging] = useState(false);
@@ -43,9 +45,7 @@ export function HomeScreen() {
   }
   if (!data) {
     return (
-      <Card>
-        <CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody>
-      </Card>
+      <LoadingCard rows={4} />
     );
   }
 
@@ -179,8 +179,11 @@ export function HomeScreen() {
           }
         />
         {recent.length === 0 ? (
-          <CardBody className="py-8 text-center text-xs text-muted">
-            Nothing logged yet.
+          <CardBody className="py-8 text-center">
+            <p className="text-sm font-medium">Nothing logged yet</p>
+            <p className="mx-auto mt-1 max-w-xs text-xs leading-relaxed text-muted">
+              The last few entries land here, so a glance shows the day.
+            </p>
           </CardBody>
         ) : (
           <ul className="divide-y divide-line">

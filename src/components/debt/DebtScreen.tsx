@@ -4,6 +4,7 @@ import { AlertTriangle, ChevronDown } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
 
+import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
 import { Money } from "@/components/ui/Money";
@@ -29,9 +30,7 @@ export function DebtScreen() {
   }
   if (!data) {
     return (
-      <Card>
-        <CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody>
-      </Card>
+      <LoadingCard rows={3} />
     );
   }
 

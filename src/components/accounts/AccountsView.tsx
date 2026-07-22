@@ -5,6 +5,7 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 
+import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -52,9 +53,7 @@ export function AccountsScreen() {
 
   if (!data) {
     return (
-      <Card>
-        <CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody>
-      </Card>
+      <LoadingCard rows={4} />
     );
   }
 

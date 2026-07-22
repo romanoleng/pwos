@@ -1,4 +1,5 @@
 import { BottomTabs } from "@/components/shell/BottomTabs";
+import { LogFab } from "@/components/shell/LogFab";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { TopBar } from "@/components/shell/TopBar";
 import { ToastProvider } from "@/components/ui/Toast";
@@ -21,6 +22,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           {children}
         </main>
       </div>
+      <LogFab />
       <BottomTabs />
     </div>
     </ToastProvider>

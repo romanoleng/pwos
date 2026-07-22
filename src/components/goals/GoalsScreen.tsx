@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 
+import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -19,7 +20,7 @@ async function fetcher(url: string): Promise<GoalsSummary> {
 export function GoalsScreen() {
   const { data, error, mutate } = useSWR<GoalsSummary>("/api/goals", fetcher);
   if (error) return <Card><CardBody className="text-sm text-loss">Couldn&apos;t load goals.</CardBody></Card>;
-  if (!data) return <Card><CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody></Card>;
+  if (!data) return <LoadingCard rows={3} />;
 
   const refresh = () => void mutate();
   // Their investments are tracked individually on the Investments screen, so

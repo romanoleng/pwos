@@ -2,6 +2,7 @@
 
 import useSWR from "swr";
 
+import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { formatPercent } from "@/lib/format";
@@ -19,7 +20,7 @@ export function WealthScreen() {
   const { data: debt } = useSWR<DebtSummary>("/api/debt", json);
 
   if (error) return <Card><CardBody className="text-sm text-loss">Couldn&apos;t load wealth.</CardBody></Card>;
-  if (!nw) return <Card><CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody></Card>;
+  if (!nw) return <LoadingCard rows={3} />;
 
   const maxClass = Math.max(...nw.classes.map((c) => c.valueZar), 1);
 
