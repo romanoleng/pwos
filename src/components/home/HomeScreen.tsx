@@ -233,6 +233,7 @@ export function HomeScreen() {
         recentDescriptions={defaults.descriptions}
         accounts={defaults.accounts}
         allCategories={defaults.allCategories}
+        kidAccounts={defaults.kidAccounts}
       />
     </div>
   );

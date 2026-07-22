@@ -24,6 +24,8 @@ export type NewTransaction = {
   category: string;
   account: string;
   toAccount?: string;
+  /** A kids_accounts id. Mutually exclusive with toAccount. */
+  toKidAccount?: string;
   date?: string;
   notes?: string;
   confirmDuplicate?: boolean;
@@ -43,7 +45,7 @@ export type DuplicateWarning = {
 };
 
 function invalidate(): void {
-  for (const tag of ["transactions", "accounts", "budget", "networth", "wealth"]) {
+  for (const tag of ["transactions", "accounts", "budget", "networth", "wealth", "kids"]) {
     revalidateTag(tag, "max");
   }
 }
@@ -76,6 +78,9 @@ export async function createTransaction(
     const from = await accountId(input.account);
     if (!from) return { ok: false, error: `Unknown account: ${input.account}` };
     const to = input.toAccount ? await accountId(input.toAccount) : null;
+    // Money sent to a child lands in their account, not one of his. Pointing at
+    // kids_accounts is what keeps it out of his net worth.
+    const toKid = input.toKidAccount?.trim() || null;
 
     if (!input.confirmDuplicate) {
       const existing = await sql<{ description: string; amount_zar: string; occurred_on: string }>`
@@ -97,9 +102,10 @@ export async function createTransaction(
 
     const created = await sql<{ id: string }>`
       insert into transactions
-        (occurred_on, description, amount_zar, type, category, account_id, to_account_id, notes)
+        (occurred_on, description, amount_zar, type, category, account_id, to_account_id,
+         to_kid_account_id, notes)
       values (${occurredOn}::date, ${description}, ${signed}, ${type}::transaction_type,
-              ${input.category}, ${from}, ${to}, ${input.notes || null})
+              ${input.category}, ${from}, ${to}, ${toKid}::bigint, ${input.notes || null})
       returning id::text`;
 
     // Both legs, or neither. Postgres guarantees it.
@@ -109,7 +115,18 @@ export async function createTransaction(
       returning label, balance_zar`;
 
     let destinationMoved: CreatedTransaction["destinationMoved"] = null;
-    if (to && to !== from) {
+    if (toKid) {
+      const received = await sql<{ child: string | null; account: string; balance_zar: string }>`
+        update kids_accounts set balance_zar = balance_zar + ${Math.abs(input.amountZar)}
+        where id = ${toKid}::bigint
+        returning child, account, balance_zar`;
+      if (received[0]) {
+        destinationMoved = {
+          accountLabel: [received[0].child, received[0].account].filter(Boolean).join(" · "),
+          newBalanceZar: money(received[0].balance_zar),
+        };
+      }
+    } else if (to && to !== from) {
       const received = await sql<{ label: string; balance_zar: string | null }>`
         update accounts set balance_zar = coalesce(balance_zar, 0) + ${Math.abs(input.amountZar)}
         where id = ${to} and balance_zar is not null
@@ -166,7 +183,8 @@ export async function deleteTransaction(
     const rows = await sql<Record<string, unknown>>`
       delete from transactions where id = ${recordId}::bigint
       returning occurred_on::text, description, amount_zar, type::text,
-                category, original_category, account_id, to_account_id, notes`;
+                category, original_category, account_id, to_account_id,
+                to_kid_account_id::text, notes`;
     if (rows.length === 0) return { ok: false, error: "That entry no longer exists." };
 
     const row = rows[0];
@@ -181,6 +199,10 @@ export async function deleteTransaction(
     if (row.to_account_id) {
       await sql`update accounts set balance_zar = coalesce(balance_zar, 0) - ${Math.abs(amount)}
                 where id = ${row.to_account_id as string} and balance_zar is not null`;
+    }
+    if (row.to_kid_account_id) {
+      await sql`update kids_accounts set balance_zar = balance_zar - ${Math.abs(amount)}
+                where id = ${row.to_kid_account_id as string}::bigint`;
     }
 
     invalidate();
@@ -201,15 +223,21 @@ export async function restoreTransaction(
   try {
     await sql`
       insert into transactions
-        (occurred_on, description, amount_zar, type, category, original_category, account_id, to_account_id, notes)
+        (occurred_on, description, amount_zar, type, category, original_category, account_id,
+         to_account_id, to_kid_account_id, notes)
       values (${String(f.occurred_on).slice(0, 10)}::date, ${f.description as string},
               ${money(f.amount_zar)}, ${f.type as string}::transaction_type,
               ${(f.category as string) ?? null}, ${(f.original_category as string) ?? null},
               ${(f.account_id as string) ?? null}, ${(f.to_account_id as string) ?? null},
+              ${(f.to_kid_account_id as string) ?? null}::bigint,
               ${(f.notes as string) ?? null})`;
     if (f.account_id) {
       await sql`update accounts set balance_zar = coalesce(balance_zar, 0) + ${money(f.amount_zar)}
                 where id = ${f.account_id as string} and balance_zar is not null`;
+    }
+    if (f.to_kid_account_id) {
+      await sql`update kids_accounts set balance_zar = balance_zar + ${Math.abs(money(f.amount_zar))}
+                where id = ${f.to_kid_account_id as string}::bigint`;
     }
     invalidate();
     return { ok: true, data: undefined };

@@ -321,3 +321,25 @@ export function budgetCategoryFor(
 
   return CATEGORY_TO_BUDGET[clean] ?? null;
 }
+
+/**
+ * A transfer destination is either one of Romano's accounts or one of the
+ * kids'. The select carries the kind in its value ("account:Capitec Main" /
+ * "kid:3") so the two can never be confused — a bare label would need a lookup
+ * that could match the wrong table.
+ */
+export function destinationFrom(value: string): {
+  toAccount?: string;
+  toKidAccount?: string;
+} {
+  if (value.startsWith("kid:")) {
+    const id = value.slice(4).trim();
+    return id ? { toKidAccount: id } : {};
+  }
+  if (value.startsWith("account:")) {
+    const label = value.slice(8).trim();
+    return label ? { toAccount: label } : {};
+  }
+  // Anything else is a plain account label, which is what older markup sent.
+  return value.trim() ? { toAccount: value.trim() } : {};
+}

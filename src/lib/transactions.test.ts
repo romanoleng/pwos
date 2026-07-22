@@ -1,14 +1,13 @@
 import assert from "node:assert/strict";
 import { describe, it } from "node:test";
 
-import {
+import { destinationFrom,
   budgetCategoryFor,
   countsAsSpend,
   inferTransactionType,
   hasSignAnomaly,
   isNonFinancialCategory,
-  spendContribution,
-} from "./transactions.ts";
+  spendContribution, } from "./transactions.ts";
 
 describe("inferTransactionType", () => {
   it("prefers a stated Type field over any inference", () => {
@@ -202,5 +201,37 @@ describe("spendContribution", () => {
     // Transfers never reach this function, but the sign rule must not claim
     // them if they ever did.
     assert.equal(spendContribution(3895, "Transfer", "PayShap received"), -3895);
+  });
+});
+
+describe("destinationFrom", () => {
+  it("reads one of his own accounts", () => {
+    assert.deepEqual(destinationFrom("account:Capitec Main"), { toAccount: "Capitec Main" });
+  });
+
+  it("reads a kid's account by id", () => {
+    assert.deepEqual(destinationFrom("kid:3"), { toKidAccount: "3" });
+  });
+
+  it("keeps an account label that happens to start like a prefix", () => {
+    // "Kids Savings" must not be mistaken for the "kid:" prefix.
+    assert.deepEqual(destinationFrom("account:Kids Savings"), { toAccount: "Kids Savings" });
+  });
+
+  it("returns neither when nothing is chosen", () => {
+    assert.deepEqual(destinationFrom(""), {});
+    assert.deepEqual(destinationFrom("kid:"), {});
+    assert.deepEqual(destinationFrom("account:"), {});
+  });
+
+  it("never returns both destinations at once", () => {
+    for (const value of ["account:Capitec Main", "kid:3", "", "Capitec Main"]) {
+      const result = destinationFrom(value);
+      assert.ok(!(result.toAccount && result.toKidAccount), value);
+    }
+  });
+
+  it("falls back to treating a bare label as an account", () => {
+    assert.deepEqual(destinationFrom("GOtyme Bank"), { toAccount: "GOtyme Bank" });
   });
 });

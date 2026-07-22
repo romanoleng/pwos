@@ -38,6 +38,7 @@ export function TransactionsScreen() {
       accounts: { label: string; kind: string }[];
       allCategories: { name: string; kind: string }[];
       categories: string[];
+      kidAccounts: { id: string; child: string | null; account: string }[];
     };
   }>(
     "/api/home",
@@ -335,6 +336,7 @@ export function TransactionsScreen() {
         onSaved={() => void mutate()}
         accounts={home?.defaults.accounts}
         allCategories={home?.defaults.allCategories}
+        kidAccounts={home?.defaults.kidAccounts}
         suggestedCategories={home?.defaults.categories}
       />
 
@@ -346,6 +348,7 @@ export function TransactionsScreen() {
           onClose={() => setEditing(null)}
           accounts={home?.defaults.accounts}
           allCategories={home?.defaults.allCategories}
+        kidAccounts={home?.defaults.kidAccounts}
           onSaved={() => {
             setEditing(null);
             setExpanded(null);

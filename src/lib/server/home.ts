@@ -66,12 +66,15 @@ export type HomeSummary = {
     accounts: { label: string; kind: string }[];
     /** Every category, so the picker matches the database exactly. */
     allCategories: { name: string; kind: string }[];
+    /** Lisa's and Liam's accounts — valid transfer destinations. */
+    kidAccounts: { id: string; child: string | null; account: string }[];
   };
 };
 
 export async function getHome(): Promise<HomeSummary> {
   const todayIso0 = toLocalISODate(new Date());
-  const [accounts, budget, recentRows, todayRow, catRows, descRows, accountRows, allCatRows] = await Promise.all([
+  const [accounts, budget, recentRows, todayRow, catRows, descRows, accountRows, allCatRows, kidRows] =
+    await Promise.all([
     getAccounts(),
     getBudgetSummary(),
     sql<{ id: string; occurred_on: string; description: string; amount_zar: string;
@@ -98,6 +101,8 @@ export async function getHome(): Promise<HomeSummary> {
       where not archived order by kind, label`,
     sql<{ name: string; kind: string }>`
       select name, kind::text from categories order by kind, sort_order, name`,
+    sql<{ id: string; child: string | null; account: string }>`
+      select id::text, child, account from kids_accounts order by child, account`,
   ]);
 
   const cycle = getBudgetCycle();
@@ -145,6 +150,7 @@ export async function getHome(): Promise<HomeSummary> {
       descriptions: descRows.map((r) => r.description),
       accounts: accountRows,
       allCategories: allCatRows,
+      kidAccounts: kidRows,
     },
   };
 }

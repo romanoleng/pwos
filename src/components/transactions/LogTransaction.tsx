@@ -13,7 +13,7 @@ import { Field, SlideOver, inputClass } from "@/components/ui/SlideOver";
 import { useToast } from "@/components/ui/Toast";
 import { toLocalISODate } from "@/lib/crypto/history";
 import { formatMoneyWhole } from "@/lib/format";
-import { isMoveCategory } from "@/lib/transactions";
+import { destinationFrom, isMoveCategory } from "@/lib/transactions";
 
 /**
  * Transaction entry (CLAUDE.md §5).
@@ -45,6 +45,7 @@ export function LogTransaction({
   recentDescriptions = [],
   accounts = [],
   allCategories = [],
+  kidAccounts = [],
   editing,
 }: {
   open: boolean;
@@ -58,6 +59,8 @@ export function LogTransaction({
   accounts?: { label: string; kind: string }[];
   /** Every category from the database, split by kind for the right mode. */
   allCategories?: { name: string; kind: string }[];
+  /** Lisa's and Liam's accounts, offered as transfer destinations. */
+  kidAccounts?: { id: string; child: string | null; account: string }[];
   /** When present the sheet edits this entry instead of creating one. */
   editing?: EditingTransaction;
 }) {
@@ -103,7 +106,7 @@ export function LogTransaction({
       direction: direction === "move" ? "out" : direction,
       category: chosenCategory || "Transfer",
       account: String(formData.get("account") ?? ""),
-      toAccount: String(formData.get("toAccount") ?? "") || undefined,
+      ...destinationFrom(String(formData.get("toAccount") ?? "")),
       date: String(formData.get("date") ?? ""),
       notes: String(formData.get("notes") ?? ""),
     };
@@ -315,10 +318,19 @@ export function LogTransaction({
                 Where is it going?
               </option>
               {accountOptions.map((account) => (
-                <option key={account} value={account}>
+                <option key={account} value={`account:${account}`}>
                   {account}
                 </option>
               ))}
+              {kidAccounts.length > 0 ? (
+                <optgroup label="Lisa &amp; Liam">
+                  {kidAccounts.map((kid) => (
+                    <option key={kid.id} value={`kid:${kid.id}`}>
+                      {[kid.child, kid.account].filter(Boolean).join(" · ")}
+                    </option>
+                  ))}
+                </optgroup>
+              ) : null}
             </select>
           </Field>
         ) : null}
