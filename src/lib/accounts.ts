@@ -10,10 +10,11 @@
  *   - "Main Account" → Capitec Main. A row reads
  *     "Transfer: Capitec Main → Luno", so the account is Capitec Main.
  *   - "Capitec" → Capitec Main. The personal current account; 44 rows.
- *   - "TymeBank" is deliberately NOT aliased to GOtyme. A TymeBank row reads
- *     "Payment to J LENG GoTyme Bank" — money moving *between* them, so they
- *     are different banks. TymeBank has 29 transactions and no recorded
- *     balance, which the UI surfaces rather than hides.
+ *   - "TymeBank" IS GOtyme. An earlier reading of "Payment to J LENG GoTyme
+ *     Bank" suggested two different banks; in fact that was a payment to
+ *     someone else's GoTyme account. Romano confirmed he holds one account
+ *     with them, and the 151 TymeBank rows were merged into GOtyme on
+ *     2026-07-22.
  */
 
 export type AccountKind = "cash" | "savings" | "business" | "crypto" | "unknown";
@@ -49,18 +50,17 @@ export const ACCOUNTS: CanonicalAccount[] = [
     entity: "personal",
     spendable: true,
     netWorthName: "GOtyme Bank",
-    aliases: ["GOtyme Bank", "GOtyme", "GoTyme"],
-  },
-  {
-    id: "tymebank",
-    label: "TymeBank",
-    kind: "cash",
-    entity: "personal",
-    // Not spendable: with no recorded balance we cannot honestly include it in
-    // safe-to-spend. Counting an unknown balance as available money is exactly
-    // the kind of optimism that makes a wealth app dangerous.
-    spendable: false,
-    aliases: ["TymeBank", "Tyme Bank", "TymeBank EveryDay (51012204711)"],
+    // TymeBank was the same account under an older name — Romano holds only
+    // one account with them. Its 151 historical transactions were merged here
+    // on 2026-07-22, so the old spellings must still resolve.
+    aliases: [
+      "GOtyme Bank",
+      "GOtyme",
+      "GoTyme",
+      "TymeBank",
+      "Tyme Bank",
+      "TymeBank EveryDay (51012204711)",
+    ],
   },
   {
     id: "absa",

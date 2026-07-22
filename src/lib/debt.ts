@@ -32,13 +32,6 @@ export type DuplicateGroup = {
   countedZar: number;
 };
 
-/** Names that refer to the same debt-review obligation. */
-const DEBT_REVIEW_TERMS = [/anders/i, /\bmbd\b/i, /\bscm\b/i, /debt\s*review/i];
-
-function isDebtReview(name: string): boolean {
-  return DEBT_REVIEW_TERMS.some((term) => term.test(name));
-}
-
 /** Strips punctuation and case so "Pay Just Now" matches "PayJustNow". */
 function normalise(name: string): string {
   return name.toLowerCase().replace(/[^a-z0-9]/g, "");
@@ -54,23 +47,13 @@ function normalise(name: string): string {
 export function findDuplicates(rows: DebtRow[]): DuplicateGroup[] {
   const groups: DuplicateGroup[] = [];
 
-  const review = rows.filter((row) => isDebtReview(row.name));
-  if (review.length > 1) {
-    const counted = review.reduce((total, row) => total + row.balanceZar, 0);
-    groups.push({
-      reason:
-        "These all name the same debt review. If it is one obligation, the total is being counted more than once.",
-      rows: review,
-      // The largest balance is the most likely true figure; the others look
-      // like the same debt re-entered under a different administrator.
-      dedupedZar: Math.max(...review.map((row) => row.balanceZar)),
-      countedZar: counted,
-    });
-  }
-
+  // Only exact name collisions are flagged. An earlier version inferred that
+  // Anders, MBD Legal and SCM were one debt review re-entered three times.
+  // Romano confirmed they are three separate creditors, so that heuristic was
+  // crying wolf on correct data — worse than staying quiet. Genuine duplicates
+  // are now recorded explicitly via debts.duplicate_of in Postgres.
   const byName = new Map<string, DebtRow[]>();
   for (const row of rows) {
-    if (isDebtReview(row.name)) continue;
     const key = normalise(row.name);
     byName.set(key, [...(byName.get(key) ?? []), row]);
   }

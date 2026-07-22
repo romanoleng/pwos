@@ -20,23 +20,17 @@ function normaliseId(name: string) {
 }
 
 describe("findDuplicates", () => {
-  it("groups the debt review entered under different administrators", () => {
-    // Live data: Anders R160,345 + MBD Legal R160,745 + SCM R500 are one
-    // obligation recorded three times.
+  it("does not flag separate creditors with similar-sounding names", () => {
+    // Anders, MBD Legal and SCM read like one debt review entered three times,
+    // and an earlier version grouped them. Romano confirmed they are three
+    // real creditors — flagging correct data as suspect is worse than silence.
     const groups = findDuplicates([
       debt("Anders", 160_345),
       debt("MBD Legal", 160_745),
       debt("SCM", 500),
       debt("Home Loan (Bond)", 974_932),
     ]);
-    assert.equal(groups.length, 1);
-    assert.deepEqual(groups[0].rows.map((r) => r.name), ["Anders", "MBD Legal", "SCM"]);
-    assert.equal(groups[0].countedZar, 321_590);
-    assert.equal(groups[0].dedupedZar, 160_745);
-  });
-
-  it("does not flag a single debt-review row", () => {
-    assert.equal(findDuplicates([debt("Anders", 160_345)]).length, 0);
+    assert.equal(groups.length, 0);
   });
 
   it("catches the same name spelled differently", () => {

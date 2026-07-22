@@ -1,14 +1,14 @@
 {
   "base": "appL4V6tbsGRJ7WxQ",
-  "takenAt": "2026-07-22T07:20:10.777Z",
-  "totalRecords": 625,
+  "takenAt": "2026-07-22T11:08:29.753Z",
+  "totalRecords": 630,
   "tables": {
     "Market Data": 32,
     "Holdings": 48,
     "Snapshots": 1,
     "Net Worth": 20,
     "Budget": 16,
-    "Transactions": 445,
+    "Transactions": 450,
     "Savings Goals": 10,
     "Kids Accounts": 10,
     "Debt Tracker": 8,

@@ -10,13 +10,20 @@ describe("resolveAccount", () => {
     }
   });
 
-  it("keeps TymeBank separate from GOtyme", () => {
-    // A TymeBank row reads "Payment to J LENG GoTyme Bank" — money moving
-    // between them, so they are different banks. Merging them would silently
-    // combine two real balances into one wrong number.
-    assert.equal(resolveAccount("TymeBank")?.id, "tymebank");
-    assert.equal(resolveAccount("GOtyme Bank")?.id, "gotyme");
-    assert.notEqual(resolveAccount("TymeBank")?.id, resolveAccount("GOtyme Bank")?.id);
+  it("resolves TymeBank to GOtyme — they are one account", () => {
+    // An earlier version kept these apart, reasoning from a row that read
+    // "Payment to J LENG GoTyme Bank". That was a payment to someone else's
+    // GoTyme account, not evidence of two accounts. Romano confirmed he holds
+    // one account with them; the 151 TymeBank rows were merged on 2026-07-22.
+    for (const alias of [
+      "TymeBank",
+      "Tyme Bank",
+      "TymeBank EveryDay (51012204711)",
+      "GOtyme Bank",
+      "GOtyme",
+    ]) {
+      assert.equal(resolveAccount(alias)?.id, "gotyme", alias);
+    }
   });
 
   it("is case and whitespace insensitive", () => {
@@ -41,10 +48,10 @@ describe("spendable accounts", () => {
     assert.equal(resolveAccount("Capitec Business")?.spendable, false);
   });
 
-  it("excludes TymeBank because its balance is unknown", () => {
-    // Treating an unrecorded balance as available money is the kind of
-    // optimism that makes a wealth app dangerous.
-    assert.equal(resolveAccount("TymeBank")?.spendable, false);
+  it("still excludes business money from personal safe-to-spend", () => {
+    // GOtyme (which TymeBank now resolves to) is spendable; business is not.
+    assert.equal(resolveAccount("TymeBank")?.spendable, true);
+    assert.equal(resolveAccount("Capitec Business")?.spendable, false);
   });
 });
 

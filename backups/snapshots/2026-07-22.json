@@ -1,6 +1,6 @@
 {
   "base": "appL4V6tbsGRJ7WxQ",
-  "takenAt": "2026-07-22T07:20:10.777Z",
+  "takenAt": "2026-07-22T11:08:29.753Z",
   "tables": {
     "Market Data": {
       "id": "tblMDxJG8FyYZuYtH",
@@ -1996,7 +1996,7 @@
             "fldBS5N3nnYVMCQ3q": "Cash",
             "fldGCrLxFR8XIwxZB": "Asset",
             "fldfxiUQZvJxyTu0f": "Absa (Romano)",
-            "fldqBv7liYBBOQ3Lz": 1.83,
+            "fldqBv7liYBBOQ3Lz": -157.07,
             "fldzTawYXUivHbh8F": "25 Jun 2026 | R12K reflected from prior Capitec Business transfers. Bond R10K + Anders MbD R500 paid out. Net balance R1,275.83."
           }
         },
@@ -2032,7 +2032,7 @@
             "fldBS5N3nnYVMCQ3q": "Cash",
             "fldGCrLxFR8XIwxZB": "Asset",
             "fldfxiUQZvJxyTu0f": "Capitec Main",
-            "fldqBv7liYBBOQ3Lz": 4500,
+            "fldqBv7liYBBOQ3Lz": 526.08,
             "fldzTawYXUivHbh8F": "27 Jun 2026 | R190 to Lisa (spending) + R35 data = R225 deducted. Balance: R6,254.\n27 Jun 2026 | R987.50 Luno top-up (XRP R687 + LINK R150 + ONDO R150.50). Balance: R5,266.50.\n4 Jul 2026 | R620 to Luno → BTC buy R612.25. Balance: R5,920.\n5 Jul 2026 | R1,000 to EasyCrypto → ENA buy R541, R459 cash pending allocation. Balance: R4,920."
           }
         },
@@ -2056,7 +2056,7 @@
             "fldBS5N3nnYVMCQ3q": "Cash",
             "fldGCrLxFR8XIwxZB": "Asset",
             "fldfxiUQZvJxyTu0f": "GOtyme Bank",
-            "fldqBv7liYBBOQ3Lz": 4704.28,
+            "fldqBv7liYBBOQ3Lz": 414.1,
             "fldzTawYXUivHbh8F": "25 Jun 2026 | Balance corrected to R6,878 — user confirmed actual balance.\n26 Jun 2026 | R1,335 deducted — Checkers groceries. New balance: R5,543."
           }
         },
@@ -2116,7 +2116,7 @@
             "fldBS5N3nnYVMCQ3q": "Savings",
             "fldGCrLxFR8XIwxZB": "Asset",
             "fldfxiUQZvJxyTu0f": "Creative Tax (Capitec Savings)",
-            "fldqBv7liYBBOQ3Lz": 800,
+            "fldqBv7liYBBOQ3Lz": 0,
             "fldzTawYXUivHbh8F": "7-day savings plan on Capitec Main — dedicated company/SARS tax provision. Created 24 Jun 2026. Target: R3,000. Top up monthly — R800 done, R2,200 remaining."
           }
         },
@@ -2160,7 +2160,7 @@
             "fldBS5N3nnYVMCQ3q": "Cash",
             "fldGCrLxFR8XIwxZB": "Asset",
             "fldfxiUQZvJxyTu0f": "Capitec Business (CreativeDigital)",
-            "fldqBv7liYBBOQ3Lz": 683.62,
+            "fldqBv7liYBBOQ3Lz": 7.39,
             "fldzTawYXUivHbh8F": "25 Jun 2026 | Balance corrected to R6,593.\n25 Jun 2026 | R500 petrol deducted (retroactive). Balance: R3,122."
           }
         }
@@ -2471,7 +2471,7 @@
           "type": "singleSelect"
         }
       ],
-      "recordCount": 445,
+      "recordCount": 450,
       "records": [
         {
           "id": "rec02UeyyYj6GXJGs",
@@ -2521,7 +2521,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -493,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -2560,7 +2560,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "EFT for ABSA BANK Romano",
             "fldrJ6f3gt0PwbJgC": 7500,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_jan26"
           }
         },
@@ -2599,7 +2599,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Immediate EFT Emergency",
             "fldrJ6f3gt0PwbJgC": -96.93,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -2612,7 +2612,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Payment to J LENG GoTyme Bank",
             "fldrJ6f3gt0PwbJgC": -1400,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_may26"
           }
         },
@@ -2651,7 +2651,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -499.35,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -2728,7 +2728,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -495.78,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -2741,7 +2741,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -539.8,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -2780,7 +2780,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "GoalSave closure Kitchen",
             "fldrJ6f3gt0PwbJgC": 250.49,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_apr26"
           }
         },
@@ -2793,7 +2793,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -6.72,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -2819,7 +2819,7 @@
             "fldhsDTulqpR7MdtA": "Store Account Payments",
             "fldkv75saQVcniLIk": "Pay Beneficiary PAYFLEXc23ba",
             "fldrJ6f3gt0PwbJgC": -531,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Payflex BNPL repayment"
           }
         },
@@ -2845,7 +2845,7 @@
             "fldhsDTulqpR7MdtA": "Clothing & Shoes",
             "fldkv75saQVcniLIk": "Online Purchase Payflex Sandton",
             "fldrJ6f3gt0PwbJgC": -183.08,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -2884,7 +2884,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Once-Off Payment Wife",
             "fldrJ6f3gt0PwbJgC": -290,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -2925,6 +2925,17 @@
             "fldrJ6f3gt0PwbJgC": 2600,
             "fldsoRG39bewZ2MWC": "ABSA",
             "fldvh7XMPP3aQtyV3": "Income | absa_apr26"
+          }
+        },
+        {
+          "id": "rec5KFhkXmkHHSq6s",
+          "createdTime": "2026-07-22T10:23:12.000Z",
+          "fields": {
+            "fldT6wzkOhs44yJ1x": "2026-07-22",
+            "fldhsDTulqpR7MdtA": "Smokes",
+            "fldkv75saQVcniLIk": "CBD",
+            "fldrJ6f3gt0PwbJgC": -200,
+            "fldsoRG39bewZ2MWC": "Capitec Main"
           }
         },
         {
@@ -3066,7 +3077,7 @@
             "fldhsDTulqpR7MdtA": "Home Maintenance",
             "fldkv75saQVcniLIk": "Purchase at VPSDERRICK TOILET GRASSY PARK",
             "fldrJ6f3gt0PwbJgC": -200,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -3144,8 +3155,19 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -467.46,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
+          }
+        },
+        {
+          "id": "rec7oLrY9TQfVXbOu",
+          "createdTime": "2026-07-22T10:09:54.000Z",
+          "fields": {
+            "fldT6wzkOhs44yJ1x": "2026-07-22",
+            "fldhsDTulqpR7MdtA": "Smokes",
+            "fldkv75saQVcniLIk": "Ciggues",
+            "fldrJ6f3gt0PwbJgC": -200,
+            "fldsoRG39bewZ2MWC": "Capitec Main"
           }
         },
         {
@@ -3157,7 +3179,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -399.27,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -3208,7 +3230,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Payment to Business Advertising Marketing Capitec",
             "fldrJ6f3gt0PwbJgC": -4000,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_may26"
           }
         },
@@ -3311,7 +3333,7 @@
             "fldhsDTulqpR7MdtA": "Pharmacy",
             "fldkv75saQVcniLIk": "Purchase at CLICKS CAPRICORN PARK",
             "fldrJ6f3gt0PwbJgC": -202.42,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_mar26"
           }
         },
@@ -3324,7 +3346,7 @@
             "fldhsDTulqpR7MdtA": "Savings",
             "fldkv75saQVcniLIk": "Money transferred in for GoalSave Lounge",
             "fldrJ6f3gt0PwbJgC": -1000,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -3337,7 +3359,7 @@
             "fldhsDTulqpR7MdtA": "Business Income",
             "fldkv75saQVcniLIk": "EFT for CREATIVEDIGITAL",
             "fldrJ6f3gt0PwbJgC": 10000,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Income | tyme_apr26"
           }
         },
@@ -3363,7 +3385,7 @@
             "fldhsDTulqpR7MdtA": "Transport",
             "fldkv75saQVcniLIk": "Purchase at AE I AND S MOTORS FC GRASSYPARK",
             "fldrJ6f3gt0PwbJgC": -200,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -3376,7 +3398,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Payment to J LENG GoTyme Bank",
             "fldrJ6f3gt0PwbJgC": -150,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_may26"
           }
         },
@@ -3401,7 +3423,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Once-Off Payment Wife",
             "fldrJ6f3gt0PwbJgC": -50,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -3427,7 +3449,7 @@
             "fldhsDTulqpR7MdtA": "Subscriptions",
             "fldkv75saQVcniLIk": "Online Purchase CC Xtra Savings Subs",
             "fldrJ6f3gt0PwbJgC": -99,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -3440,7 +3462,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -362.2,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -3492,7 +3514,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Purchase at Checkers Meadowridge",
             "fldrJ6f3gt0PwbJgC": -409.71,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -3530,7 +3552,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -36.98,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -3569,7 +3591,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Transfer: Yellow Card → Capitec Main",
             "fldrJ6f3gt0PwbJgC": -10000,
-            "fldsoRG39bewZ2MWC": "TymeBank"
+            "fldsoRG39bewZ2MWC": "GOtyme Bank"
           }
         },
         {
@@ -3581,7 +3603,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Pay Beneficiary Work duties",
             "fldrJ6f3gt0PwbJgC": -500,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_jan26"
           }
         },
@@ -3722,7 +3744,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -361.91,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -3798,7 +3820,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -20,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -3811,7 +3833,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Transfer: Yellow Card → Janeese TymeBank",
             "fldrJ6f3gt0PwbJgC": -2000,
-            "fldsoRG39bewZ2MWC": "TymeBank"
+            "fldsoRG39bewZ2MWC": "GOtyme Bank"
           }
         },
         {
@@ -3887,7 +3909,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -10,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -3926,7 +3948,7 @@
             "fldhsDTulqpR7MdtA": "Clothing & Shoes",
             "fldkv75saQVcniLIk": "Online Purchase Payflex Sandton",
             "fldrJ6f3gt0PwbJgC": -289.68,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -3965,7 +3987,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -398.28,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -3978,7 +4000,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -717.81,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -3991,7 +4013,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "EFT for CAPITEC R LENG",
             "fldrJ6f3gt0PwbJgC": 1200,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -4030,7 +4052,7 @@
             "fldhsDTulqpR7MdtA": "Clothing & Shoes",
             "fldkv75saQVcniLIk": "Online Purchase Payflex Sandton",
             "fldrJ6f3gt0PwbJgC": -677.34,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -4056,7 +4078,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Immediate EFT Savings",
             "fldrJ6f3gt0PwbJgC": -444,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_jan26"
           }
         },
@@ -4108,7 +4130,7 @@
             "fldhsDTulqpR7MdtA": "Transport",
             "fldkv75saQVcniLIk": "Purchase at TOP VENDING PTY",
             "fldrJ6f3gt0PwbJgC": -19,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -4134,7 +4156,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Purchase at SUPER STORE Lansdowne",
             "fldrJ6f3gt0PwbJgC": -226,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -4173,7 +4195,7 @@
             "fldhsDTulqpR7MdtA": "Business Income",
             "fldkv75saQVcniLIk": "Income received",
             "fldrJ6f3gt0PwbJgC": 15800,
-            "fldsoRG39bewZ2MWC": "TymeBank"
+            "fldsoRG39bewZ2MWC": "GOtyme Bank"
           }
         },
         {
@@ -4185,7 +4207,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -10,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -4224,7 +4246,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -635.87,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -4276,7 +4298,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Purchase at VPSCAPRICORN BEACH SUP",
             "fldrJ6f3gt0PwbJgC": -101,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -4315,7 +4337,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Purchase at PnP Crp Muizenberg",
             "fldrJ6f3gt0PwbJgC": -138.44,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -4328,7 +4350,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "EFT for CAPITEC R LENG",
             "fldrJ6f3gt0PwbJgC": 209,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_may26"
           }
         },
@@ -4367,7 +4389,7 @@
             "fldhsDTulqpR7MdtA": "Electricity",
             "fldkv75saQVcniLIk": "VAS purchase for Electricity",
             "fldrJ6f3gt0PwbJgC": -300,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -4393,7 +4415,7 @@
             "fldhsDTulqpR7MdtA": "Bank Fees",
             "fldkv75saQVcniLIk": "Fee VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -3,
-            "fldsoRG39bewZ2MWC": "TymeBank EveryDay (51012204711)",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "VAS electricity fee"
           }
         },
@@ -4406,7 +4428,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "GoalSave closure Garage Cupboards",
             "fldrJ6f3gt0PwbJgC": 100.2,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_apr26"
           }
         },
@@ -4432,7 +4454,7 @@
             "fldhsDTulqpR7MdtA": "Clothing & Shoes",
             "fldkv75saQVcniLIk": "Online Purchase Payflex Sandton",
             "fldrJ6f3gt0PwbJgC": -530.68,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -4445,7 +4467,7 @@
             "fldhsDTulqpR7MdtA": "Clothing & Shoes",
             "fldkv75saQVcniLIk": "Purchase at WOOLWORTHS Capricorn SQR",
             "fldrJ6f3gt0PwbJgC": -49.98,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -4470,7 +4492,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -466.23,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -4483,7 +4505,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -10,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -4496,7 +4518,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Purchase at Pick n Pay Asap KENILWORTH",
             "fldrJ6f3gt0PwbJgC": -496.77,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -4560,7 +4582,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -479.15,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -4573,7 +4595,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "PayShap Pay by Account R LENG",
             "fldrJ6f3gt0PwbJgC": 2080,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_jan26"
           }
         },
@@ -4637,7 +4659,7 @@
             "fldhsDTulqpR7MdtA": "Savings",
             "fldkv75saQVcniLIk": "Money transferred in for GoalSave Patio+Grass",
             "fldrJ6f3gt0PwbJgC": -2000,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -4650,7 +4672,7 @@
             "fldhsDTulqpR7MdtA": "Electricity",
             "fldkv75saQVcniLIk": "VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -140,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -4688,7 +4710,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -804.74,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -4714,7 +4736,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -10,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -4792,7 +4814,7 @@
             "fldhsDTulqpR7MdtA": "Electricity",
             "fldkv75saQVcniLIk": "VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -200,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -4818,7 +4840,7 @@
             "fldhsDTulqpR7MdtA": "Food & Dining",
             "fldkv75saQVcniLIk": "KFC Takeaways",
             "fldrJ6f3gt0PwbJgC": -215,
-            "fldsoRG39bewZ2MWC": "TymeBank"
+            "fldsoRG39bewZ2MWC": "GOtyme Bank"
           }
         },
         {
@@ -4869,7 +4891,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -10,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -4894,7 +4916,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -334.98,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -4907,7 +4929,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -14.27,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -4920,7 +4942,7 @@
             "fldhsDTulqpR7MdtA": "Electricity",
             "fldkv75saQVcniLIk": "VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -250,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -4946,7 +4968,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Pay Beneficiary Business Advertising Marketing",
             "fldrJ6f3gt0PwbJgC": -1300,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_jan26"
           }
         },
@@ -5075,7 +5097,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Pay Beneficiary Business Advertising Marketing",
             "fldrJ6f3gt0PwbJgC": -1100,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_jan26"
           }
         },
@@ -5088,7 +5110,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -406.92,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -5114,7 +5136,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -528.45,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -5127,7 +5149,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Pay Beneficiary Business Advertising Marketing",
             "fldrJ6f3gt0PwbJgC": -1000,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -5165,7 +5187,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -2.82,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -5183,6 +5205,18 @@
           }
         },
         {
+          "id": "recS5MRRiXJNsOUz4",
+          "createdTime": "2026-07-22T10:07:00.000Z",
+          "fields": {
+            "fldT6wzkOhs44yJ1x": "2026-07-22",
+            "fldhsDTulqpR7MdtA": "Groceries",
+            "fldkv75saQVcniLIk": "Checkers",
+            "fldrJ6f3gt0PwbJgC": -200,
+            "fldsoRG39bewZ2MWC": "Capitec Main",
+            "fldvh7XMPP3aQtyV3": "Test"
+          }
+        },
+        {
           "id": "recS6Ns72falR6JH5",
           "createdTime": "2026-06-13T13:17:35.000Z",
           "fields": {
@@ -5191,7 +5225,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -593.55,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -5204,7 +5238,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -10,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -5230,7 +5264,7 @@
             "fldhsDTulqpR7MdtA": "Subscriptions",
             "fldkv75saQVcniLIk": "Online Purchase CC Xtra Savings Subs",
             "fldrJ6f3gt0PwbJgC": -99,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -5256,7 +5290,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Payment to B Marketing Capitec R LENG",
             "fldrJ6f3gt0PwbJgC": -3000,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_apr26"
           }
         },
@@ -5345,7 +5379,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Once-Off Payment Kids",
             "fldrJ6f3gt0PwbJgC": -50,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -5358,7 +5392,7 @@
             "fldhsDTulqpR7MdtA": "Electricity",
             "fldkv75saQVcniLIk": "VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -150,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -5422,7 +5456,7 @@
             "fldhsDTulqpR7MdtA": "Savings",
             "fldkv75saQVcniLIk": "Money transferred in for GoalSave Home Deposit",
             "fldrJ6f3gt0PwbJgC": -400,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -5435,7 +5469,7 @@
             "fldhsDTulqpR7MdtA": "Electricity",
             "fldkv75saQVcniLIk": "VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -200,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -5461,7 +5495,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Purchase at S2SSuperstoreCapricor Muizenberg",
             "fldrJ6f3gt0PwbJgC": -92,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -5499,7 +5533,7 @@
             "fldhsDTulqpR7MdtA": "Transport",
             "fldkv75saQVcniLIk": "Purchase at TOP VENDING PTY",
             "fldrJ6f3gt0PwbJgC": -12,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -5589,7 +5623,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -357.87,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -5615,7 +5649,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -660.68,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -5666,7 +5700,7 @@
             "fldhsDTulqpR7MdtA": "Store Account Payments",
             "fldkv75saQVcniLIk": "Pay Beneficiary PAYFLEXe35a3",
             "fldrJ6f3gt0PwbJgC": -810.33,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Payflex BNPL repayment"
           }
         },
@@ -5731,7 +5765,7 @@
             "fldhsDTulqpR7MdtA": "Clothing & Shoes",
             "fldkv75saQVcniLIk": "Purchase at PEP 6308 Muizenberg",
             "fldrJ6f3gt0PwbJgC": -145.84,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -5757,7 +5791,7 @@
             "fldhsDTulqpR7MdtA": "Savings",
             "fldkv75saQVcniLIk": "Money transferred in for GoalSave Fridge",
             "fldrJ6f3gt0PwbJgC": -250,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -5807,7 +5841,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "GoalSave closure Hyundai i20",
             "fldrJ6f3gt0PwbJgC": 150.29,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_apr26"
           }
         },
@@ -5820,7 +5854,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -10,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -5859,7 +5893,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "PayShap Pay by Account R LENG",
             "fldrJ6f3gt0PwbJgC": 170,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_may26"
           }
         },
@@ -5885,7 +5919,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -997.16,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -5898,7 +5932,7 @@
             "fldhsDTulqpR7MdtA": "Savings",
             "fldkv75saQVcniLIk": "Money transferred in for GoalSave Aluminium Doors",
             "fldrJ6f3gt0PwbJgC": -500,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -6001,7 +6035,19 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Transfer: Yellow Card → Capitec Main",
             "fldrJ6f3gt0PwbJgC": -400,
-            "fldsoRG39bewZ2MWC": "TymeBank"
+            "fldsoRG39bewZ2MWC": "GOtyme Bank"
+          }
+        },
+        {
+          "id": "recaPvrVIHEA6Hyi3",
+          "createdTime": "2026-07-22T10:06:59.000Z",
+          "fields": {
+            "fldT6wzkOhs44yJ1x": "2026-07-22",
+            "fldhsDTulqpR7MdtA": "Groceries",
+            "fldkv75saQVcniLIk": "Checkers",
+            "fldrJ6f3gt0PwbJgC": -200,
+            "fldsoRG39bewZ2MWC": "Capitec Main",
+            "fldvh7XMPP3aQtyV3": "Test"
           }
         },
         {
@@ -6013,7 +6059,7 @@
             "fldhsDTulqpR7MdtA": "Clothing & Shoes",
             "fldkv75saQVcniLIk": "Purchase at Ackermans Muizenberg",
             "fldrJ6f3gt0PwbJgC": -429.85,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_mar26"
           }
         },
@@ -6039,7 +6085,7 @@
             "fldhsDTulqpR7MdtA": "Bank Fees",
             "fldkv75saQVcniLIk": "Fee VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -3,
-            "fldsoRG39bewZ2MWC": "TymeBank EveryDay (51012204711)",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "VAS electricity fee ref 1c1079"
           }
         },
@@ -6104,7 +6150,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "EFT for CAPITEC R LENG",
             "fldrJ6f3gt0PwbJgC": 990,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -6117,7 +6163,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -941.46,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -6135,6 +6181,17 @@
           }
         },
         {
+          "id": "recbOi8EQS8K1QgRR",
+          "createdTime": "2026-07-22T10:02:46.000Z",
+          "fields": {
+            "fldT6wzkOhs44yJ1x": "2026-07-22",
+            "fldhsDTulqpR7MdtA": "Petrol",
+            "fldkv75saQVcniLIk": "Petrol",
+            "fldrJ6f3gt0PwbJgC": -500,
+            "fldsoRG39bewZ2MWC": "Capitec Main"
+          }
+        },
+        {
           "id": "recbqqeuxYnnvJXi7",
           "createdTime": "2026-06-13T13:20:34.000Z",
           "fields": {
@@ -6143,7 +6200,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -10,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -6156,7 +6213,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Pay Beneficiary Wife",
             "fldrJ6f3gt0PwbJgC": 250,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_jan26"
           }
         },
@@ -6195,7 +6252,7 @@
             "fldhsDTulqpR7MdtA": "Business Income",
             "fldkv75saQVcniLIk": "EFT for CREATIVEDIGITAL",
             "fldrJ6f3gt0PwbJgC": 1196,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Income | tyme_apr26"
           }
         },
@@ -6208,7 +6265,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Payment to Business Advertising Marketing Capitec",
             "fldrJ6f3gt0PwbJgC": -50,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_may26"
           }
         },
@@ -6221,7 +6278,7 @@
             "fldhsDTulqpR7MdtA": "Clothing & Shoes",
             "fldkv75saQVcniLIk": "Online Purchase Payflex Sandton",
             "fldrJ6f3gt0PwbJgC": -233,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -6325,7 +6382,7 @@
             "fldhsDTulqpR7MdtA": "Business Income",
             "fldkv75saQVcniLIk": "EFT for CREATIVEDIGITAL",
             "fldrJ6f3gt0PwbJgC": 5000,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Income | tyme_feb26"
           }
         },
@@ -6364,7 +6421,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "EFT for CAPITEC R LENG",
             "fldrJ6f3gt0PwbJgC": 1050,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -6428,7 +6485,7 @@
             "fldhsDTulqpR7MdtA": "Subscriptions",
             "fldkv75saQVcniLIk": "Online Purchase CC Xtra Savings Subs",
             "fldrJ6f3gt0PwbJgC": -99,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -6480,7 +6537,7 @@
             "fldhsDTulqpR7MdtA": "Home Maintenance",
             "fldkv75saQVcniLIk": "Purchase at WOODSIDE VILLAGE MANAGEME",
             "fldrJ6f3gt0PwbJgC": -25,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -6544,7 +6601,7 @@
             "fldhsDTulqpR7MdtA": "Pharmacy",
             "fldkv75saQVcniLIk": "Purchase at CLICKS CAPRICORN PARK",
             "fldrJ6f3gt0PwbJgC": -159.65,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -6674,7 +6731,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Purchase at S2STamershop CapeTown",
             "fldrJ6f3gt0PwbJgC": -43,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -6700,7 +6757,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -368.28,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -6726,7 +6783,7 @@
             "fldhsDTulqpR7MdtA": "Savings",
             "fldkv75saQVcniLIk": "Money transferred in for GoalSave Kitchen",
             "fldrJ6f3gt0PwbJgC": -350,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -6739,7 +6796,7 @@
             "fldhsDTulqpR7MdtA": "Electricity",
             "fldkv75saQVcniLIk": "VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -165,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -6752,7 +6809,7 @@
             "fldhsDTulqpR7MdtA": "Electricity",
             "fldkv75saQVcniLIk": "VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -200,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -6855,7 +6912,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Pay Beneficiary Wife",
             "fldrJ6f3gt0PwbJgC": 1500,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_apr26"
           }
         },
@@ -6881,7 +6938,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Pay Beneficiary Wife",
             "fldrJ6f3gt0PwbJgC": 1500,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_may26"
           }
         },
@@ -6894,7 +6951,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Payment to J LENG GoTyme Bank",
             "fldrJ6f3gt0PwbJgC": -200,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_may26"
           }
         },
@@ -6907,7 +6964,7 @@
             "fldhsDTulqpR7MdtA": "Subscriptions",
             "fldkv75saQVcniLIk": "Online Purchase CC Xtra Savings Subs",
             "fldrJ6f3gt0PwbJgC": -99,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -6920,7 +6977,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -498.31,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -6972,7 +7029,7 @@
             "fldhsDTulqpR7MdtA": "Savings",
             "fldkv75saQVcniLIk": "Money transferred in for GoalSave Garage Cupboards",
             "fldrJ6f3gt0PwbJgC": -250,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -6985,7 +7042,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -837.33,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -7011,7 +7068,7 @@
             "fldhsDTulqpR7MdtA": "Home Maintenance",
             "fldkv75saQVcniLIk": "Purchase at WOODSIDE VILLAGE MANAGEME",
             "fldrJ6f3gt0PwbJgC": -25,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -7063,7 +7120,7 @@
             "fldhsDTulqpR7MdtA": "Business Income",
             "fldkv75saQVcniLIk": "Immediate EFT for CreativeDigital",
             "fldrJ6f3gt0PwbJgC": 10980,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Income | tyme_feb26"
           }
         },
@@ -7102,7 +7159,7 @@
             "fldhsDTulqpR7MdtA": "Electricity",
             "fldkv75saQVcniLIk": "VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -40,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -7128,7 +7185,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -418.57,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -7167,7 +7224,7 @@
             "fldhsDTulqpR7MdtA": "Home Maintenance",
             "fldkv75saQVcniLIk": "Purchase at WOODSIDE VILLAGE MANAGEME",
             "fldrJ6f3gt0PwbJgC": -25,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -7180,7 +7237,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Reversal - Purchase at Pick n Pay Asap",
             "fldrJ6f3gt0PwbJgC": 508.47,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Income | tyme_jan26"
           }
         },
@@ -7193,7 +7250,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -715.35,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -7232,7 +7289,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -434.42,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -7284,7 +7341,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Payment to Business Advertising Marketing Capitec",
             "fldrJ6f3gt0PwbJgC": -1500,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_may26"
           }
         },
@@ -7362,7 +7419,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Immediate EFT Savings",
             "fldrJ6f3gt0PwbJgC": -500,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_jan26"
           }
         },
@@ -7504,7 +7561,7 @@
             "fldhsDTulqpR7MdtA": "Kids",
             "fldkv75saQVcniLIk": "Clicks - Family",
             "fldrJ6f3gt0PwbJgC": -265,
-            "fldsoRG39bewZ2MWC": "TymeBank"
+            "fldsoRG39bewZ2MWC": "GOtyme Bank"
           }
         },
         {
@@ -7529,7 +7586,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -10,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -7542,7 +7599,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Pay Beneficiary Work duties",
             "fldrJ6f3gt0PwbJgC": -50,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_jan26"
           }
         },
@@ -7555,7 +7612,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "GoalSave closure Car Port",
             "fldrJ6f3gt0PwbJgC": 250.49,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_apr26"
           }
         },
@@ -7632,7 +7689,7 @@
             "fldhsDTulqpR7MdtA": "Business Income",
             "fldkv75saQVcniLIk": "Immediate EFT for CreativeDigital",
             "fldrJ6f3gt0PwbJgC": 10000,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Income | tyme_may26"
           }
         },
@@ -7645,7 +7702,7 @@
             "fldhsDTulqpR7MdtA": "Savings",
             "fldkv75saQVcniLIk": "Money transferred in for GoalSave i20",
             "fldrJ6f3gt0PwbJgC": -500,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_feb26"
           }
         },
@@ -7749,7 +7806,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -10,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -7775,7 +7832,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60 Tips",
             "fldrJ6f3gt0PwbJgC": -10,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -7801,7 +7858,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -25.33,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -7827,7 +7884,7 @@
             "fldhsDTulqpR7MdtA": "Bank Fees",
             "fldkv75saQVcniLIk": "Fee VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -3,
-            "fldsoRG39bewZ2MWC": "TymeBank EveryDay (51012204711)",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "VAS electricity fee ref 3f20ba"
           }
         },
@@ -7840,7 +7897,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "PayShap Pay by Account R LENG",
             "fldrJ6f3gt0PwbJgC": 50,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_jan26"
           }
         },
@@ -7853,7 +7910,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Payment to Business Advertising Marketing Capitec",
             "fldrJ6f3gt0PwbJgC": -1017,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_may26"
           }
         },
@@ -7866,7 +7923,7 @@
             "fldhsDTulqpR7MdtA": "Home Maintenance",
             "fldkv75saQVcniLIk": "Purchase at WOODSIDE VILLAGE MANAGEME",
             "fldrJ6f3gt0PwbJgC": -35,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -7879,7 +7936,7 @@
             "fldhsDTulqpR7MdtA": "Cellphone",
             "fldkv75saQVcniLIk": "VAS Mobile Purchase Vodacom Data Bundle",
             "fldrJ6f3gt0PwbJgC": -375,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_feb26"
           }
         },
@@ -7892,7 +7949,7 @@
             "fldhsDTulqpR7MdtA": "Store Account Payments",
             "fldkv75saQVcniLIk": "Pay Beneficiary PAYFLEXfe1f9",
             "fldrJ6f3gt0PwbJgC": -1475.33,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Payflex BNPL repayment"
           }
         },
@@ -7931,7 +7988,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -364.77,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -7957,7 +8014,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -569.87,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_may26"
           }
         },
@@ -7970,7 +8027,7 @@
             "fldhsDTulqpR7MdtA": "Groceries",
             "fldkv75saQVcniLIk": "Online Purchase Checkers Sixty60",
             "fldrJ6f3gt0PwbJgC": -1.54,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_apr26"
           }
         },
@@ -7996,7 +8053,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Payment to B Marketing Capitec R LENG",
             "fldrJ6f3gt0PwbJgC": -2000,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_apr26"
           }
         },
@@ -8009,7 +8066,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "Payment to J LENG GoTyme Bank",
             "fldrJ6f3gt0PwbJgC": -500,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_apr26"
           }
         },
@@ -8059,7 +8116,7 @@
             "fldhsDTulqpR7MdtA": "Transfer",
             "fldkv75saQVcniLIk": "EFT for CAPITEC R LENG",
             "fldrJ6f3gt0PwbJgC": 570,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Transfer | tyme_may26"
           }
         },
@@ -8188,7 +8245,7 @@
             "fldhsDTulqpR7MdtA": "Electricity",
             "fldkv75saQVcniLIk": "VAS Electricity Purchase",
             "fldrJ6f3gt0PwbJgC": -150,
-            "fldsoRG39bewZ2MWC": "TymeBank",
+            "fldsoRG39bewZ2MWC": "GOtyme Bank",
             "fldvh7XMPP3aQtyV3": "Expense | tyme_jan26"
           }
         },
@@ -8662,8 +8719,9 @@
             "fld19zodyvt0yKC1P": "PayJustNow",
             "fldRylhwh9GUkXciS": 5000,
             "fldgVTyiDZrS8Brhd": "Revolving Credit",
+            "fldgVYqZ1kBUGDUnv": "Available credit R21,983. Two instalments left: R893.33 + R523.",
             "fldpRkJrHVVd21Vf4": "2026-07-25",
-            "fldyDq6KrUTl0MQgt": 6800
+            "fldyDq6KrUTl0MQgt": 1416.33
           }
         },
         {
@@ -8716,10 +8774,10 @@
             "fldRylhwh9GUkXciS": 4619,
             "fldZwbE4Ei51vVnm2": 22,
             "fldgVTyiDZrS8Brhd": "Revolving Credit",
-            "fldgVYqZ1kBUGDUnv": "~20%+ interest — eliminate within 12 months, redirect R5k to savings after",
+            "fldgVYqZ1kBUGDUnv": "Available credit R11,040. One instalment left.",
             "fldpRkJrHVVd21Vf4": "2027-06-01",
             "fldxbXjuQeD4F9xpH": "Active",
-            "fldyDq6KrUTl0MQgt": 7200
+            "fldyDq6KrUTl0MQgt": 2519.33
           }
         }
       ]
