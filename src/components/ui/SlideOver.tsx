@@ -7,8 +7,9 @@ import { useEffect, useRef, type ReactNode } from "react";
  * Slide-over panel (CLAUDE.md §9b) — used for add/edit instead of a modal, so
  * the figures you're editing against stay visible behind it.
  *
- * Full-height sheet on desktop, bottom sheet on mobile where a right-hand
- * drawer is awkward to reach one-handed.
+ * Full-height sheet on desktop; on mobile either a bottom sheet (default) or,
+ * with `fullScreen`, the whole screen — for forms that should be seen whole
+ * rather than scrolled (the transaction log). Desktop is unaffected either way.
  */
 export function SlideOver({
   open,
@@ -17,6 +18,7 @@ export function SlideOver({
   description,
   children,
   footer,
+  fullScreen = false,
 }: {
   open: boolean;
   onClose: () => void;
@@ -24,6 +26,8 @@ export function SlideOver({
   description?: string;
   children: ReactNode;
   footer?: ReactNode;
+  /** Mobile: cover the screen instead of rising as a bottom sheet. */
+  fullScreen?: boolean;
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
 
@@ -67,7 +71,13 @@ export function SlideOver({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="absolute inset-x-0 bottom-0 flex max-h-[88dvh] animate-[sheet-up_280ms_cubic-bezier(0.32,0.72,0,1)] flex-col rounded-t-2xl border border-line-2 bg-surface md:animate-[panel-in_220ms_cubic-bezier(0.32,0.72,0,1)] md:inset-y-0 md:left-auto md:right-0 md:max-h-none md:w-[26rem] md:rounded-none md:rounded-l-2xl md:border-y-0 md:border-r-0"
+        className={
+          fullScreen
+            ? // Whole screen on mobile (pt-safe clears the notch in the PWA);
+              // ≥ md it collapses back to the standard right-hand panel.
+              "pt-safe absolute inset-0 flex animate-[sheet-up_280ms_cubic-bezier(0.32,0.72,0,1)] flex-col bg-surface md:animate-[panel-in_220ms_cubic-bezier(0.32,0.72,0,1)] md:left-auto md:w-[26rem] md:rounded-l-2xl md:border-l md:border-line-2 md:pt-0"
+            : "absolute inset-x-0 bottom-0 flex max-h-[88dvh] animate-[sheet-up_280ms_cubic-bezier(0.32,0.72,0,1)] flex-col rounded-t-2xl border border-line-2 bg-surface md:animate-[panel-in_220ms_cubic-bezier(0.32,0.72,0,1)] md:inset-y-0 md:left-auto md:right-0 md:max-h-none md:w-[26rem] md:rounded-none md:rounded-l-2xl md:border-y-0 md:border-r-0"
+        }
       >
         <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3.5">
           <div>
@@ -86,7 +96,18 @@ export function SlideOver({
           </button>
         </div>
 
-        <div className="flex-1 overflow-y-auto px-4 py-4">{children}</div>
+        {/* Scrolling stays possible as the fallback (small phones, keyboard
+            open) — fullScreen just sizes the sheet so it shouldn't be needed.
+            Its bottom padding absorbs the home indicator. */}
+        <div
+          className={
+            fullScreen
+              ? "flex-1 overflow-y-auto px-4 pt-4 pb-[max(1rem,env(safe-area-inset-bottom,0px))]"
+              : "flex-1 overflow-y-auto px-4 py-4"
+          }
+        >
+          {children}
+        </div>
 
         {footer ? (
           <div className="pb-safe border-t border-line px-4 py-3">{footer}</div>

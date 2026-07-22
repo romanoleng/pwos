@@ -195,6 +195,9 @@ export function LogTransaction({
   return (
     <SlideOver
       open={open}
+      // Full screen on mobile so the whole form is one view, no scrolling —
+      // the point of entry-at-the-till is seeing everything at once.
+      fullScreen
       onClose={() => {
         reset();
         onClose();
@@ -206,7 +209,13 @@ export function LogTransaction({
           : "Writes straight to your ledger and moves the account."
       }
     >
-      <form action={(formData) => submit(formData, false)}>
+      {/* min-h-full + the mt-auto tail pins "Log it" to the bottom of the
+          screen, so the layout reads as designed-for-the-space rather than a
+          short form floating in a tall sheet. */}
+      <form
+        action={(formData) => submit(formData, false)}
+        className="flex min-h-full flex-col"
+      >
         <div className="mb-4 grid grid-cols-3 gap-2">
           <DirectionButton
             active={direction === "out"}
@@ -225,7 +234,9 @@ export function LogTransaction({
           />
         </div>
 
-        <Field label="Amount (ZAR)" hint="Just the number — the direction sets the sign.">
+        {/* No hint line — the direction buttons above already say what the
+            sign will be, and every saved line matters for the one-view goal. */}
+        <Field label="Amount (ZAR)">
           <AmountInput
             name="amount"
             required
@@ -292,26 +303,39 @@ export function LogTransaction({
           </select>
         </Field>
 
-        <Field label={needsDestination ? "From account" : "Account"}>
-          <select
-            name="account"
-            required
-            className={inputClass}
-            defaultValue={
-              editing?.accountLabel && accountOptions.includes(editing.accountLabel)
-                ? editing.accountLabel
-                : defaultAccount && accountOptions.includes(defaultAccount)
-                  ? defaultAccount
-                  : accountOptions[0]
-            }
-          >
-            {accountOptions.map((account) => (
-              <option key={account} value={account}>
-                {account}
-              </option>
-            ))}
-          </select>
-        </Field>
+        {/* Account and date share a row — both are usually the smart default
+            (main account, today), so neither earns a full line of its own. */}
+        <div className="grid grid-cols-2 gap-3">
+          <Field label={needsDestination ? "From account" : "Account"}>
+            <select
+              name="account"
+              required
+              className={inputClass}
+              defaultValue={
+                editing?.accountLabel && accountOptions.includes(editing.accountLabel)
+                  ? editing.accountLabel
+                  : defaultAccount && accountOptions.includes(defaultAccount)
+                    ? defaultAccount
+                    : accountOptions[0]
+              }
+            >
+              {accountOptions.map((account) => (
+                <option key={account} value={account}>
+                  {account}
+                </option>
+              ))}
+            </select>
+          </Field>
+
+          <Field label="Date">
+            <input
+              name="date"
+              type="date"
+              defaultValue={editing?.date?.slice(0, 10) ?? toLocalISODate(new Date())}
+              className={inputClass}
+            />
+          </Field>
+        </div>
 
         {direction === "in" && !editing ? (
           <label className="mt-1 flex items-start gap-2.5 rounded-lg border border-line bg-surface-2 px-3 py-2.5">
@@ -359,25 +383,18 @@ export function LogTransaction({
           </Field>
         ) : null}
 
-        <Field label="Date">
-          <input
-            name="date"
-            type="date"
-            defaultValue={editing?.date?.slice(0, 10) ?? toLocalISODate(new Date())}
-            className={inputClass}
-          />
-        </Field>
-
         <Field label="Notes">
-          <textarea
+          {/* One line, not a textarea — notes here are "ref 88765", not prose,
+              and the saved height keeps the whole form on one screen. */}
+          <input
             name="notes"
-            rows={2}
             defaultValue={editing?.notes ?? ""}
-            className={`${inputClass} h-auto py-2`}
+            className={inputClass}
             placeholder="Optional"
           />
         </Field>
 
+        <div className="mt-auto pt-2">
         {duplicate ? (
           <div className="mb-3 rounded-lg border border-warn/40 bg-warn/5 px-3 py-2.5">
             <p className="flex items-start gap-1.5 text-xs text-warn">
@@ -417,11 +434,12 @@ export function LogTransaction({
           <button
             type="submit"
             disabled={saving}
-            className="h-10 w-full rounded-lg bg-accent text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            className="h-12 w-full rounded-lg bg-accent text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60 md:h-10"
           >
             {saving ? "Saving…" : editing ? "Save changes" : "Log it"}
           </button>
         ) : null}
+        </div>
       </form>
     </SlideOver>
   );
