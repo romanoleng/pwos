@@ -166,14 +166,14 @@ export function CategoryManager() {
                         onClick={() => void onMove(category, "up")}
                         disabled={busy}
                       >
-                        <ArrowUp size={13} strokeWidth={1.75} />
+                        <ArrowUp size={15} strokeWidth={1.75} />
                       </IconButton>
                       <IconButton
                         label={`Move ${category.name} down`}
                         onClick={() => void onMove(category, "down")}
                         disabled={busy}
                       >
-                        <ArrowDown size={13} strokeWidth={1.75} />
+                        <ArrowDown size={15} strokeWidth={1.75} />
                       </IconButton>
                       <IconButton
                         label={`${category.pinned ? "Unpin" : "Pin"} ${category.name}`}
@@ -181,28 +181,28 @@ export function CategoryManager() {
                         disabled={busy}
                         active={category.pinned}
                       >
-                        <Pin size={13} strokeWidth={1.75} />
+                        <Pin size={15} strokeWidth={1.75} />
                       </IconButton>
                       <IconButton
                         label={`Rename ${category.name}`}
                         onClick={() => setEditing(category)}
                         disabled={busy}
                       >
-                        <Pencil size={13} strokeWidth={1.75} />
+                        <Pencil size={15} strokeWidth={1.75} />
                       </IconButton>
                       <IconButton
                         label={`Merge ${category.name} into another`}
                         onClick={() => setMerging(category)}
                         disabled={busy}
                       >
-                        <Merge size={13} strokeWidth={1.75} />
+                        <Merge size={15} strokeWidth={1.75} />
                       </IconButton>
                       <IconButton
                         label={`Retire ${category.name}`}
                         onClick={() => void onArchive(category)}
                         disabled={busy}
                       >
-                        <Archive size={13} strokeWidth={1.75} />
+                        <Archive size={15} strokeWidth={1.75} />
                       </IconButton>
                     </div>
                   </div>
@@ -278,7 +278,7 @@ function IconButton({
       title={label}
       onClick={onClick}
       disabled={disabled}
-      className={`rounded-md p-1.5 transition-colors disabled:opacity-30 ${
+      className={`grid size-9 place-items-center rounded-lg transition-colors disabled:opacity-30 ${
         active ? "text-accent" : "text-faint hover:bg-surface-2 hover:text-ink"
       }`}
     >

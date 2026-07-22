@@ -59,7 +59,7 @@ export function SlideOver({
         type="button"
         aria-label="Close panel"
         onClick={onClose}
-        className="absolute inset-0 bg-black/50 backdrop-blur-[2px]"
+        className="absolute inset-0 animate-[backdrop-in_200ms_ease-out] bg-black/50 backdrop-blur-[2px]"
       />
 
       <div
@@ -67,7 +67,7 @@ export function SlideOver({
         role="dialog"
         aria-modal="true"
         aria-label={title}
-        className="absolute inset-x-0 bottom-0 flex max-h-[88dvh] flex-col rounded-t-2xl border border-line-2 bg-surface md:inset-y-0 md:left-auto md:right-0 md:max-h-none md:w-[26rem] md:rounded-none md:rounded-l-2xl md:border-y-0 md:border-r-0"
+        className="absolute inset-x-0 bottom-0 flex max-h-[88dvh] animate-[sheet-up_280ms_cubic-bezier(0.32,0.72,0,1)] flex-col rounded-t-2xl border border-line-2 bg-surface md:animate-[panel-in_220ms_cubic-bezier(0.32,0.72,0,1)] md:inset-y-0 md:left-auto md:right-0 md:max-h-none md:w-[26rem] md:rounded-none md:rounded-l-2xl md:border-y-0 md:border-r-0"
       >
         <div className="flex items-start justify-between gap-3 border-b border-line px-4 py-3.5">
           <div>

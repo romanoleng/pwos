@@ -304,3 +304,37 @@ Two lessons, in order of importance:
 2. The audit trigger is what made the repair exact rather than a guess. It
    recorded `{"category": ["Crypto DCA", "Crypto Investment"]}`, so the single
    affected row could be put back precisely.
+
+### State at close of 22 Jul 2026 (for the next session)
+
+The app is staged for the Friday fresh start. The sequence Romano will run:
+Settings → Fresh start (pre-filled 24 Jul) → Budgets → "Bring back my
+categories · 13 titles" → fill amounts in as August teaches him. The R48 100
+Natroceutics payment is already logged for the 24th with starts_cycle set; it
+shows as "scheduled ahead" until its date. Post-reset, getCurrentCycle treats
+the cutover as the cycle start, so nothing lands invisible in the gap days.
+
+Shipped this session beyond the reset machinery: Stats screen (income side by
+side with spend — the income half exists nowhere else), category manager
+(rename/merge/retire/pin — merges refuse to cross kinds), pace markers on
+budget bars, privacy eye (Money masks to "R ••••", reveal needs the app
+password), configurable tab bar (default Home·Budget·Savings·Debt·More),
+Savings screen replacing Goals, category icons (keyword-matched, see
+lib/categoryIcons.ts), global log FAB, comma-decimal AmountInput, collapsible
+sections (unmount-on-close — the grid-rows 0fr animation silently failed;
+check computed styles, not aria attributes), and skeleton loading.
+
+Hard-won process rules, all earned the painful way this session:
+- `npm run build` exit code is the only truth; it prints "Compiled
+  successfully" BEFORE prerender failures.
+- The Neon HTTP driver treats each statement as its own transaction; a bare
+  begin/rollback pair does nothing. Rehearsals against live data need
+  neon.transaction() or a backup-first plan (scripts/backup-db.mjs).
+- Verify Tailwind arbitrary values reached the compiled CSS before trusting a
+  behaviour that depends on them.
+
+Open, deliberately: Button-component consolidation (~30 inline sites),
+category icon override picker, income analysis depth in Stats once August
+data exists, the Anders/MBD possible-duplicate (~R160k, ref R88765 decides),
+EasyCrypto holdings are stale pending Romano's own entry, and eight crypto
+positions carry R0 cost basis until he fills them in.
