@@ -4,6 +4,7 @@ import { Settings } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
+import { PrivacyToggle } from "@/components/shell/PrivacyToggle";
 import { navTitleFor } from "@/lib/nav";
 
 /**
@@ -17,6 +18,8 @@ export function TopBar() {
     <header className="pt-safe sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur-md md:hidden">
       <div className="flex h-12 items-center justify-between px-4">
         <h1 className="text-sm font-semibold tracking-tight">{navTitleFor(pathname)}</h1>
+        <div className="flex items-center gap-0.5">
+        <PrivacyToggle />
         {/* One slot, one meaning, every screen. The theme toggle used to live
             here — a set-once preference in the only permanently visible spot.
             It's in Settings now. The middle stays empty for a future
@@ -31,6 +34,7 @@ export function TopBar() {
         >
           <Settings size={17} strokeWidth={1.75} />
         </Link>
+        </div>
       </div>
     </header>
   );

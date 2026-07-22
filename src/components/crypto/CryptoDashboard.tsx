@@ -12,7 +12,7 @@ import { HoldingsToolbar } from "@/components/crypto/HoldingsToolbar";
 import { MilestoneLadder } from "@/components/crypto/MilestoneLadder";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
-import { Money, Percent } from "@/components/ui/Money";
+import { Money, Percent, Sensitive } from "@/components/ui/Money";
 import { FREEDOM_TARGET_ZAR } from "@/lib/constants";
 import type { Holding, Portfolio } from "@/lib/crypto/types";
 import {
@@ -231,7 +231,7 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
           <ul className="mt-2.5 space-y-1">
             {meta.inferredIds.map((match) => (
               <li key={match.symbol} className="text-[11px]">
-                <span className="font-medium text-ink">{match.symbol}</span>
+                <span className="font-medium text-ink"><Sensitive>{match.symbol}</Sensitive></span>
                 <span className="text-faint"> → </span>
                 <code className="text-muted">{match.coingeckoId}</code>
                 {match.name ? (
@@ -379,7 +379,7 @@ function MilestoneHitBanner({ holdings }: { holdings: Holding[] }) {
       <ul className="mt-2 space-y-1.5">
         {holdings.map((holding) => (
           <li key={holding.recordId} className="text-xs leading-relaxed">
-            <span className="font-medium text-ink">{holding.symbol}</span>{" "}
+            <span className="font-medium text-ink"><Sensitive>{holding.symbol}</Sensitive></span>{" "}
             <span className="text-faint">({holding.wallet})</span>{" "}
             <span className="text-muted">
               — M{holding.lastHitMilestone?.milestone.level}:{" "}
@@ -411,7 +411,7 @@ function Core5Card({ holdings }: { holdings: Portfolio["core5"] }) {
               className="flex items-center justify-between gap-3 px-4 py-2.5"
             >
               <div className="min-w-0">
-                <p className="text-sm font-medium">{holding.symbol}</p>
+                <p className="text-sm font-medium"><Sensitive>{holding.symbol}</Sensitive></p>
                 <p className="truncate text-[11px] text-faint">
                   {formatQuantity(holding.quantity)}
                   {holding.walletCount > 1
@@ -473,10 +473,10 @@ function MoverList({
         <ul className="space-y-1.5">
           {movers.map((mover) => (
             <li
-              key={`${mover.symbol}-${mover.wallet}`}
+              key={`$<Sensitive>{mover.symbol}</Sensitive>-${mover.wallet}`}
               className="flex items-baseline justify-between gap-2 text-xs"
             >
-              <span className="font-medium">{mover.symbol}</span>
+              <span className="font-medium"><Sensitive>{mover.symbol}</Sensitive></span>
               <Percent value={mover.change24hPct} signed />
             </li>
           ))}
@@ -509,7 +509,7 @@ function HoldingsTable({
             >
               <div className="min-w-0 flex-1">
                 <p className="flex items-center gap-2 text-sm font-medium">
-                  {holding.symbol}
+                  <Sensitive>{holding.symbol}</Sensitive>
                   {holding.priceSource === "airtable-fallback" ? (
                     <span
                       title="No live price — valued from the last stored figure"
@@ -525,7 +525,7 @@ function HoldingsTable({
                   ) : null}
                 </p>
                 <p className="mt-0.5 truncate text-[11px] text-faint">
-                  <span className="tnum">{formatQuantity(holding.quantity)}</span>
+                  <Sensitive className="tnum">{formatQuantity(holding.quantity)}</Sensitive>
                   {holding.priceZar !== null ? (
                     <>
                       {" @ "}
@@ -591,7 +591,7 @@ function HoldingsTable({
                     <Money value={holding.pnlZar ?? 0} variant="whole" signed />
                   </Stat>
                   <Stat label="Quantity">
-                    <span className="tnum">{formatQuantity(holding.quantity)}</span>
+                    <Sensitive className="tnum">{formatQuantity(holding.quantity)}</Sensitive>
                   </Stat>
                   <Stat label="Weight">
                     {holding.weightPct !== null ? (

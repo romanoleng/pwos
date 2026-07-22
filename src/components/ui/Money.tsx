@@ -1,3 +1,7 @@
+"use client";
+
+import { useValuesHidden } from "@/lib/privacy";
+
 import {
   directionOf,
   formatMoney,
@@ -42,6 +46,11 @@ export function Money({
   tone,
   className = "",
 }: MoneyProps) {
+  // Privacy mode: the amount becomes dots, the tone colour goes with it (a
+  // red "R ••••" would still say "loss"), but percentages elsewhere stay —
+  // Romano's ask was the shape without the substance.
+  const valuesHidden = useValuesHidden();
+
   let text: string;
   if (signed) {
     text = formatMoneySigned(value, currency, variant === "whole" ? { decimals: 0 } : {});
@@ -55,10 +64,40 @@ export function Money({
     text = formatMoney(value, currency);
   }
 
+  if (valuesHidden) {
+    return (
+      <span aria-label="amount hidden" className={`tnum ${className}`.trim()}>
+        R ••••
+      </span>
+    );
+  }
+
   const resolvedTone = tone ?? (signed ? directionOf(value) : "none");
   const toneClass = resolvedTone === "none" ? "" : TONE_CLASS[resolvedTone];
 
   return <span className={`tnum ${toneClass} ${className}`.trim()}>{text}</span>;
+}
+
+/**
+ * Masks identifying text — coin symbols, holding names, quantities — in
+ * privacy mode. Values get "R ••••" via Money; identities get this.
+ */
+export function Sensitive({
+  children,
+  className = "",
+}: {
+  children: React.ReactNode;
+  className?: string;
+}) {
+  const valuesHidden = useValuesHidden();
+  if (valuesHidden) {
+    return (
+      <span aria-label="hidden" className={className}>
+        •••
+      </span>
+    );
+  }
+  return <span className={className}>{children}</span>;
 }
 
 type PercentProps = {

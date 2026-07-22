@@ -22,6 +22,7 @@ import {
 } from "@/lib/crypto/history";
 import type { PortfolioTotals } from "@/lib/crypto/types";
 import { formatDate, formatMoneyCompact } from "@/lib/format";
+import { useValuesHidden } from "@/lib/privacy";
 
 const RANGES = [
   { key: "30d", label: "30d", days: 30 },
@@ -37,6 +38,7 @@ async function fetcher(url: string): Promise<{ series: HistoryPoint[] }> {
 
 export function PortfolioChart({ totals }: { totals: PortfolioTotals }) {
   const [range, setRange] = useState<(typeof RANGES)[number]["key"]>("90d");
+  const valuesHidden = useValuesHidden();
 
   // History changes at most daily; no polling.
   const { data, error } = useSWR("/api/crypto/history", fetcher, {
@@ -130,7 +132,7 @@ export function PortfolioChart({ totals }: { totals: PortfolioTotals }) {
                     minTickGap={28}
                   />
                   <YAxis
-                    tickFormatter={(value: number) => formatMoneyCompact(value)}
+                    tickFormatter={(value: number) => (valuesHidden ? "•" : formatMoneyCompact(value))}
                     tick={{ fill: "var(--faint)", fontSize: 11 }}
                     axisLine={false}
                     tickLine={false}

@@ -7,7 +7,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money } from "@/components/ui/Money";
-import { formatDate, formatMoneyWhole, formatPercent } from "@/lib/format";
+import { formatDate, formatPercent } from "@/lib/format";
 import { isKidInvestment } from "@/lib/kids";
 import type { GoalsSummary } from "@/lib/server/goals";
 
@@ -112,7 +112,13 @@ export function GoalsScreen() {
                   <p className="truncate text-sm font-medium">{kid.account}</p>
                   <p className="mt-0.5 text-[11px] text-faint">
                     {[kid.child, kid.institution].filter(Boolean).join(" · ") || "—"}
-                    {kid.monthlyZar > 0 ? ` · ${formatMoneyWhole(kid.monthlyZar)}/mo` : ""}
+                    {kid.monthlyZar > 0 ? (
+                      <>
+                        {" · "}
+                        <Money value={kid.monthlyZar} variant="whole" className="text-faint" />
+                        /mo
+                      </>
+                    ) : null}
                   </p>
                 </div>
                 <EditableAmount editKey="kids.balance" recordId={kid.recordId} value={kid.balanceZar} onSaved={refresh} className="text-sm" />

@@ -6,7 +6,7 @@ import useSWR from "swr";
 import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
-import { Money } from "@/components/ui/Money";
+import { Money, Sensitive } from "@/components/ui/Money";
 import { groupByChild, isKidInvestment } from "@/lib/kids";
 import type { GoalsSummary } from "@/lib/server/goals";
 import type { NetWorthSummary } from "@/lib/server/networth";
@@ -59,7 +59,7 @@ export function InvestmentsScreen() {
           <ul className="divide-y divide-line">
             {entry.rows.map((row) => (
               <li key={row.recordId} className="flex items-center justify-between gap-3 px-4 py-2.5">
-                <span className="truncate text-sm">{row.name}</span>
+                <span className="truncate text-sm"><Sensitive>{row.name}</Sensitive></span>
                 <EditableAmount editKey="netWorth.value" recordId={row.recordId} value={row.valueZar} onSaved={refresh} className="text-sm" />
               </li>
             ))}
@@ -88,7 +88,7 @@ export function InvestmentsScreen() {
             {group.accounts.map((kid) => (
               <li key={kid.recordId} className="flex items-center justify-between gap-3 px-4 py-2.5">
                 <div className="min-w-0">
-                  <p className="truncate text-sm">{kid.account}</p>
+                  <p className="truncate text-sm"><Sensitive>{kid.account}</Sensitive></p>
                   <p className="mt-0.5 text-[11px] text-faint">
                     {kid.institution ?? "—"} · contributing{" "}
                     <EditableAmount

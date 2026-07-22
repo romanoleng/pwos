@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { NAV_GROUPS, isActivePath } from "@/lib/nav";
+import { PrivacyToggle } from "@/components/shell/PrivacyToggle";
 import { ThemeToggle } from "@/components/theme";
 import { SignOutButton } from "@/components/shell/SignOutButton";
 
@@ -57,7 +58,8 @@ export function Sidebar() {
       </nav>
 
       <div className="flex items-center gap-2 border-t border-line px-3 py-3">
-        <ThemeToggle />
+        <PrivacyToggle />
+          <ThemeToggle />
         <SignOutButton />
       </div>
     </aside>
