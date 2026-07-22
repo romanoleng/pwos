@@ -21,6 +21,10 @@
   --faint: #66666e;
 
   --accent: #8a86f5;
+  /* Mobile tab bar. Fixed across themes — see the note in BottomTabs. */
+  --tabbar: #8a86f5;
+  --tabbar-ink: #000000;
+  --tabbar-dim: #29284a;
   --gain: #5fb98a;
   --loss: #cf7a68;
   --warn: #d4a24a;
@@ -46,6 +50,9 @@
   --faint: #8b8b96;
 
   --accent: #5b55e0;
+  --tabbar: #8a86f5;
+  --tabbar-ink: #000000;
+  --tabbar-dim: #29284a;
   --gain: #2c8a62;
   --loss: #b04f3b;
   --warn: #94660f;
@@ -68,6 +75,9 @@
   --color-faint: var(--faint);
 
   --color-accent: var(--accent);
+  --color-tabbar: var(--tabbar);
+  --color-tabbar-ink: var(--tabbar-ink);
+  --color-tabbar-dim: var(--tabbar-dim);
   --color-gain: var(--gain);
   --color-loss: var(--loss);
   --color-warn: var(--warn);
