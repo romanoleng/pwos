@@ -232,3 +232,55 @@ it's the honest test of whether the interaction model works. Only then roll it a
   through `toLocalISODate()` in `src/lib/crypto/history.ts`. Pinned by regression tests.
 - Portfolio is currently **down**: roughly R254k invested against ~R138k value as of the last stored
   snapshot. Freedom progress ≈ 6.9%. The UI must not soften this.
+
+### V1.2 — the day after the Neon migration (2026-07-22)
+
+**Categories are pinned, not inferred.** The log sheet's quick-tap chips were
+ranked by 60-day frequency, which surfaced `Betting/Lottery` (inflated by
+duplicate rows) and `Subscriptions` (a debit order nobody logs by hand) while
+missing what Romano actually buys in a shop. `categories.pinned` now drives
+them. Frequency measured what was recorded, not what happens.
+
+**Budgets became editable.** The `budget.budgeted` registry entry had existed
+since the inline-edit work but nothing rendered it — budgets were the only
+figures with no way to change them. Adding a *new* budget line is still SQL
+only; that's the next gap.
+
+**Money belongs to exactly one person.** The kids' accounts are tracked per
+child, split by account type: RA / TFSA / EasyEquities ZAR appear under
+Investments, Capitec and 32-day notice under Goals. An unrecognised type
+counts as savings — understating what is invested beats implying locked-away
+money is reachable. Their balances are deliberately **excluded from Romano's
+net worth**, and `transactions.to_kid_account_id` lets a transfer land in a
+child's account without ever passing through his.
+
+**Estimated balances are marked, not smoothed.** Anders, MBD Legal and SCM are
+real creditors under debt review whose balances are best guesses.
+`debts.balance_estimated` drives a marker and an "of which estimated" figure
+(R321 590 of R1 309 933) rather than letting a guess masquerade as a statement.
+
+#### Migration errors found and corrected
+
+- **`Debt Repayment` was one Airtable bucket covering four things.** The
+  migration mapped all of it to Payflex, so a R10 000 bond payment and a R500
+  debt-review instalment landed on a line budgeted at R5 000. Reclassified;
+  total spend unchanged. Description-based routing was described as done in an
+  earlier session but was never actually in the script — check the script, not
+  the summary.
+- **Stale Airtable summary rows were being counted as net worth.** "Family
+  Future (Lisa & Liam)" held R673,20 against a real R5 653. Archived. The
+  "Savings Goals" row (R500 against R10 800 in the goals table) is still open
+  and needs Romano to confirm where that money physically sits.
+- **Seven screens still told him edits were written to Airtable.** Copy that
+  outlives its backend sends you to the wrong place to check your own data.
+
+#### Two process notes
+
+- `toISOString()` on a `date` column shifts it a day in SAST — it turned
+  `cycle_start` 2026-06-24 into 2026-06-23 in a throwaway diagnostic and nearly
+  sent me looking for a second budget cycle that never existed. The same bug
+  the app guards against, reintroduced in a one-off script.
+- A verification script that writes then restores **must not** put a query
+  between the two. One failed mid-way and left a real budget at R750 instead of
+  R1 000. The audit trigger recorded `{"budgeted_zar":[1000,750]}`, which is
+  the only reason the original was recoverable.
