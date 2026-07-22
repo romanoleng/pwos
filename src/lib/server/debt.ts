@@ -12,12 +12,14 @@ type Row = {
   id: string; name: string; kind: string | null; balance_zar: string;
   monthly_zar: string; interest_pct: string | null; priority: string | null;
   status: string | null; target_payoff: string | null; duplicate_of: string | null;
+  balance_estimated: boolean;
 };
 
 export async function getDebtSummary(): Promise<DebtSummary> {
   const rows = await sql<Row>`
     select id::text, name, kind, balance_zar, monthly_zar, interest_pct,
-           priority, status, target_payoff::text, duplicate_of::text
+           priority, status, target_payoff::text, duplicate_of::text,
+           balance_estimated
     from debts where not archived order by balance_zar desc`;
 
   const debts: DebtRow[] = rows.map((r) => ({
@@ -30,6 +32,7 @@ export async function getDebtSummary(): Promise<DebtSummary> {
     priority: r.priority,
     status: r.status,
     payoffDate: isoDate(r.target_payoff),
+    balanceEstimated: r.balance_estimated,
   }));
 
   // Explicitly marked duplicates, plus any exact name collisions.
@@ -49,6 +52,11 @@ export async function getDebtSummary(): Promise<DebtSummary> {
     duplicates: nameGroups,
     // Postgres holds liabilities in one place, so there is no second source to
     // disagree with. Kept at parity so the UI needs no change.
+    // How much of the total rests on a guess. Surfaced rather than folded in,
+    // so the liabilities figure is never read as more exact than it is.
+    estimatedZar: debts
+      .filter((d) => d.balanceEstimated)
+      .reduce((total, d) => total + d.balanceZar, 0),
     netWorthLiabilitiesZar: totalZar,
     discrepancyZar: 0,
   };

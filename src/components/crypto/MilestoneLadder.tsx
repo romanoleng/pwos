@@ -14,7 +14,7 @@ const LEVEL_LABEL: Record<number, string> = {
 /**
  * The M1–M5 ladder for one coin (CLAUDE.md §5).
  *
- * The raw Airtable text is always rendered as the instruction. Parsed values
+ * The raw milestone text is always rendered as the instruction. Parsed values
  * drive the trigger, the hit state and the distance only — a sell instruction
  * is never paraphrased, because getting it subtly wrong is worse than showing
  * nothing.

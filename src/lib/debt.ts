@@ -21,6 +21,8 @@ export type DebtRow = {
   priority: string | null;
   status: string | null;
   payoffDate: string | null;
+  /** The balance is a best guess, not a figure off a statement. */
+  balanceEstimated: boolean;
 };
 
 export type DuplicateGroup = {
@@ -79,6 +81,8 @@ export type DebtSummary = {
   monthlyZar: number;
   duplicates: DuplicateGroup[];
   /** Debt Tracker total vs the Net Worth liability rollup. */
+  /** Share of totalZar that is an estimate rather than a statement figure. */
+  estimatedZar: number;
   netWorthLiabilitiesZar: number;
   discrepancyZar: number;
 };

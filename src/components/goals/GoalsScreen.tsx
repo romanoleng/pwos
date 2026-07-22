@@ -5,7 +5,7 @@ import useSWR from "swr";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
 import { Money } from "@/components/ui/Money";
-import { formatDate, formatPercent } from "@/lib/format";
+import { formatDate, formatMoneyWhole, formatPercent } from "@/lib/format";
 import type { GoalsSummary } from "@/lib/server/goals";
 
 async function fetcher(url: string): Promise<GoalsSummary> {
@@ -90,7 +90,17 @@ export function GoalsScreen() {
         <CardHeader
           title="Lisa & Liam"
           description="Kids' savings and investment accounts."
-          action={<Money value={data.totals.kidsZar} variant="whole" className="text-sm" />}
+          action={
+            <span className="text-sm">
+              <Money value={data.totals.kidsZar} variant="whole" />
+              {data.totals.kidsMonthlyZar > 0 ? (
+                <span className="ml-2 text-[11px] text-faint">
+                  +<Money value={data.totals.kidsMonthlyZar} variant="whole" />
+                  /mo
+                </span>
+              ) : null}
+            </span>
+          }
         />
         {data.kids.length === 0 ? (
           <CardBody className="py-8 text-center text-xs text-muted">No accounts recorded.</CardBody>
@@ -102,7 +112,7 @@ export function GoalsScreen() {
                   <p className="truncate text-sm font-medium">{kid.account}</p>
                   <p className="mt-0.5 text-[11px] text-faint">
                     {[kid.child, kid.institution].filter(Boolean).join(" · ") || "—"}
-                    {kid.monthlyZar > 0 ? ` · R${kid.monthlyZar}/mo` : ""}
+                    {kid.monthlyZar > 0 ? ` · ${formatMoneyWhole(kid.monthlyZar)}/mo` : ""}
                   </p>
                 </div>
                 <EditableAmount editKey="kids.balance" recordId={kid.recordId} value={kid.balanceZar} onSaved={refresh} className="text-sm" />
@@ -112,7 +122,7 @@ export function GoalsScreen() {
         )}
       </Card>
 
-      <p className="text-[11px] text-faint">Tap any figure to edit it. Changes write to Airtable and can be undone.</p>
+      <p className="text-[11px] text-faint">Tap any figure to edit it. Changes save immediately and can be undone.</p>
     </div>
   );
 }

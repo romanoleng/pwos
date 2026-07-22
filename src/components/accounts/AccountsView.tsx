@@ -190,7 +190,7 @@ export function AccountsScreen() {
                     />
                   ) : (
                     <span className="text-[11px] text-warn">
-                      No Net Worth row — add one in Airtable to track it
+                      No Net Worth row yet — add one to track it
                     </span>
                   )}
                 </div>

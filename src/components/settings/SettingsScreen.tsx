@@ -38,7 +38,7 @@ export function SettingsScreen() {
         <CardBody>
           <ul className="space-y-2 text-[11px] leading-relaxed text-muted">
             <li><span className="text-ink">Crypto prices</span> — CoinGecko, server-side, cached 45s. The browser never calls it directly.</li>
-            <li><span className="text-ink">Everything else</span> — your Airtable base, read through this app&apos;s own API.</li>
+            <li><span className="text-ink">Everything else</span> — Neon Postgres, read through this app&apos;s own API. Every change is recorded in an audit trail.</li>
             <li><span className="text-ink">Net worth</span> — derived live, never hand-maintained.</li>
             <li><span className="text-ink">Budget actuals</span> — computed from the typed ledger, not the stored Actual column.</li>
           </ul>

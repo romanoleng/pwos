@@ -249,7 +249,7 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
         <p className="text-xs leading-relaxed text-faint">
           {meta.fallbackSymbols.length > 0 && (
             <>
-              Valued from stored Airtable prices (no CoinGecko id):{" "}
+              Valued from the last stored price (no CoinGecko id):{" "}
               <span className="text-muted">{meta.fallbackSymbols.join(", ")}</span>.{" "}
             </>
           )}
@@ -510,7 +510,7 @@ function HoldingsTable({
                   {holding.symbol}
                   {holding.priceSource === "airtable-fallback" ? (
                     <span
-                      title="No live price — valued from the stored Airtable figure"
+                      title="No live price — valued from the last stored figure"
                       className="rounded bg-raise px-1 py-0.5 text-[9px] font-medium uppercase text-muted"
                     >
                       stored

@@ -108,7 +108,7 @@ export function HoldingEditor({
       description={
         editing
           ? "Positions are the source of truth. Prices stay live."
-          : "Logs a new position in Airtable."
+          : "Logs a new position."
       }
     >
       <form action={onSubmit} id="holding-form">

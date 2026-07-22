@@ -13,6 +13,7 @@ const debt = (name: string, balanceZar: number, over: Partial<DebtRow> = {}): De
   priority: null,
   status: "Active",
   payoffDate: null,
+  balanceEstimated: false,
   ...over,
 });
 function normaliseId(name: string) {

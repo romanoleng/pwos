@@ -20,7 +20,10 @@ export type KidAccount = {
 export type GoalsSummary = {
   freedom: { targetZar: number; label: string; currentZar: number; progressPct: number };
   goals: Goal[]; kids: KidAccount[];
-  totals: { savedZar: number; targetZar: number; monthlyZar: number; kidsZar: number };
+  totals: {
+    savedZar: number; targetZar: number; monthlyZar: number;
+    kidsZar: number; kidsMonthlyZar: number;
+  };
 };
 
 function monthsToTarget(current: number, target: number | null, monthly: number) {
@@ -37,7 +40,7 @@ export async function getGoals(): Promise<GoalsSummary> {
     sql<{ id: string; account: string; child: string | null; institution: string | null;
           balance_zar: string; monthly_zar: string }>`
       select id::text, account, child, institution, balance_zar, monthly_zar
-      from kids_accounts order by balance_zar desc`,
+      from kids_accounts order by child, monthly_zar desc, balance_zar desc`,
     getNetWorth(),
   ]);
 
@@ -70,6 +73,7 @@ export async function getGoals(): Promise<GoalsSummary> {
       targetZar: goals.reduce((t, g) => t + (g.targetZar ?? 0), 0),
       monthlyZar: goals.reduce((t, g) => t + g.monthlyZar, 0),
       kidsZar: kids.reduce((t, k) => t + k.balanceZar, 0),
+      kidsMonthlyZar: kids.reduce((t, k) => t + k.monthlyZar, 0),
     },
   };
 }

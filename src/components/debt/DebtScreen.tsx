@@ -57,10 +57,17 @@ export function DebtScreen() {
             <Stat label="If duplicates merged">
               <Money value={data.dedupedTotalZar} variant="whole" />
             </Stat>
-            <Stat label="Net Worth table says">
-              <Money value={data.netWorthLiabilitiesZar} variant="whole" />
+            <Stat label="Of which estimated">
+              <Money value={data.estimatedZar} variant="whole" />
             </Stat>
           </dl>
+          {data.estimatedZar > 0 ? (
+            <p className="mt-4 border-t border-line pt-3 text-xs text-muted">
+              <Money value={data.estimatedZar} variant="whole" /> of this total is
+              an estimate, not a statement figure. Confirm those balances and the
+              number below gets real.
+            </p>
+          ) : null}
           {Math.abs(data.discrepancyZar) > 1 ? (
             <p className="mt-4 border-t border-line pt-3 text-xs text-warn">
               Debt Tracker and the Net Worth table disagree by{" "}
@@ -93,7 +100,7 @@ export function DebtScreen() {
           </ul>
           <p className="mt-2.5 text-[11px] text-faint">
             Nothing is merged or deleted automatically. Confirm which is real, then
-            correct the balances below or in Airtable.
+            correct the balances below.
           </p>
         </div>
       ))}
@@ -117,12 +124,20 @@ export function DebtScreen() {
               <div className="min-w-0 flex-1">
                 <p className="truncate text-sm font-medium">{row.name}</p>
                 <p className="mt-0.5 flex flex-wrap gap-1.5 text-[11px] text-faint">
-                  {row.status ? <span>{row.status}</span> : null}
+                  {row.balanceEstimated ? (
+                    <span className="text-warn">estimate</span>
+                  ) : null}
+                  {row.status ? <span>{row.balanceEstimated ? "· " : ""}{row.status}</span> : null}
                   {row.interestPct ? <span>· {formatPercent(row.interestPct)}</span> : null}
                   {row.payoffDate ? <span>· target {formatDate(row.payoffDate)}</span> : null}
                 </p>
               </div>
               <div className="text-right text-sm">
+                {row.balanceEstimated ? (
+                  <span className="mr-0.5 text-faint" aria-label="approximately">
+                    ~
+                  </span>
+                ) : null}
                 <Money value={row.balanceZar} variant="whole" />
                 <p className="text-[11px] text-faint">
                   <Money value={row.monthlyZar} variant="whole" /> /mo
@@ -175,7 +190,7 @@ export function DebtScreen() {
       </Card>
 
       <p className="text-[11px] text-faint">
-        Tap any balance or monthly figure to edit it. Changes write to Airtable and can
+        Tap any balance or monthly figure to edit it. Changes save immediately and can
         be undone.
       </p>
     </div>
