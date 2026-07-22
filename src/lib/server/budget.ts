@@ -63,6 +63,24 @@ async function previewCycleStart(cycleStart: string): Promise<BudgetSummary["cyc
   };
 }
 
+/**
+ * The titles that a blank restore would bring back. Counts across the cutover
+ * on purpose: titles are structure, not history — only the amounts were reset.
+ */
+async function previewBlankStart(
+  cycleStart: string,
+): Promise<{ titles: number; from: string } | null> {
+  const previous = await sql<{ cycle_start: string; n: string }>`
+    select b.cycle_start::text, count(*)::text as n
+    from budgets b
+    join categories c on c.name = b.category and c.kind = 'expense' and not c.archived
+    where b.cycle_start < ${cycleStart}::date
+    group by b.cycle_start
+    order by b.cycle_start desc limit 1`;
+  if (previous.length === 0) return null;
+  return { titles: Number(previous[0].n), from: previous[0].cycle_start };
+}
+
 export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSummary> {
   const cycle = await getCurrentCycle(now);
   const floor = await cutoverFloor();
@@ -174,5 +192,6 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
       };
     })(),
     cycleStart: budgetLines.length === 0 ? await previewCycleStart(cycle.start) : null,
+    blankStart: budgetLines.length === 0 ? await previewBlankStart(cycle.start) : null,
   };
 }

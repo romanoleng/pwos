@@ -160,6 +160,8 @@ export type BudgetSummary = {
     puttingAwayZar: number;
     unallocatedZar: number;
   };
+  /** Titles a blank restore would recreate at R0. Survives the reset. */
+  blankStart: { titles: number; from: string } | null;
   /** Set only when the cycle has no lines yet: what each starting option gives. */
   cycleStart: {
     from: string;

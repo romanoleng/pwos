@@ -244,6 +244,47 @@ export async function seedBudgetsFromActuals(): Promise<
 }
 
 /**
+ * Bring back the category titles from the last planned cycle, amounts at R0.
+ *
+ * The fresh-start companion: Romano wants his structure — Groceries, Petrol,
+ * Home Bond and the rest — without last month's numbers, because August is
+ * where the real amounts get learned. Titles are structure, not history, so
+ * this deliberately looks past the cutover that hides the old values.
+ */
+export async function seedBudgetsBlank(): Promise<
+  MutationResult<{ created: number; from: string }>
+> {
+  const cycle = await getCurrentCycle();
+  try {
+    const already = await sql<{ n: string }>`
+      select count(*)::text as n from budgets where cycle_start = ${cycle.start}::date`;
+    if (Number(already[0].n) > 0) {
+      return { ok: false, error: "This cycle already has budget lines." };
+    }
+
+    const previous = await sql<{ cycle_start: string }>`
+      select cycle_start::text from budgets
+      where cycle_start < ${cycle.start}::date
+      order by cycle_start desc limit 1`;
+    if (previous.length === 0) return { ok: false, error: "No earlier titles to bring back." };
+
+    const created = await sql<{ id: string }>`
+      insert into budgets (cycle_start, category, budgeted_zar, kind)
+      select ${cycle.start}::date, b.category, 0, b.kind
+      from budgets b
+      join categories c on c.name = b.category and c.kind = 'expense' and not c.archived
+      where b.cycle_start = ${previous[0].cycle_start}::date
+      returning id::text`;
+
+    invalidate();
+    return { ok: true, data: { created: created.length, from: previous[0].cycle_start } };
+  } catch (error) {
+    console.error("[seedBudgetsBlank]", error);
+    return { ok: false, error: error instanceof Error ? error.message : "Couldn't bring them back." };
+  }
+}
+
+/**
  * Add a category, so a budget line can exist for something the app has never
  * seen. New categories appear in the log sheet's picker immediately — one list,
  * one source.

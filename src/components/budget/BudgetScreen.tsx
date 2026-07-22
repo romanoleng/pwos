@@ -5,8 +5,8 @@ import { useState } from "react";
 import useSWR from "swr";
 
 import {
-  copyBudgetsForward, deleteBudgetLine, restoreBudgetLine, seedBudgetsFromActuals,
-  setExpectedIncome,
+  copyBudgetsForward, deleteBudgetLine, restoreBudgetLine, seedBudgetsBlank,
+  seedBudgetsFromActuals, setExpectedIncome,
 } from "@/app/actions/budgets";
 import { BudgetLineEditor } from "@/components/budget/BudgetLineEditor";
 import { LoadingCard } from "@/components/ui/LoadingCard";
@@ -77,9 +77,12 @@ export function BudgetScreen() {
     });
   }
 
-  async function onStartCycle(how: "seed" | "copy") {
+  async function onStartCycle(how: "seed" | "copy" | "blank") {
     setBusy(true);
-    const result = how === "seed" ? await seedBudgetsFromActuals() : await copyBudgetsForward();
+    const result =
+      how === "seed" ? await seedBudgetsFromActuals()
+      : how === "copy" ? await copyBudgetsForward()
+      : await seedBudgetsBlank();
     setBusy(false);
     if (!result.ok) {
       toast.show({ message: result.error, tone: "error" });
@@ -339,6 +342,28 @@ export function BudgetScreen() {
                   </p>
                 </>
               ) : null}
+              {data.blankStart ? (
+                <button
+                  type="button"
+                  onClick={() => void onStartCycle("blank")}
+                  disabled={busy}
+                  className={`rounded-lg px-3.5 py-2.5 text-left text-xs font-medium disabled:opacity-60 ${
+                    data.cycleStart
+                      ? "border border-line"
+                      : "bg-accent text-white"
+                  }`}
+                >
+                  Bring back my categories · {data.blankStart.titles} titles
+                  <span
+                    className={`mt-0.5 block text-[11px] font-normal ${
+                      data.cycleStart ? "text-muted" : "opacity-80"
+                    }`}
+                  >
+                    The names you had, every amount at R0 — fill them in as the
+                    month teaches you
+                  </span>
+                </button>
+              ) : null}
               <button
                 type="button"
                 onClick={() => setAdding(true)}
@@ -350,9 +375,7 @@ export function BudgetScreen() {
           </CardBody>
         ) : (
           <ul className="divide-y divide-line">
-            {lines
-              .filter((line) => line.budgetedZar > 0 || line.actualZar > 0)
-              .map((line) => {
+            {lines.map((line) => {
               const over = line.remainingZar < 0;
               // Spending faster than the days are passing, by enough to matter.
               const ahead =
@@ -387,7 +410,9 @@ export function BudgetScreen() {
                       answers "am I ahead or behind" rather than just "how much
                       is left". It matters more here than in a calendar-month
                       app: a 27-day cycle followed by a 34-day one can't be
-                      eyeballed. */}
+                      eyeballed. A line with no amount and no spend gets no bar
+                      — a bar of nothing means nothing. */}
+                  {line.budgetedZar === 0 && line.actualZar === 0 ? null : (
                   <div className="relative mt-2 h-1.5 w-full rounded-full bg-raise">
                     <div
                       className={`h-full rounded-full ${
@@ -404,6 +429,7 @@ export function BudgetScreen() {
                       />
                     ) : null}
                   </div>
+                  )}
 
                   <p className="mt-1.5 flex items-center justify-between gap-2 text-[11px] text-faint">
                     <span className="flex items-center gap-2">
@@ -419,12 +445,16 @@ export function BudgetScreen() {
                         <Trash2 size={12} strokeWidth={1.75} />
                       </button>
                     </span>
-                    <span className={over ? "text-loss" : ""}>
-                      {over ? "over by " : "left "}
-                      <Money value={Math.abs(line.remainingZar)} variant="whole" />
-                      {" · "}
-                      <Percent value={line.usedPct} decimals={0} />
-                    </span>
+                    {line.budgetedZar === 0 && line.actualZar === 0 ? (
+                      <span>no amount yet — tap the figure to set one</span>
+                    ) : (
+                      <span className={over ? "text-loss" : ""}>
+                        {over ? "over by " : "left "}
+                        <Money value={Math.abs(line.remainingZar)} variant="whole" />
+                        {" · "}
+                        <Percent value={line.usedPct} decimals={0} />
+                      </span>
+                    )}
                   </p>
                 </li>
               );
