@@ -73,3 +73,33 @@ preview URL, so you can check a change before it reaches the live app.
   run it unattended. It needs a secured endpoint first — a cron URL that writes
   to Airtable must not be callable by anyone who guesses it.
 - **Custom domain.** Vercel → Settings → Domains, once you have one.
+
+---
+
+# Backups
+
+Your financial data lives in Airtable. This keeps a versioned copy in git.
+
+```bash
+npm run backup
+git add backups && git commit -m "backup: $(date +%F)" && git push
+```
+
+**What it writes**
+
+- `backups/latest/` — one file per table, overwritten each run. Diffs cleanly,
+  so a commit shows exactly which records changed.
+- `backups/snapshots/YYYY-MM-DD.json` — one immutable file per run. ~390 KB, so
+  keeping every one indefinitely costs nothing.
+
+Field *definitions* are included alongside records. Without them the field-id
+keys would be unreadable if the Airtable schema were ever lost.
+
+**How often:** weekly is plenty at ~64 transactions a month. Always run it
+before any bulk edit in Airtable — that is the change most likely to need
+undoing.
+
+**Restoring:** the snapshot contains every record keyed by field id, plus the
+schema. Recreating a table means POSTing those records back through the
+Airtable API. Nothing about this is Airtable-specific, which is also what makes
+a future migration off Airtable safe to attempt.

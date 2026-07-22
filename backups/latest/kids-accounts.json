@@ -1,0 +1,172 @@
+{
+  "id": "tbliHyrFGyWNaamF0",
+  "fields": [
+    {
+      "id": "fldYSUjwg09Rejvkc",
+      "name": "Account",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldRe1SuyyfoDl3J7",
+      "name": "Child",
+      "type": "singleSelect"
+    },
+    {
+      "id": "fldnVpOMglmQr9975",
+      "name": "Account Type",
+      "type": "singleSelect"
+    },
+    {
+      "id": "fldP70Dc7YXA3A0KB",
+      "name": "Balance (ZAR)",
+      "type": "currency"
+    },
+    {
+      "id": "fldbKtVU7GGxGsLbX",
+      "name": "Monthly Contribution (ZAR)",
+      "type": "currency"
+    },
+    {
+      "id": "fldb7f793z9kWEehF",
+      "name": "Institution",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldHd1wydiGHnEiBC",
+      "name": "Last Updated",
+      "type": "date"
+    },
+    {
+      "id": "fldnBtEpst31T0s87",
+      "name": "Notes",
+      "type": "multilineText"
+    }
+  ],
+  "recordCount": 10,
+  "records": [
+    {
+      "id": "recMfV0OPaTTh7GcO",
+      "createdTime": "2026-06-11T20:44:38.000Z",
+      "fields": {
+        "fldHd1wydiGHnEiBC": "2026-06-09",
+        "fldP70Dc7YXA3A0KB": 1194,
+        "fldRe1SuyyfoDl3J7": "Lisa",
+        "fldYSUjwg09Rejvkc": "Retirement Annuity",
+        "fldb7f793z9kWEehF": "EasyEquities",
+        "fldnBtEpst31T0s87": "Review age/access restrictions",
+        "fldnVpOMglmQr9975": "Retirement Annuity"
+      }
+    },
+    {
+      "id": "recPjII6DETvmBCwm",
+      "createdTime": "2026-06-11T20:44:38.000Z",
+      "fields": {
+        "fldHd1wydiGHnEiBC": "2026-06-09",
+        "fldP70Dc7YXA3A0KB": 0,
+        "fldRe1SuyyfoDl3J7": "Lisa",
+        "fldYSUjwg09Rejvkc": "Capitec Savings",
+        "fldb7f793z9kWEehF": "Capitec",
+        "fldbKtVU7GGxGsLbX": 0,
+        "fldnBtEpst31T0s87": "Currently R0 — fund before next contributions",
+        "fldnVpOMglmQr9975": "Savings"
+      }
+    },
+    {
+      "id": "recTBUlPjOZtVvDmW",
+      "createdTime": "2026-06-11T20:44:38.000Z",
+      "fields": {
+        "fldHd1wydiGHnEiBC": "2026-06-09",
+        "fldP70Dc7YXA3A0KB": 557,
+        "fldRe1SuyyfoDl3J7": "Lisa",
+        "fldYSUjwg09Rejvkc": "TFSA",
+        "fldb7f793z9kWEehF": "EasyEquities",
+        "fldnBtEpst31T0s87": "Most powerful vehicle — maximise annually",
+        "fldnVpOMglmQr9975": "TFSA"
+      }
+    },
+    {
+      "id": "recWk7hLob3PwwCXZ",
+      "createdTime": "2026-06-11T20:44:38.000Z",
+      "fields": {
+        "fldHd1wydiGHnEiBC": "2026-06-09",
+        "fldP70Dc7YXA3A0KB": 606,
+        "fldRe1SuyyfoDl3J7": "Lisa",
+        "fldYSUjwg09Rejvkc": "Investments",
+        "fldb7f793z9kWEehF": "EasyEquities",
+        "fldnVpOMglmQr9975": "Investments"
+      }
+    },
+    {
+      "id": "recdIc2nwHOvf8QbU",
+      "createdTime": "2026-06-11T20:44:38.000Z",
+      "fields": {
+        "fldHd1wydiGHnEiBC": "2026-06-09",
+        "fldP70Dc7YXA3A0KB": 500,
+        "fldRe1SuyyfoDl3J7": "Liam",
+        "fldYSUjwg09Rejvkc": "Capitec Savings",
+        "fldb7f793z9kWEehF": "Capitec",
+        "fldnVpOMglmQr9975": "Savings"
+      }
+    },
+    {
+      "id": "recdYqGo8vGaUNQo6",
+      "createdTime": "2026-06-11T20:44:38.000Z",
+      "fields": {
+        "fldHd1wydiGHnEiBC": "2026-06-09",
+        "fldP70Dc7YXA3A0KB": 614,
+        "fldRe1SuyyfoDl3J7": "Liam",
+        "fldYSUjwg09Rejvkc": "Investments",
+        "fldb7f793z9kWEehF": "EasyEquities",
+        "fldnVpOMglmQr9975": "Investments"
+      }
+    },
+    {
+      "id": "reco2TfwjCZV60nTl",
+      "createdTime": "2026-06-11T20:44:38.000Z",
+      "fields": {
+        "fldHd1wydiGHnEiBC": "2026-06-09",
+        "fldP70Dc7YXA3A0KB": 250,
+        "fldRe1SuyyfoDl3J7": "Lisa",
+        "fldYSUjwg09Rejvkc": "32-Day Savings",
+        "fldnVpOMglmQr9975": "32-Day Notice"
+      }
+    },
+    {
+      "id": "recq3xMEJhT0Vx4wv",
+      "createdTime": "2026-06-11T20:44:38.000Z",
+      "fields": {
+        "fldHd1wydiGHnEiBC": "2026-06-09",
+        "fldP70Dc7YXA3A0KB": 1300,
+        "fldRe1SuyyfoDl3J7": "Liam",
+        "fldYSUjwg09Rejvkc": "Retirement Annuity",
+        "fldb7f793z9kWEehF": "EasyEquities",
+        "fldnBtEpst31T0s87": "Review age/access restrictions",
+        "fldnVpOMglmQr9975": "Retirement Annuity"
+      }
+    },
+    {
+      "id": "recqmcagNT1q7vKa6",
+      "createdTime": "2026-06-11T20:44:38.000Z",
+      "fields": {
+        "fldHd1wydiGHnEiBC": "2026-06-09",
+        "fldP70Dc7YXA3A0KB": 382,
+        "fldRe1SuyyfoDl3J7": "Liam",
+        "fldYSUjwg09Rejvkc": "TFSA",
+        "fldb7f793z9kWEehF": "EasyEquities",
+        "fldnBtEpst31T0s87": "Most powerful vehicle — maximise annually",
+        "fldnVpOMglmQr9975": "TFSA"
+      }
+    },
+    {
+      "id": "recvcfE0YkodZMFBq",
+      "createdTime": "2026-06-11T20:44:38.000Z",
+      "fields": {
+        "fldHd1wydiGHnEiBC": "2026-06-09",
+        "fldP70Dc7YXA3A0KB": 250,
+        "fldRe1SuyyfoDl3J7": "Liam",
+        "fldYSUjwg09Rejvkc": "32-Day Savings",
+        "fldnVpOMglmQr9975": "32-Day Notice"
+      }
+    }
+  ]
+}

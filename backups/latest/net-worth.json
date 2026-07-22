@@ -1,0 +1,274 @@
+{
+  "id": "tblYdUqI6nZ12tC3N",
+  "fields": [
+    {
+      "id": "fldfxiUQZvJxyTu0f",
+      "name": "Asset / Liability",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldBS5N3nnYVMCQ3q",
+      "name": "Category",
+      "type": "singleSelect"
+    },
+    {
+      "id": "fldGCrLxFR8XIwxZB",
+      "name": "Type",
+      "type": "singleSelect"
+    },
+    {
+      "id": "fldqBv7liYBBOQ3Lz",
+      "name": "Value (ZAR)",
+      "type": "currency"
+    },
+    {
+      "id": "fldzTawYXUivHbh8F",
+      "name": "Notes",
+      "type": "multilineText"
+    },
+    {
+      "id": "fld13UXcF9zmMxxXw",
+      "name": "Last Updated",
+      "type": "date"
+    }
+  ],
+  "recordCount": 20,
+  "records": [
+    {
+      "id": "rec5VjlTZMBJoKYUg",
+      "createdTime": "2026-06-13T15:25:22.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-13",
+        "fldBS5N3nnYVMCQ3q": "Savings",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Capitec Savings (Romano)",
+        "fldqBv7liYBBOQ3Lz": 14.95,
+        "fldzTawYXUivHbh8F": "Romano Capitec savings plans total — MPC R5.63 + Small EF R0.28 + DJ Controller R0.56 + Tax R0.81 + Big EF R5.00 + Liam Savings R1.20 + Debt Clearance R0.10 + Car Purchase R1.37"
+      }
+    },
+    {
+      "id": "rec8M3WyONGKAYl59",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-09",
+        "fldBS5N3nnYVMCQ3q": "Debt",
+        "fldGCrLxFR8XIwxZB": "Liability",
+        "fldfxiUQZvJxyTu0f": "Anders / SCM / MBD Legal",
+        "fldqBv7liYBBOQ3Lz": 100000,
+        "fldzTawYXUivHbh8F": "Small debts — clear immediately"
+      }
+    },
+    {
+      "id": "recAcWGFpqBu6s1Ik",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-09",
+        "fldBS5N3nnYVMCQ3q": "Savings",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Savings Goals",
+        "fldqBv7liYBBOQ3Lz": 500,
+        "fldzTawYXUivHbh8F": "Multiple goal accounts combined"
+      }
+    },
+    {
+      "id": "recC7UY9Kcu1N8HbD",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-13",
+        "fldBS5N3nnYVMCQ3q": "Investments",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Retirement Annuity",
+        "fldqBv7liYBBOQ3Lz": 80807.5,
+        "fldzTawYXUivHbh8F": "EasyEquities Retirement Annuity — +6.51% | R4,946.86 P&L"
+      }
+    },
+    {
+      "id": "recCYFsWNZrT1G9XM",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-13",
+        "fldBS5N3nnYVMCQ3q": "Crypto",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Crypto — EasyCrypto",
+        "fldqBv7liYBBOQ3Lz": 105924.88,
+        "fldzTawYXUivHbh8F": "EasyCrypto portfolio — Current value R104,695 | Invested R221,943 | P&L -52.8% | TARGET: R1,500,000 (part of R2M overall goal) | Progress: 6.98% | Feb 2028 deadline."
+      }
+    },
+    {
+      "id": "recCqKfZ4rLz6O4QC",
+      "createdTime": "2026-06-14T10:48:59.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-25",
+        "fldBS5N3nnYVMCQ3q": "Cash",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Absa (Romano)",
+        "fldqBv7liYBBOQ3Lz": 1.83,
+        "fldzTawYXUivHbh8F": "25 Jun 2026 | R12K reflected from prior Capitec Business transfers. Bond R10K + Anders MbD R500 paid out. Net balance R1,275.83."
+      }
+    },
+    {
+      "id": "recLUCOewAux2Kx4i",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-13",
+        "fldBS5N3nnYVMCQ3q": "Vehicle",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Vehicle",
+        "fldqBv7liYBBOQ3Lz": 40000,
+        "fldzTawYXUivHbh8F": "Estimated value kept — no screenshot provided 13 Jun 2026, value confirmed as R40,000"
+      }
+    },
+    {
+      "id": "recMM3G1i5d5zv545",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-13",
+        "fldBS5N3nnYVMCQ3q": "Property",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "EasyProperties ZAR",
+        "fldqBv7liYBBOQ3Lz": 2082.63,
+        "fldzTawYXUivHbh8F": "EasyEquities EasyProperties ZAR — +9.65% | R184.12 P&L"
+      }
+    },
+    {
+      "id": "recNd5OB5KtSOcFC4",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-07-05",
+        "fldBS5N3nnYVMCQ3q": "Cash",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Capitec Main",
+        "fldqBv7liYBBOQ3Lz": 4500,
+        "fldzTawYXUivHbh8F": "27 Jun 2026 | R190 to Lisa (spending) + R35 data = R225 deducted. Balance: R6,254.\n27 Jun 2026 | R987.50 Luno top-up (XRP R687 + LINK R150 + ONDO R150.50). Balance: R5,266.50.\n4 Jul 2026 | R620 to Luno → BTC buy R612.25. Balance: R5,920.\n5 Jul 2026 | R1,000 to EasyCrypto → ENA buy R541, R459 cash pending allocation. Balance: R4,920."
+      }
+    },
+    {
+      "id": "recS532kfzEjRXiFX",
+      "createdTime": "2026-06-13T15:25:22.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-13",
+        "fldBS5N3nnYVMCQ3q": "Crypto",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Crypto — Tangem Hardware Wallet",
+        "fldqBv7liYBBOQ3Lz": 34819.21,
+        "fldzTawYXUivHbh8F": "Tangem self-custody cold wallet — Current value R34,867 | Invested R35,552 | P&L -1.9% | PHASE 1 TARGET: R500,000 by Feb 2028 (part of R2M overall goal) | PHASE 2 TARGET: R5,000,000 by 2030 | Progress to Phase 1: 6.97% | Long-term vault — Forever Bag + Growth Engine + Trading. EasyCrypto milestone profits sweep into vault to compound growth."
+      }
+    },
+    {
+      "id": "recXStn7wjyDkiCY4",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-07-04",
+        "fldBS5N3nnYVMCQ3q": "Cash",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "GOtyme Bank",
+        "fldqBv7liYBBOQ3Lz": 4704.28,
+        "fldzTawYXUivHbh8F": "25 Jun 2026 | Balance corrected to R6,878 — user confirmed actual balance.\n26 Jun 2026 | R1,335 deducted — Checkers groceries. New balance: R5,543."
+      }
+    },
+    {
+      "id": "recbedvWFCAUMJTvf",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-13",
+        "fldBS5N3nnYVMCQ3q": "Investments",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "TFSA (Personal)",
+        "fldqBv7liYBBOQ3Lz": 1177.83,
+        "fldzTawYXUivHbh8F": "EasyEquities Tax-Free Savings Account — +12.84% | R131.41 P&L"
+      }
+    },
+    {
+      "id": "recdBdTnb3My5xJwL",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-13",
+        "fldBS5N3nnYVMCQ3q": "Investments",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Family Future (Lisa & Liam)",
+        "fldqBv7liYBBOQ3Lz": 673.2,
+        "fldzTawYXUivHbh8F": "Capitec only — Lisa Main R2.17 + Lisa Savings R0.02 + Liam Main R671.01. Kids EasyEquities accounts not visible in screenshot."
+      }
+    },
+    {
+      "id": "recdjSNNkv3bf30Ue",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-09",
+        "fldBS5N3nnYVMCQ3q": "Debt",
+        "fldGCrLxFR8XIwxZB": "Liability",
+        "fldfxiUQZvJxyTu0f": "Payflex",
+        "fldqBv7liYBBOQ3Lz": 5000,
+        "fldzTawYXUivHbh8F": "Revolving ~20%+ interest — eliminate within 12 months"
+      }
+    },
+    {
+      "id": "recf5oPChYXbARBbm",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-25",
+        "fldBS5N3nnYVMCQ3q": "Debt",
+        "fldGCrLxFR8XIwxZB": "Liability",
+        "fldfxiUQZvJxyTu0f": "Home Loan (Bond)",
+        "fldqBv7liYBBOQ3Lz": 974932,
+        "fldzTawYXUivHbh8F": "Primary liability — long term. 25 Jun 2026: R10,000 payment made. Balance reduced R984,932 → R974,932."
+      }
+    },
+    {
+      "id": "reclNe9ko8LUOJLPT",
+      "createdTime": "2026-06-24T15:19:30.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-24",
+        "fldBS5N3nnYVMCQ3q": "Savings",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Creative Tax (Capitec Savings)",
+        "fldqBv7liYBBOQ3Lz": 800,
+        "fldzTawYXUivHbh8F": "7-day savings plan on Capitec Main — dedicated company/SARS tax provision. Created 24 Jun 2026. Target: R3,000. Top up monthly — R800 done, R2,200 remaining."
+      }
+    },
+    {
+      "id": "rectnexC7qOPUfxzE",
+      "createdTime": "2026-06-14T10:45:56.000Z",
+      "fields": {
+        "fldfxiUQZvJxyTu0f": "Capitec Rewards (Romano)",
+        "fldqBv7liYBBOQ3Lz": 0
+      }
+    },
+    {
+      "id": "recuyFcR7RFc6jo94",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-13",
+        "fldBS5N3nnYVMCQ3q": "Investments",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Equities",
+        "fldqBv7liYBBOQ3Lz": 342.59,
+        "fldzTawYXUivHbh8F": "EasyEquities combined: ZAR R342.59 (+24.16%) + USD R457.44 (+19.89%) + AUD R0.23 + EUR R1.13 + GBP R1.53"
+      }
+    },
+    {
+      "id": "recypRpCBqElC7b9o",
+      "createdTime": "2026-06-11T20:43:28.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-13",
+        "fldBS5N3nnYVMCQ3q": "Crypto",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Crypto — Luno",
+        "fldqBv7liYBBOQ3Lz": 180,
+        "fldzTawYXUivHbh8F": "Zeroed — no Luno screenshot provided in 13 Jun 2026 snapshot"
+      }
+    },
+    {
+      "id": "recz4U5ZvnXlyhj8d",
+      "createdTime": "2026-06-13T15:25:22.000Z",
+      "fields": {
+        "fld13UXcF9zmMxxXw": "2026-06-27",
+        "fldBS5N3nnYVMCQ3q": "Cash",
+        "fldGCrLxFR8XIwxZB": "Asset",
+        "fldfxiUQZvJxyTu0f": "Capitec Business (CreativeDigital)",
+        "fldqBv7liYBBOQ3Lz": 683.62,
+        "fldzTawYXUivHbh8F": "25 Jun 2026 | Balance corrected to R6,593.\n25 Jun 2026 | R500 petrol deducted (retroactive). Balance: R3,122."
+      }
+    }
+  ]
+}

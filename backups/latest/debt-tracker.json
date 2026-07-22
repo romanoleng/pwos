@@ -1,0 +1,163 @@
+{
+  "id": "tblST3fTejbm3yAsB",
+  "fields": [
+    {
+      "id": "fld19zodyvt0yKC1P",
+      "name": "Debt",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldgVTyiDZrS8Brhd",
+      "name": "Type",
+      "type": "singleSelect"
+    },
+    {
+      "id": "fldyDq6KrUTl0MQgt",
+      "name": "Outstanding Balance (ZAR)",
+      "type": "currency"
+    },
+    {
+      "id": "fldRylhwh9GUkXciS",
+      "name": "Monthly Payment (ZAR)",
+      "type": "currency"
+    },
+    {
+      "id": "fldZwbE4Ei51vVnm2",
+      "name": "Interest Rate %",
+      "type": "number"
+    },
+    {
+      "id": "fld9HFlI1tDIedwBJ",
+      "name": "Priority",
+      "type": "singleSelect"
+    },
+    {
+      "id": "fldxbXjuQeD4F9xpH",
+      "name": "Status",
+      "type": "singleSelect"
+    },
+    {
+      "id": "fldpRkJrHVVd21Vf4",
+      "name": "Target Payoff Date",
+      "type": "date"
+    },
+    {
+      "id": "fldgVYqZ1kBUGDUnv",
+      "name": "Notes",
+      "type": "multilineText"
+    }
+  ],
+  "recordCount": 8,
+  "records": [
+    {
+      "id": "rec2zJRGRDKuhrS25",
+      "createdTime": "2026-06-11T20:44:58.000Z",
+      "fields": {
+        "fld19zodyvt0yKC1P": "MBD Legal",
+        "fld9HFlI1tDIedwBJ": "🔴 Eliminate First",
+        "fldRylhwh9GUkXciS": 500,
+        "fldZwbE4Ei51vVnm2": 0,
+        "fldgVTyiDZrS8Brhd": "Legal Debt",
+        "fldgVYqZ1kBUGDUnv": "Real balance R160,744.76 (ABSA CC, collections-purchased by Anders TJ Inc). 30% settlement offer (R112,521.33 lump or 3x R37,507.11 — 29 May/29 Jun/30 Jul 2026) declined — Romano paying R500/month flat regardless of offer terms or consequences. This is a fixed decision, not under review.",
+        "fldxbXjuQeD4F9xpH": "Active",
+        "fldyDq6KrUTl0MQgt": 160744.76
+      }
+    },
+    {
+      "id": "rec7SvrkwJLsVnYP9",
+      "createdTime": "2026-06-11T20:44:58.000Z",
+      "fields": {
+        "fld19zodyvt0yKC1P": "Home Loan (Bond)",
+        "fld9HFlI1tDIedwBJ": "🟢 Long Term",
+        "fldRylhwh9GUkXciS": 10000,
+        "fldZwbE4Ei51vVnm2": 11.25,
+        "fldgVTyiDZrS8Brhd": "Bond",
+        "fldgVYqZ1kBUGDUnv": "Primary liability — long term. 25 Jun 2026: R10,000 payment from ABSA. Balance reduced R984,932 → R974,932.",
+        "fldpRkJrHVVd21Vf4": "2035-01-01",
+        "fldxbXjuQeD4F9xpH": "Active",
+        "fldyDq6KrUTl0MQgt": 974932
+      }
+    },
+    {
+      "id": "recEEXe4QxUr5GNkr",
+      "createdTime": "2026-06-11T20:44:58.000Z",
+      "fields": {
+        "fld19zodyvt0yKC1P": "SCM",
+        "fld9HFlI1tDIedwBJ": "🔴 Eliminate First",
+        "fldRylhwh9GUkXciS": 500,
+        "fldZwbE4Ei51vVnm2": 0,
+        "fldgVTyiDZrS8Brhd": "Legal Debt",
+        "fldgVYqZ1kBUGDUnv": "R500/month is the debt review installment, not the full balance. Actual outstanding owed to creditor is higher (legal/collections-purchased debt) — exact figure unknown, held under debt review arrangement.",
+        "fldxbXjuQeD4F9xpH": "Active",
+        "fldyDq6KrUTl0MQgt": 500
+      }
+    },
+    {
+      "id": "recNFnulbR7Hn7sww",
+      "createdTime": "2026-06-16T09:43:07.000Z",
+      "fields": {
+        "fld19zodyvt0yKC1P": "PayJustNow",
+        "fldRylhwh9GUkXciS": 5000,
+        "fldgVTyiDZrS8Brhd": "Revolving Credit",
+        "fldpRkJrHVVd21Vf4": "2026-07-25",
+        "fldyDq6KrUTl0MQgt": 6800
+      }
+    },
+    {
+      "id": "recSnoZDlDrcFjeyM",
+      "createdTime": "2026-07-07T08:56:34.000Z",
+      "fields": {
+        "fld19zodyvt0yKC1P": "City of Cape Town Rates (CCT Account 228778391)",
+        "fld9HFlI1tDIedwBJ": "Eliminate",
+        "fldgVTyiDZrS8Brhd": "Municipal Rates",
+        "fldgVYqZ1kBUGDUnv": "CCT account 228778391 — recurring MONTHLY rates bill, paid from Capitec Business (CreativeDigital) account. Split with wife (she also contributes but exact recent amount unconfirmed). Latest bill: R1,248.75 as at 6 Jul 2026, due 31 Jul 2026. Query line: 0860103089. Romano confirms he paid last month's bill but exact amount/date not on hand — not yet logged as a transaction.",
+        "fldpRkJrHVVd21Vf4": "2026-07-31",
+        "fldxbXjuQeD4F9xpH": "Outstanding",
+        "fldyDq6KrUTl0MQgt": 1248.75
+      }
+    },
+    {
+      "id": "recbWyBnAAIGolDQE",
+      "createdTime": "2026-07-01T10:03:14.000Z",
+      "fields": {
+        "fld19zodyvt0yKC1P": "Home Levies Arrears — Trafalgar",
+        "fld9HFlI1tDIedwBJ": "Eliminate",
+        "fldRylhwh9GUkXciS": 0,
+        "fldZwbE4Ei51vVnm2": 0,
+        "fldgVTyiDZrS8Brhd": "Levy Arrears",
+        "fldpRkJrHVVd21Vf4": "2026-12-31",
+        "fldxbXjuQeD4F9xpH": "Outstanding",
+        "fldyDq6KrUTl0MQgt": 8227.08
+      }
+    },
+    {
+      "id": "recg1SxvgbwN53b3n",
+      "createdTime": "2026-06-11T20:44:58.000Z",
+      "fields": {
+        "fld19zodyvt0yKC1P": "Anders",
+        "fld9HFlI1tDIedwBJ": "🔴 Eliminate First",
+        "fldRylhwh9GUkXciS": 500,
+        "fldZwbE4Ei51vVnm2": 0,
+        "fldgVTyiDZrS8Brhd": "Legal Debt",
+        "fldgVYqZ1kBUGDUnv": "Real balance R160,344.76 (ABSA CC, collections-purchased by Anders TJ Inc, ref R88765). 30% settlement offer received 23 Jun 2026: lump R112,241.33 by 29 Jun 2026, OR 3x R37,413.78 (29 Jun/29 Jul/29 Aug 2026) for paid-up letter 31 Aug 2026. NOT confirmed same debt as MBD Legal record (near-identical balance/offer terms — possible duplicate collector chasing same ABSA account, unconfirmed). R500/month flat continues under debt review pending decision.",
+        "fldxbXjuQeD4F9xpH": "Active",
+        "fldyDq6KrUTl0MQgt": 160344.76
+      }
+    },
+    {
+      "id": "recyfslKQ2dtLZOPQ",
+      "createdTime": "2026-06-11T20:44:58.000Z",
+      "fields": {
+        "fld19zodyvt0yKC1P": "Payflex",
+        "fld9HFlI1tDIedwBJ": "🔴 Eliminate First",
+        "fldRylhwh9GUkXciS": 4619,
+        "fldZwbE4Ei51vVnm2": 22,
+        "fldgVTyiDZrS8Brhd": "Revolving Credit",
+        "fldgVYqZ1kBUGDUnv": "~20%+ interest — eliminate within 12 months, redirect R5k to savings after",
+        "fldpRkJrHVVd21Vf4": "2027-06-01",
+        "fldxbXjuQeD4F9xpH": "Active",
+        "fldyDq6KrUTl0MQgt": 7200
+      }
+    }
+  ]
+}

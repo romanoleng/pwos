@@ -1,0 +1,728 @@
+{
+  "id": "tblOnIdrw4iv2Mfun",
+  "fields": [
+    {
+      "id": "flde9cM9OdDfVj4il",
+      "name": "Date",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldKdijwPzixgP53m",
+      "name": "Total Value (ZAR)",
+      "type": "number"
+    },
+    {
+      "id": "fldCMADS5e3Am6104",
+      "name": "Total Invested (ZAR)",
+      "type": "number"
+    },
+    {
+      "id": "fldS2g1AwXCq5O4LN",
+      "name": "P&L (ZAR)",
+      "type": "number"
+    },
+    {
+      "id": "fldt6wuGS43Vv2z8C",
+      "name": "R2M Progress %",
+      "type": "number"
+    },
+    {
+      "id": "fldpnRsRRogXKdBW7",
+      "name": "R3M Progress %",
+      "type": "number"
+    },
+    {
+      "id": "fldKd0NGPlMW0kjhL",
+      "name": "Milestones Hit Count",
+      "type": "number"
+    },
+    {
+      "id": "fldkOGGPR4YJSj2Fl",
+      "name": "Milestones Hit Detail",
+      "type": "multilineText"
+    },
+    {
+      "id": "fldAt4aR6huZn458a",
+      "name": "Close Calls Count",
+      "type": "number"
+    },
+    {
+      "id": "flduycQyfkuaWGjhw",
+      "name": "Close Calls Detail",
+      "type": "multilineText"
+    },
+    {
+      "id": "fld94gmFx1XSwHu7U",
+      "name": "Top Gainer",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldhxc45qB4N8SydS",
+      "name": "Top Gainer %",
+      "type": "number"
+    },
+    {
+      "id": "flde9C0N9RAXBfj2R",
+      "name": "Top Gainer Price (ZAR)",
+      "type": "number"
+    },
+    {
+      "id": "fldTfGayxyLUjW5Of",
+      "name": "Top Loser",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldLKj3Fv6Zt4tZCT",
+      "name": "Top Loser %",
+      "type": "number"
+    },
+    {
+      "id": "fldutaRpK26xff8u8",
+      "name": "Top Loser Price (ZAR)",
+      "type": "number"
+    },
+    {
+      "id": "fldxCcxvxwJMtaRZG",
+      "name": "All Movers Detail",
+      "type": "multilineText"
+    }
+  ],
+  "recordCount": 34,
+  "records": [
+    {
+      "id": "rec4N2OOHMJmYYOUG",
+      "createdTime": "2026-06-19T18:35:00.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 232462,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 128393,
+        "fldS2g1AwXCq5O4LN": -104069,
+        "flde9cM9OdDfVj4il": "2026-06-19",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.28,
+        "fldt6wuGS43Vv2z8C": 6.42,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "rec5zZ1VqIUg4Az3P",
+      "createdTime": "2026-06-21T14:41:00.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "JUP",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 235058,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 128654,
+        "fldLKj3Fv6Zt4tZCT": -2.97,
+        "fldS2g1AwXCq5O4LN": -106404,
+        "fldTfGayxyLUjW5Of": "ZEC",
+        "flde9C0N9RAXBfj2R": 3.63,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 10.54,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.29,
+        "fldt6wuGS43Vv2z8C": 6.43,
+        "fldutaRpK26xff8u8": 7385.2,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"JUP\",\"change24h\":10.54,\"livePrice\":3.63},{\"symbol\":\"ENA\",\"change24h\":5.78,\"livePrice\":1.49},{\"symbol\":\"SOL\",\"change24h\":4.16,\"livePrice\":1206.24},{\"symbol\":\"AVAX\",\"change24h\":4.01,\"livePrice\":103.23},{\"symbol\":\"TAO\",\"change24h\":2.96,\"livePrice\":3852.09},{\"symbol\":\"GRT\",\"change24h\":2.86,\"livePrice\":0.326268},{\"symbol\":\"OP\",\"change24h\":2.7,\"livePrice\":1.68},{\"symbol\":\"RAY\",\"change24h\":2.7,\"livePrice\":10.4},{\"symbol\":\"HNT\",\"change24h\":2.07,\"livePrice\":4.56},{\"symbol\":\"AR\",\"change24h\":1.85,\"livePrice\":32.94},{\"symbol\":\"LINK\",\"change24h\":1.24,\"livePrice\":129.79},{\"symbol\":\"BNB\",\"change24h\":1.12,\"livePrice\":9616.24},{\"symbol\":\"BTC\",\"change24h\":1.02,\"livePrice\":1045244},{\"symbol\":\"XLM\",\"change24h\":1.02,\"livePrice\":3.51},{\"symbol\":\"TIA\",\"change24h\":1.01,\"livePrice\":6.1},{\"symbol\":\"QNT\",\"change24h\":1.01,\"livePrice\":1157.49},{\"symbol\":\"WLD\",\"change24h\":0.97,\"livePrice\":10.02},{\"symbol\":\"SUI\",\"change24h\":0.71,\"livePrice\":11.59},{\"symbol\":\"VIRTUAL\",\"change24h\":0.65,\"livePrice\":9.84},{\"symbol\":\"ICP\",\"change24h\":0.64,\"livePrice\":37.09},{\"symbol\":\"XRP\",\"change24h\":0.63,\"livePrice\":18.68},{\"symbol\":\"ADA\",\"change24h\":0.63,\"livePrice\":2.64},{\"symbol\":\"HBAR\",\"change24h\":0.59,\"livePrice\":1.31},{\"symbol\":\"UNI\",\"change24h\":0.57,\"livePrice\":49.47},{\"symbol\":\"ETH\",\"change24h\":0.56,\"livePrice\":28147},{\"symbol\":\"DOGE\",\"change24h\":0.53,\"livePrice\":1.36},{\"symbol\":\"AAVE\",\"change24h\":0.47,\"livePrice\":1220.99},{\"symbol\":\"TRX\",\"change24h\":0.44,\"livePrice\":5.33},{\"symbol\":\"FET\",\"change24h\":0.37,\"livePrice\":3.05},{\"symbol\":\"INJ\",\"change24h\":0.29,\"livePrice\":81.19},{\"symbol\":\"PAXG\",\"change24h\":0.21,\"livePrice\":67890},{\"symbol\":\"IMX\",\"change24h\":0.04,\"livePrice\":2.33},{\"symbol\":\"USDC\",\"change24h\":0,\"livePrice\":16.34},{\"symbol\":\"ATOM\",\"change24h\":-0.23,\"livePrice\":28.92},{\"symbol\":\"ONDO\",\"change24h\":-0.4,\"livePrice\":5.53},{\"symbol\":\"ALGO\",\"change24h\":-0.42,\"livePrice\":1.5},{\"symbol\":\"POL\",\"change24h\":-1.4,\"livePrice\":1.3},{\"symbol\":\"RENDER\",\"change24h\":-1.42,\"livePrice\":27.56},{\"symbol\":\"HYPE\",\"change24h\":-2.23,\"livePrice\":1108.49},{\"symbol\":\"ZEC\",\"change24h\":-2.97,\"livePrice\":7385.2}]"
+      }
+    },
+    {
+      "id": "rec6RBlE4Qekpkxi5",
+      "createdTime": "2026-06-21T21:41:09.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "WLD",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254487,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 142875,
+        "fldLKj3Fv6Zt4tZCT": -4.3,
+        "fldS2g1AwXCq5O4LN": -111612,
+        "fldTfGayxyLUjW5Of": "ZEC",
+        "flde9C0N9RAXBfj2R": 10.15,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 2.59,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.76,
+        "fldt6wuGS43Vv2z8C": 7.14,
+        "fldutaRpK26xff8u8": 7382.19,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"WLD\",\"change24h\":2.59,\"livePrice\":10.15},{\"symbol\":\"SOL\",\"change24h\":2.13,\"livePrice\":1205.49},{\"symbol\":\"TAO\",\"change24h\":1.62,\"livePrice\":3838.66},{\"symbol\":\"ENA\",\"change24h\":1.61,\"livePrice\":1.46},{\"symbol\":\"TRX\",\"change24h\":1.51,\"livePrice\":5.4},{\"symbol\":\"BNB\",\"change24h\":1.2,\"livePrice\":9680.24},{\"symbol\":\"PAXG\",\"change24h\":0.99,\"livePrice\":68467},{\"symbol\":\"USDC\",\"change24h\":0.88,\"livePrice\":16.48},{\"symbol\":\"QNT\",\"change24h\":0.77,\"livePrice\":1158.38},{\"symbol\":\"BTC\",\"change24h\":0.73,\"livePrice\":1052422},{\"symbol\":\"AVAX\",\"change24h\":0.7,\"livePrice\":101.58},{\"symbol\":\"POL\",\"change24h\":0.43,\"livePrice\":1.32},{\"symbol\":\"AAVE\",\"change24h\":0.16,\"livePrice\":1223.63},{\"symbol\":\"SUI\",\"change24h\":0.12,\"livePrice\":11.55},{\"symbol\":\"DOGE\",\"change24h\":0.11,\"livePrice\":1.36},{\"symbol\":\"XLM\",\"change24h\":0.04,\"livePrice\":3.49},{\"symbol\":\"ETH\",\"change24h\":0.03,\"livePrice\":28343},{\"symbol\":\"LINK\",\"change24h\":-0.13,\"livePrice\":129.25},{\"symbol\":\"XRP\",\"change24h\":-0.29,\"livePrice\":18.68},{\"symbol\":\"AR\",\"change24h\":-0.54,\"livePrice\":32.49},{\"symbol\":\"HBAR\",\"change24h\":-0.62,\"livePrice\":1.3},{\"symbol\":\"ADA\",\"change24h\":-0.73,\"livePrice\":2.63},{\"symbol\":\"TIA\",\"change24h\":-0.86,\"livePrice\":6.01},{\"symbol\":\"OP\",\"change24h\":-1.12,\"livePrice\":1.66},{\"symbol\":\"ONDO\",\"change24h\":-1.36,\"livePrice\":5.5},{\"symbol\":\"FET\",\"change24h\":-1.41,\"livePrice\":3.02},{\"symbol\":\"ATOM\",\"change24h\":-1.52,\"livePrice\":28.95},{\"symbol\":\"ICP\",\"change24h\":-1.54,\"livePrice\":36.86},{\"symbol\":\"ALGO\",\"change24h\":-1.68,\"livePrice\":1.5},{\"symbol\":\"RENDER\",\"change24h\":-1.86,\"livePrice\":27.37},{\"symbol\":\"INJ\",\"change24h\":-2.37,\"livePrice\":79.91},{\"symbol\":\"HYPE\",\"change24h\":-2.5,\"livePrice\":1113.24},{\"symbol\":\"ZEC\",\"change24h\":-4.3,\"livePrice\":7382.19}]"
+      }
+    },
+    {
+      "id": "rec9FPuFj6Ur8anmS",
+      "createdTime": "2026-06-23T09:00:42.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254141,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 137503,
+        "fldS2g1AwXCq5O4LN": -116638,
+        "flde9cM9OdDfVj4il": "2026-06-23",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.58,
+        "fldt6wuGS43Vv2z8C": 6.88,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "rec9sIYFYt6hDhxOC",
+      "createdTime": "2026-06-23T06:00:32.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254141,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 141184,
+        "fldS2g1AwXCq5O4LN": -112957,
+        "flde9cM9OdDfVj4il": "2026-06-23",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.71,
+        "fldt6wuGS43Vv2z8C": 7.06,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recC7vDUONnwiemHM",
+      "createdTime": "2026-06-22T09:00:34.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254487,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 145135,
+        "fldS2g1AwXCq5O4LN": -109352,
+        "flde9cM9OdDfVj4il": "2026-06-22",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.84,
+        "fldt6wuGS43Vv2z8C": 7.26,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recDBIu7rZpwutlV1",
+      "createdTime": "2026-06-21T10:30:46.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 235058,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129486,
+        "fldS2g1AwXCq5O4LN": -105572,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.32,
+        "fldt6wuGS43Vv2z8C": 6.47,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recESxX1hZ2g0FJY7",
+      "createdTime": "2026-06-21T14:42:08.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "JUP",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 235058,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 128650,
+        "fldLKj3Fv6Zt4tZCT": -2.96,
+        "fldS2g1AwXCq5O4LN": -106408,
+        "fldTfGayxyLUjW5Of": "ZEC",
+        "flde9C0N9RAXBfj2R": 3.63,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 10.46,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.29,
+        "fldt6wuGS43Vv2z8C": 6.43,
+        "fldutaRpK26xff8u8": 7386.31,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"JUP\",\"change24h\":10.46,\"livePrice\":3.63},{\"symbol\":\"ENA\",\"change24h\":5.75,\"livePrice\":1.49},{\"symbol\":\"SOL\",\"change24h\":4.24,\"livePrice\":1207.19},{\"symbol\":\"AVAX\",\"change24h\":4,\"livePrice\":103.22},{\"symbol\":\"TAO\",\"change24h\":2.99,\"livePrice\":3852.88},{\"symbol\":\"GRT\",\"change24h\":2.88,\"livePrice\":0.326308},{\"symbol\":\"RAY\",\"change24h\":2.72,\"livePrice\":10.4},{\"symbol\":\"OP\",\"change24h\":2.67,\"livePrice\":1.68},{\"symbol\":\"HNT\",\"change24h\":2.11,\"livePrice\":4.57},{\"symbol\":\"AR\",\"change24h\":1.81,\"livePrice\":32.93},{\"symbol\":\"LINK\",\"change24h\":1.25,\"livePrice\":129.81},{\"symbol\":\"BNB\",\"change24h\":1.14,\"livePrice\":9618.45},{\"symbol\":\"XLM\",\"change24h\":1.04,\"livePrice\":3.51},{\"symbol\":\"BTC\",\"change24h\":1.03,\"livePrice\":1045349},{\"symbol\":\"QNT\",\"change24h\":1.02,\"livePrice\":1157.6},{\"symbol\":\"WLD\",\"change24h\":1,\"livePrice\":10.02},{\"symbol\":\"TIA\",\"change24h\":0.96,\"livePrice\":6.09},{\"symbol\":\"SUI\",\"change24h\":0.71,\"livePrice\":11.59},{\"symbol\":\"VIRTUAL\",\"change24h\":0.67,\"livePrice\":9.84},{\"symbol\":\"ICP\",\"change24h\":0.63,\"livePrice\":37.09},{\"symbol\":\"XRP\",\"change24h\":0.61,\"livePrice\":18.68},{\"symbol\":\"ADA\",\"change24h\":0.61,\"livePrice\":2.64},{\"symbol\":\"UNI\",\"change24h\":0.58,\"livePrice\":49.48},{\"symbol\":\"HBAR\",\"change24h\":0.57,\"livePrice\":1.31},{\"symbol\":\"ETH\",\"change24h\":0.57,\"livePrice\":28150},{\"symbol\":\"DOGE\",\"change24h\":0.53,\"livePrice\":1.36},{\"symbol\":\"AAVE\",\"change24h\":0.47,\"livePrice\":1221.01},{\"symbol\":\"TRX\",\"change24h\":0.45,\"livePrice\":5.33},{\"symbol\":\"FET\",\"change24h\":0.39,\"livePrice\":3.05},{\"symbol\":\"INJ\",\"change24h\":0.33,\"livePrice\":81.22},{\"symbol\":\"PAXG\",\"change24h\":0.2,\"livePrice\":67883},{\"symbol\":\"IMX\",\"change24h\":0.05,\"livePrice\":2.33},{\"symbol\":\"USDC\",\"change24h\":0,\"livePrice\":16.34},{\"symbol\":\"ATOM\",\"change24h\":-0.14,\"livePrice\":28.94},{\"symbol\":\"ONDO\",\"change24h\":-0.41,\"livePrice\":5.53},{\"symbol\":\"ALGO\",\"change24h\":-0.44,\"livePrice\":1.5},{\"symbol\":\"POL\",\"change24h\":-1.41,\"livePrice\":1.3},{\"symbol\":\"RENDER\",\"change24h\":-1.45,\"livePrice\":27.55},{\"symbol\":\"HYPE\",\"change24h\":-2.23,\"livePrice\":1108.48},{\"symbol\":\"ZEC\",\"change24h\":-2.96,\"livePrice\":7386.31}]"
+      }
+    },
+    {
+      "id": "recElTJV3MxKHPHRS",
+      "createdTime": "2026-06-21T10:52:01.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "JUP",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 235058,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129364,
+        "fldLKj3Fv6Zt4tZCT": -4.01,
+        "fldS2g1AwXCq5O4LN": -105694,
+        "fldTfGayxyLUjW5Of": "POL",
+        "flde9C0N9RAXBfj2R": 3.66,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 12.25,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.31,
+        "fldt6wuGS43Vv2z8C": 6.47,
+        "fldutaRpK26xff8u8": 1.3,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"JUP\",\"change24h\":12.25,\"livePrice\":3.66},{\"symbol\":\"ENA\",\"change24h\":5,\"livePrice\":1.52},{\"symbol\":\"SOL\",\"change24h\":3.48,\"livePrice\":1209.75},{\"symbol\":\"GRT\",\"change24h\":3.44,\"livePrice\":0.331673},{\"symbol\":\"TAO\",\"change24h\":2.5,\"livePrice\":3850.03},{\"symbol\":\"RAY\",\"change24h\":2.12,\"livePrice\":10.34},{\"symbol\":\"AVAX\",\"change24h\":1.89,\"livePrice\":103.13},{\"symbol\":\"AR\",\"change24h\":1.74,\"livePrice\":33.24},{\"symbol\":\"BTC\",\"change24h\":1.16,\"livePrice\":1051030},{\"symbol\":\"TRX\",\"change24h\":0.94,\"livePrice\":5.33},{\"symbol\":\"UNI\",\"change24h\":0.89,\"livePrice\":49.72},{\"symbol\":\"IMX\",\"change24h\":0.84,\"livePrice\":2.35},{\"symbol\":\"BNB\",\"change24h\":0.68,\"livePrice\":9635.03},{\"symbol\":\"VIRTUAL\",\"change24h\":0.64,\"livePrice\":9.95},{\"symbol\":\"QNT\",\"change24h\":0.44,\"livePrice\":1157.06},{\"symbol\":\"LINK\",\"change24h\":0.39,\"livePrice\":130.41},{\"symbol\":\"ETH\",\"change24h\":0.36,\"livePrice\":28297},{\"symbol\":\"XRP\",\"change24h\":0.22,\"livePrice\":18.8},{\"symbol\":\"ICP\",\"change24h\":0.19,\"livePrice\":37.34},{\"symbol\":\"PAXG\",\"change24h\":0.17,\"livePrice\":67914},{\"symbol\":\"USDC\",\"change24h\":0.01,\"livePrice\":16.34},{\"symbol\":\"OP\",\"change24h\":0,\"livePrice\":1.68},{\"symbol\":\"TIA\",\"change24h\":-0.02,\"livePrice\":6.17},{\"symbol\":\"FET\",\"change24h\":-0.06,\"livePrice\":3.09},{\"symbol\":\"ALGO\",\"change24h\":-0.27,\"livePrice\":1.53},{\"symbol\":\"ATOM\",\"change24h\":-0.32,\"livePrice\":29.17},{\"symbol\":\"AAVE\",\"change24h\":-0.41,\"livePrice\":1221.15},{\"symbol\":\"WLD\",\"change24h\":-0.43,\"livePrice\":9.85},{\"symbol\":\"HBAR\",\"change24h\":-0.47,\"livePrice\":1.31},{\"symbol\":\"ADA\",\"change24h\":-0.53,\"livePrice\":2.65},{\"symbol\":\"DOGE\",\"change24h\":-0.67,\"livePrice\":1.36},{\"symbol\":\"HNT\",\"change24h\":-1.02,\"livePrice\":4.55},{\"symbol\":\"INJ\",\"change24h\":-1.04,\"livePrice\":82.38},{\"symbol\":\"SUI\",\"change24h\":-1.14,\"livePrice\":11.62},{\"symbol\":\"XLM\",\"change24h\":-1.38,\"livePrice\":3.49},{\"symbol\":\"RENDER\",\"change24h\":-2.02,\"livePrice\":27.83},{\"symbol\":\"ONDO\",\"change24h\":-2.27,\"livePrice\":5.58},{\"symbol\":\"ZEC\",\"change24h\":-2.44,\"livePrice\":7518.82},{\"symbol\":\"HYPE\",\"change24h\":-3.43,\"livePrice\":1119.28},{\"symbol\":\"POL\",\"change24h\":-4.01,\"livePrice\":1.3}]"
+      }
+    },
+    {
+      "id": "recGihhPUFQ7vVhVz",
+      "createdTime": "2026-06-21T21:24:20.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "WLD",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 233765,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129378,
+        "fldLKj3Fv6Zt4tZCT": -4.69,
+        "fldS2g1AwXCq5O4LN": -104386,
+        "fldTfGayxyLUjW5Of": "ZEC",
+        "flde9C0N9RAXBfj2R": 10.12,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 2.12,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.31,
+        "fldt6wuGS43Vv2z8C": 6.47,
+        "fldutaRpK26xff8u8": 7369.25,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"WLD\",\"change24h\":2.12,\"livePrice\":10.12},{\"symbol\":\"SOL\",\"change24h\":1.7,\"livePrice\":1198.93},{\"symbol\":\"ENA\",\"change24h\":1.65,\"livePrice\":1.46},{\"symbol\":\"TRX\",\"change24h\":1.5,\"livePrice\":5.4},{\"symbol\":\"TAO\",\"change24h\":1.17,\"livePrice\":3824.79},{\"symbol\":\"BNB\",\"change24h\":1.12,\"livePrice\":9670.98},{\"symbol\":\"PAXG\",\"change24h\":0.96,\"livePrice\":68453},{\"symbol\":\"USDC\",\"change24h\":0.92,\"livePrice\":16.49},{\"symbol\":\"BTC\",\"change24h\":0.55,\"livePrice\":1049375},{\"symbol\":\"QNT\",\"change24h\":0.54,\"livePrice\":1155.21},{\"symbol\":\"AVAX\",\"change24h\":0.42,\"livePrice\":101.32},{\"symbol\":\"POL\",\"change24h\":0.29,\"livePrice\":1.32},{\"symbol\":\"DOGE\",\"change24h\":-0.12,\"livePrice\":1.36},{\"symbol\":\"XLM\",\"change24h\":-0.21,\"livePrice\":3.47},{\"symbol\":\"ETH\",\"change24h\":-0.23,\"livePrice\":28240},{\"symbol\":\"LINK\",\"change24h\":-0.31,\"livePrice\":128.87},{\"symbol\":\"SUI\",\"change24h\":-0.33,\"livePrice\":11.51},{\"symbol\":\"AAVE\",\"change24h\":-0.36,\"livePrice\":1220.34},{\"symbol\":\"XRP\",\"change24h\":-0.44,\"livePrice\":18.64},{\"symbol\":\"HBAR\",\"change24h\":-0.78,\"livePrice\":1.3},{\"symbol\":\"ADA\",\"change24h\":-0.97,\"livePrice\":2.62},{\"symbol\":\"AR\",\"change24h\":-1,\"livePrice\":32.37},{\"symbol\":\"ONDO\",\"change24h\":-1.23,\"livePrice\":5.51},{\"symbol\":\"OP\",\"change24h\":-1.27,\"livePrice\":1.65},{\"symbol\":\"TIA\",\"change24h\":-1.49,\"livePrice\":5.98},{\"symbol\":\"ICP\",\"change24h\":-1.49,\"livePrice\":36.82},{\"symbol\":\"FET\",\"change24h\":-1.7,\"livePrice\":3.01},{\"symbol\":\"ATOM\",\"change24h\":-1.78,\"livePrice\":28.91},{\"symbol\":\"ALGO\",\"change24h\":-2.24,\"livePrice\":1.49},{\"symbol\":\"HYPE\",\"change24h\":-2.31,\"livePrice\":1117.41},{\"symbol\":\"RENDER\",\"change24h\":-2.31,\"livePrice\":27.31},{\"symbol\":\"INJ\",\"change24h\":-2.33,\"livePrice\":80.06},{\"symbol\":\"ZEC\",\"change24h\":-4.69,\"livePrice\":7369.25}]"
+      }
+    },
+    {
+      "id": "recGmgctScNspkKgu",
+      "createdTime": "2026-06-24T09:00:34.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254141,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 138418,
+        "fldS2g1AwXCq5O4LN": -115723,
+        "flde9cM9OdDfVj4il": "2026-06-24",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.61,
+        "fldt6wuGS43Vv2z8C": 6.92,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recGxb187ISHgmrnE",
+      "createdTime": "2026-06-21T21:26:37.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "WLD",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 233765,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129537,
+        "fldLKj3Fv6Zt4tZCT": -4.4,
+        "fldS2g1AwXCq5O4LN": -104228,
+        "fldTfGayxyLUjW5Of": "ZEC",
+        "flde9C0N9RAXBfj2R": 10.15,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 2.41,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.32,
+        "fldt6wuGS43Vv2z8C": 6.48,
+        "fldutaRpK26xff8u8": 7390.01,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"WLD\",\"change24h\":2.41,\"livePrice\":10.15},{\"symbol\":\"SOL\",\"change24h\":1.9,\"livePrice\":1200.65},{\"symbol\":\"ENA\",\"change24h\":1.88,\"livePrice\":1.46},{\"symbol\":\"TRX\",\"change24h\":1.49,\"livePrice\":5.4},{\"symbol\":\"TAO\",\"change24h\":1.37,\"livePrice\":3830.27},{\"symbol\":\"BNB\",\"change24h\":1.16,\"livePrice\":9672.88},{\"symbol\":\"PAXG\",\"change24h\":0.97,\"livePrice\":68451},{\"symbol\":\"USDC\",\"change24h\":0.9,\"livePrice\":16.48},{\"symbol\":\"QNT\",\"change24h\":0.67,\"livePrice\":1156.41},{\"symbol\":\"BTC\",\"change24h\":0.49,\"livePrice\":1048617},{\"symbol\":\"AVAX\",\"change24h\":0.47,\"livePrice\":101.36},{\"symbol\":\"POL\",\"change24h\":0.44,\"livePrice\":1.32},{\"symbol\":\"DOGE\",\"change24h\":-0.05,\"livePrice\":1.36},{\"symbol\":\"SUI\",\"change24h\":-0.09,\"livePrice\":11.53},{\"symbol\":\"XLM\",\"change24h\":-0.15,\"livePrice\":3.48},{\"symbol\":\"LINK\",\"change24h\":-0.18,\"livePrice\":128.99},{\"symbol\":\"ETH\",\"change24h\":-0.22,\"livePrice\":28226},{\"symbol\":\"AAVE\",\"change24h\":-0.27,\"livePrice\":1220.56},{\"symbol\":\"XRP\",\"change24h\":-0.41,\"livePrice\":18.64},{\"symbol\":\"HBAR\",\"change24h\":-0.79,\"livePrice\":1.3},{\"symbol\":\"AR\",\"change24h\":-0.82,\"livePrice\":32.44},{\"symbol\":\"ADA\",\"change24h\":-0.83,\"livePrice\":2.63},{\"symbol\":\"ONDO\",\"change24h\":-0.88,\"livePrice\":5.52},{\"symbol\":\"OP\",\"change24h\":-1.21,\"livePrice\":1.65},{\"symbol\":\"TIA\",\"change24h\":-1.25,\"livePrice\":6},{\"symbol\":\"ICP\",\"change24h\":-1.36,\"livePrice\":36.87},{\"symbol\":\"ATOM\",\"change24h\":-1.54,\"livePrice\":28.97},{\"symbol\":\"FET\",\"change24h\":-1.56,\"livePrice\":3.01},{\"symbol\":\"ALGO\",\"change24h\":-2.04,\"livePrice\":1.49},{\"symbol\":\"INJ\",\"change24h\":-2.07,\"livePrice\":80.05},{\"symbol\":\"RENDER\",\"change24h\":-2.18,\"livePrice\":27.33},{\"symbol\":\"HYPE\",\"change24h\":-2.34,\"livePrice\":1116.94},{\"symbol\":\"ZEC\",\"change24h\":-4.4,\"livePrice\":7390.01}]"
+      }
+    },
+    {
+      "id": "recIOwy9w5fUhwGwU",
+      "createdTime": "2026-06-21T21:32:00.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "WLD",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 233765,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129509,
+        "fldLKj3Fv6Zt4tZCT": -4.68,
+        "fldS2g1AwXCq5O4LN": -104256,
+        "fldTfGayxyLUjW5Of": "ZEC",
+        "flde9C0N9RAXBfj2R": 10.15,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 2.58,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.32,
+        "fldt6wuGS43Vv2z8C": 6.48,
+        "fldutaRpK26xff8u8": 7368.36,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"WLD\",\"change24h\":2.58,\"livePrice\":10.15},{\"symbol\":\"SOL\",\"change24h\":1.89,\"livePrice\":1200.45},{\"symbol\":\"ENA\",\"change24h\":1.85,\"livePrice\":1.46},{\"symbol\":\"TRX\",\"change24h\":1.49,\"livePrice\":5.4},{\"symbol\":\"TAO\",\"change24h\":1.34,\"livePrice\":3827.89},{\"symbol\":\"BNB\",\"change24h\":1.16,\"livePrice\":9672.49},{\"symbol\":\"PAXG\",\"change24h\":1.04,\"livePrice\":68490},{\"symbol\":\"USDC\",\"change24h\":0.89,\"livePrice\":16.48},{\"symbol\":\"QNT\",\"change24h\":0.71,\"livePrice\":1156.87},{\"symbol\":\"BTC\",\"change24h\":0.56,\"livePrice\":1049319},{\"symbol\":\"AVAX\",\"change24h\":0.55,\"livePrice\":101.44},{\"symbol\":\"POL\",\"change24h\":0.47,\"livePrice\":1.32},{\"symbol\":\"DOGE\",\"change24h\":-0.05,\"livePrice\":1.36},{\"symbol\":\"XLM\",\"change24h\":-0.06,\"livePrice\":3.48},{\"symbol\":\"AAVE\",\"change24h\":-0.08,\"livePrice\":1221.39},{\"symbol\":\"SUI\",\"change24h\":-0.12,\"livePrice\":11.53},{\"symbol\":\"ETH\",\"change24h\":-0.13,\"livePrice\":28252},{\"symbol\":\"LINK\",\"change24h\":-0.18,\"livePrice\":129.05},{\"symbol\":\"XRP\",\"change24h\":-0.5,\"livePrice\":18.63},{\"symbol\":\"AR\",\"change24h\":-0.76,\"livePrice\":32.42},{\"symbol\":\"HBAR\",\"change24h\":-0.8,\"livePrice\":1.3},{\"symbol\":\"ADA\",\"change24h\":-0.86,\"livePrice\":2.62},{\"symbol\":\"ONDO\",\"change24h\":-1.06,\"livePrice\":5.51},{\"symbol\":\"TIA\",\"change24h\":-1.16,\"livePrice\":6},{\"symbol\":\"OP\",\"change24h\":-1.2,\"livePrice\":1.65},{\"symbol\":\"FET\",\"change24h\":-1.47,\"livePrice\":3.01},{\"symbol\":\"ICP\",\"change24h\":-1.5,\"livePrice\":36.83},{\"symbol\":\"ATOM\",\"change24h\":-1.59,\"livePrice\":28.96},{\"symbol\":\"ALGO\",\"change24h\":-2.02,\"livePrice\":1.49},{\"symbol\":\"INJ\",\"change24h\":-2.07,\"livePrice\":80.03},{\"symbol\":\"RENDER\",\"change24h\":-2.1,\"livePrice\":27.33},{\"symbol\":\"HYPE\",\"change24h\":-2.44,\"livePrice\":1115.73},{\"symbol\":\"ZEC\",\"change24h\":-4.68,\"livePrice\":7368.36}]"
+      }
+    },
+    {
+      "id": "recOrpAloM8OGSrpj",
+      "createdTime": "2026-06-21T10:34:32.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 235058,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129376,
+        "fldS2g1AwXCq5O4LN": -105682,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.31,
+        "fldt6wuGS43Vv2z8C": 6.47,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recSP4tVyr6NeBmx0",
+      "createdTime": "2026-06-22T06:00:32.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254487,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 143866,
+        "fldS2g1AwXCq5O4LN": -110621,
+        "flde9cM9OdDfVj4il": "2026-06-22",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.8,
+        "fldt6wuGS43Vv2z8C": 7.19,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recW0vtkI3hyNvCss",
+      "createdTime": "2026-06-21T06:00:32.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 235058,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 127960,
+        "fldS2g1AwXCq5O4LN": -107098,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.27,
+        "fldt6wuGS43Vv2z8C": 6.4,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recY9A0Sv6uQFZEf5",
+      "createdTime": "2026-06-21T04:22:55.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 234381,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 128349,
+        "fldS2g1AwXCq5O4LN": -106032,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.28,
+        "fldt6wuGS43Vv2z8C": 6.42,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recYfs76tqFs4XsWE",
+      "createdTime": "2026-06-23T13:00:35.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254141,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 137751,
+        "fldS2g1AwXCq5O4LN": -116390,
+        "flde9cM9OdDfVj4il": "2026-06-23",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.59,
+        "fldt6wuGS43Vv2z8C": 6.89,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recYxFu3T5h0oiRa0",
+      "createdTime": "2026-06-21T21:35:02.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "WLD",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254487,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 142731,
+        "fldLKj3Fv6Zt4tZCT": -4.64,
+        "fldS2g1AwXCq5O4LN": -111756,
+        "fldTfGayxyLUjW5Of": "ZEC",
+        "flde9C0N9RAXBfj2R": 10.15,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 2.62,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.76,
+        "fldt6wuGS43Vv2z8C": 7.14,
+        "fldutaRpK26xff8u8": 7371.4,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"WLD\",\"change24h\":2.62,\"livePrice\":10.15},{\"symbol\":\"SOL\",\"change24h\":1.93,\"livePrice\":1201.01},{\"symbol\":\"ENA\",\"change24h\":1.8,\"livePrice\":1.46},{\"symbol\":\"TRX\",\"change24h\":1.51,\"livePrice\":5.4},{\"symbol\":\"TAO\",\"change24h\":1.35,\"livePrice\":3828.4},{\"symbol\":\"BNB\",\"change24h\":1.17,\"livePrice\":9673.18},{\"symbol\":\"PAXG\",\"change24h\":1.06,\"livePrice\":68498},{\"symbol\":\"USDC\",\"change24h\":0.9,\"livePrice\":16.48},{\"symbol\":\"QNT\",\"change24h\":0.72,\"livePrice\":1157.09},{\"symbol\":\"BTC\",\"change24h\":0.64,\"livePrice\":1050194},{\"symbol\":\"AVAX\",\"change24h\":0.6,\"livePrice\":101.49},{\"symbol\":\"POL\",\"change24h\":0.48,\"livePrice\":1.32},{\"symbol\":\"DOGE\",\"change24h\":0.02,\"livePrice\":1.36},{\"symbol\":\"SUI\",\"change24h\":0,\"livePrice\":11.54},{\"symbol\":\"ETH\",\"change24h\":-0.01,\"livePrice\":28285},{\"symbol\":\"XLM\",\"change24h\":-0.03,\"livePrice\":3.48},{\"symbol\":\"AAVE\",\"change24h\":-0.07,\"livePrice\":1221.52},{\"symbol\":\"LINK\",\"change24h\":-0.12,\"livePrice\":129.12},{\"symbol\":\"XRP\",\"change24h\":-0.34,\"livePrice\":18.66},{\"symbol\":\"HBAR\",\"change24h\":-0.73,\"livePrice\":1.3},{\"symbol\":\"AR\",\"change24h\":-0.75,\"livePrice\":32.43},{\"symbol\":\"ADA\",\"change24h\":-0.79,\"livePrice\":2.63},{\"symbol\":\"OP\",\"change24h\":-1,\"livePrice\":1.66},{\"symbol\":\"TIA\",\"change24h\":-1.1,\"livePrice\":6},{\"symbol\":\"ONDO\",\"change24h\":-1.13,\"livePrice\":5.5},{\"symbol\":\"FET\",\"change24h\":-1.45,\"livePrice\":3.01},{\"symbol\":\"ICP\",\"change24h\":-1.51,\"livePrice\":36.83},{\"symbol\":\"ATOM\",\"change24h\":-1.64,\"livePrice\":28.95},{\"symbol\":\"ALGO\",\"change24h\":-1.97,\"livePrice\":1.5},{\"symbol\":\"RENDER\",\"change24h\":-1.98,\"livePrice\":27.37},{\"symbol\":\"INJ\",\"change24h\":-2.19,\"livePrice\":79.93},{\"symbol\":\"HYPE\",\"change24h\":-2.45,\"livePrice\":1115.63},{\"symbol\":\"ZEC\",\"change24h\":-4.64,\"livePrice\":7371.4}]"
+      }
+    },
+    {
+      "id": "recca5rMMxvRQZNRQ",
+      "createdTime": "2026-06-21T21:46:33.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254487,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 142925,
+        "fldS2g1AwXCq5O4LN": -111562,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.76,
+        "fldt6wuGS43Vv2z8C": 7.15,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "reccaEVdtiLj95xDw",
+      "createdTime": "2026-06-21T10:45:29.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 235058,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129294,
+        "fldS2g1AwXCq5O4LN": -105764,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.31,
+        "fldt6wuGS43Vv2z8C": 6.46,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "reccdDtwu1y8xRD7e",
+      "createdTime": "2026-06-20T05:53:06.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 233754,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 128541,
+        "fldS2g1AwXCq5O4LN": -105212,
+        "flde9cM9OdDfVj4il": "2026-06-20",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.28,
+        "fldt6wuGS43Vv2z8C": 6.43,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recfyFIjZIRo5tboU",
+      "createdTime": "2026-06-21T21:25:00.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "WLD",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 233765,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129500,
+        "fldLKj3Fv6Zt4tZCT": -4.48,
+        "fldS2g1AwXCq5O4LN": -104265,
+        "fldTfGayxyLUjW5Of": "ZEC",
+        "flde9C0N9RAXBfj2R": 10.14,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 2.36,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.32,
+        "fldt6wuGS43Vv2z8C": 6.47,
+        "fldutaRpK26xff8u8": 7384.95,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"WLD\",\"change24h\":2.36,\"livePrice\":10.14},{\"symbol\":\"SOL\",\"change24h\":1.83,\"livePrice\":1200.5},{\"symbol\":\"ENA\",\"change24h\":1.79,\"livePrice\":1.46},{\"symbol\":\"TRX\",\"change24h\":1.5,\"livePrice\":5.4},{\"symbol\":\"TAO\",\"change24h\":1.34,\"livePrice\":3831.26},{\"symbol\":\"BNB\",\"change24h\":1.14,\"livePrice\":9672.92},{\"symbol\":\"PAXG\",\"change24h\":0.96,\"livePrice\":68451},{\"symbol\":\"USDC\",\"change24h\":0.92,\"livePrice\":16.48},{\"symbol\":\"QNT\",\"change24h\":0.62,\"livePrice\":1156.09},{\"symbol\":\"BTC\",\"change24h\":0.57,\"livePrice\":1049604},{\"symbol\":\"AVAX\",\"change24h\":0.45,\"livePrice\":101.35},{\"symbol\":\"POL\",\"change24h\":0.29,\"livePrice\":1.32},{\"symbol\":\"DOGE\",\"change24h\":-0.05,\"livePrice\":1.36},{\"symbol\":\"SUI\",\"change24h\":-0.15,\"livePrice\":11.53},{\"symbol\":\"XLM\",\"change24h\":-0.17,\"livePrice\":3.47},{\"symbol\":\"ETH\",\"change24h\":-0.19,\"livePrice\":28252},{\"symbol\":\"LINK\",\"change24h\":-0.24,\"livePrice\":128.96},{\"symbol\":\"AAVE\",\"change24h\":-0.34,\"livePrice\":1220.51},{\"symbol\":\"XRP\",\"change24h\":-0.39,\"livePrice\":18.65},{\"symbol\":\"HBAR\",\"change24h\":-0.8,\"livePrice\":1.3},{\"symbol\":\"ADA\",\"change24h\":-0.85,\"livePrice\":2.63},{\"symbol\":\"AR\",\"change24h\":-0.86,\"livePrice\":32.42},{\"symbol\":\"OP\",\"change24h\":-1.26,\"livePrice\":1.65},{\"symbol\":\"ONDO\",\"change24h\":-1.31,\"livePrice\":5.51},{\"symbol\":\"TIA\",\"change24h\":-1.35,\"livePrice\":5.99},{\"symbol\":\"ICP\",\"change24h\":-1.39,\"livePrice\":36.86},{\"symbol\":\"FET\",\"change24h\":-1.55,\"livePrice\":3.01},{\"symbol\":\"ATOM\",\"change24h\":-1.69,\"livePrice\":28.93},{\"symbol\":\"RENDER\",\"change24h\":-2.18,\"livePrice\":27.35},{\"symbol\":\"ALGO\",\"change24h\":-2.19,\"livePrice\":1.49},{\"symbol\":\"HYPE\",\"change24h\":-2.27,\"livePrice\":1117.85},{\"symbol\":\"INJ\",\"change24h\":-2.31,\"livePrice\":80.07},{\"symbol\":\"ZEC\",\"change24h\":-4.48,\"livePrice\":7384.95}]"
+      }
+    },
+    {
+      "id": "recgNDXRiayUTi2iC",
+      "createdTime": "2026-06-21T10:48:52.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "JUP",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 235058,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129348,
+        "fldLKj3Fv6Zt4tZCT": -4.04,
+        "fldS2g1AwXCq5O4LN": -105710,
+        "fldTfGayxyLUjW5Of": "POL",
+        "flde9C0N9RAXBfj2R": 3.67,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 12.45,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.31,
+        "fldt6wuGS43Vv2z8C": 6.47,
+        "fldutaRpK26xff8u8": 1.3,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"JUP\",\"change24h\":12.45,\"livePrice\":3.67},{\"symbol\":\"ENA\",\"change24h\":5.29,\"livePrice\":1.52},{\"symbol\":\"SOL\",\"change24h\":3.66,\"livePrice\":1209.45},{\"symbol\":\"GRT\",\"change24h\":3.57,\"livePrice\":0.331908},{\"symbol\":\"TAO\",\"change24h\":2.86,\"livePrice\":3847.9},{\"symbol\":\"RAY\",\"change24h\":2.39,\"livePrice\":10.35},{\"symbol\":\"AVAX\",\"change24h\":2.01,\"livePrice\":103.1},{\"symbol\":\"AR\",\"change24h\":1.74,\"livePrice\":33.21},{\"symbol\":\"BTC\",\"change24h\":1.15,\"livePrice\":1050580},{\"symbol\":\"TRX\",\"change24h\":0.97,\"livePrice\":5.33},{\"symbol\":\"UNI\",\"change24h\":0.84,\"livePrice\":49.7},{\"symbol\":\"IMX\",\"change24h\":0.72,\"livePrice\":2.35},{\"symbol\":\"BNB\",\"change24h\":0.68,\"livePrice\":9636.42},{\"symbol\":\"VIRTUAL\",\"change24h\":0.6,\"livePrice\":9.94},{\"symbol\":\"LINK\",\"change24h\":0.46,\"livePrice\":130.41},{\"symbol\":\"QNT\",\"change24h\":0.4,\"livePrice\":1156.93},{\"symbol\":\"ETH\",\"change24h\":0.34,\"livePrice\":28282},{\"symbol\":\"XRP\",\"change24h\":0.25,\"livePrice\":18.8},{\"symbol\":\"ICP\",\"change24h\":0.23,\"livePrice\":37.33},{\"symbol\":\"PAXG\",\"change24h\":0.17,\"livePrice\":67909},{\"symbol\":\"OP\",\"change24h\":0.04,\"livePrice\":1.68},{\"symbol\":\"USDC\",\"change24h\":0,\"livePrice\":16.34},{\"symbol\":\"FET\",\"change24h\":-0.04,\"livePrice\":3.09},{\"symbol\":\"TIA\",\"change24h\":-0.05,\"livePrice\":6.17},{\"symbol\":\"AAVE\",\"change24h\":-0.21,\"livePrice\":1221.15},{\"symbol\":\"WLD\",\"change24h\":-0.24,\"livePrice\":9.85},{\"symbol\":\"ALGO\",\"change24h\":-0.25,\"livePrice\":1.53},{\"symbol\":\"ATOM\",\"change24h\":-0.3,\"livePrice\":29.15},{\"symbol\":\"ADA\",\"change24h\":-0.46,\"livePrice\":2.65},{\"symbol\":\"HBAR\",\"change24h\":-0.49,\"livePrice\":1.31},{\"symbol\":\"DOGE\",\"change24h\":-0.63,\"livePrice\":1.36},{\"symbol\":\"INJ\",\"change24h\":-0.85,\"livePrice\":82.39},{\"symbol\":\"SUI\",\"change24h\":-1.07,\"livePrice\":11.62},{\"symbol\":\"HNT\",\"change24h\":-1.19,\"livePrice\":4.54},{\"symbol\":\"XLM\",\"change24h\":-1.35,\"livePrice\":3.49},{\"symbol\":\"RENDER\",\"change24h\":-2.12,\"livePrice\":27.82},{\"symbol\":\"ONDO\",\"change24h\":-2.18,\"livePrice\":5.58},{\"symbol\":\"ZEC\",\"change24h\":-2.62,\"livePrice\":7508.86},{\"symbol\":\"HYPE\",\"change24h\":-3.27,\"livePrice\":1118.59},{\"symbol\":\"POL\",\"change24h\":-4.04,\"livePrice\":1.3}]"
+      }
+    },
+    {
+      "id": "rechR7n7aUE74pPOS",
+      "createdTime": "2026-06-20T06:00:32.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 234696,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129445,
+        "fldS2g1AwXCq5O4LN": -105250,
+        "flde9cM9OdDfVj4il": "2026-06-20",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.31,
+        "fldt6wuGS43Vv2z8C": 6.47,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "rechhXo56wPAe3Yhd",
+      "createdTime": "2026-06-22T13:00:35.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254487,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 146409,
+        "fldS2g1AwXCq5O4LN": -108078,
+        "flde9cM9OdDfVj4il": "2026-06-22",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.88,
+        "fldt6wuGS43Vv2z8C": 7.32,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "reci3Chjd3JtxND6P",
+      "createdTime": "2026-06-20T05:59:52.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 234696,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129445,
+        "fldS2g1AwXCq5O4LN": -105250,
+        "flde9cM9OdDfVj4il": "2026-06-20",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.31,
+        "fldt6wuGS43Vv2z8C": 6.47,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "reciP9AuHWiFZYeZ1",
+      "createdTime": "2026-06-23T16:26:37.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254141,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 138593,
+        "fldS2g1AwXCq5O4LN": -115548,
+        "flde9cM9OdDfVj4il": "2026-06-23",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.62,
+        "fldt6wuGS43Vv2z8C": 6.93,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recjyNuHobUztcT5A",
+      "createdTime": "2026-06-21T10:52:16.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "JUP",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 235058,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129364,
+        "fldLKj3Fv6Zt4tZCT": -4.01,
+        "fldS2g1AwXCq5O4LN": -105694,
+        "fldTfGayxyLUjW5Of": "POL",
+        "flde9C0N9RAXBfj2R": 3.66,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 12.25,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.31,
+        "fldt6wuGS43Vv2z8C": 6.47,
+        "fldutaRpK26xff8u8": 1.3,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"JUP\",\"change24h\":12.25,\"livePrice\":3.66},{\"symbol\":\"ENA\",\"change24h\":5,\"livePrice\":1.52},{\"symbol\":\"SOL\",\"change24h\":3.48,\"livePrice\":1209.75},{\"symbol\":\"GRT\",\"change24h\":3.44,\"livePrice\":0.331673},{\"symbol\":\"TAO\",\"change24h\":2.5,\"livePrice\":3850.03},{\"symbol\":\"RAY\",\"change24h\":2.12,\"livePrice\":10.34},{\"symbol\":\"AVAX\",\"change24h\":1.89,\"livePrice\":103.13},{\"symbol\":\"AR\",\"change24h\":1.74,\"livePrice\":33.24},{\"symbol\":\"BTC\",\"change24h\":1.16,\"livePrice\":1051030},{\"symbol\":\"TRX\",\"change24h\":0.94,\"livePrice\":5.33},{\"symbol\":\"UNI\",\"change24h\":0.89,\"livePrice\":49.72},{\"symbol\":\"IMX\",\"change24h\":0.84,\"livePrice\":2.35},{\"symbol\":\"BNB\",\"change24h\":0.68,\"livePrice\":9635.03},{\"symbol\":\"VIRTUAL\",\"change24h\":0.64,\"livePrice\":9.95},{\"symbol\":\"QNT\",\"change24h\":0.44,\"livePrice\":1157.06},{\"symbol\":\"LINK\",\"change24h\":0.39,\"livePrice\":130.41},{\"symbol\":\"ETH\",\"change24h\":0.36,\"livePrice\":28297},{\"symbol\":\"XRP\",\"change24h\":0.22,\"livePrice\":18.8},{\"symbol\":\"ICP\",\"change24h\":0.19,\"livePrice\":37.34},{\"symbol\":\"PAXG\",\"change24h\":0.17,\"livePrice\":67914},{\"symbol\":\"USDC\",\"change24h\":0.01,\"livePrice\":16.34},{\"symbol\":\"OP\",\"change24h\":0,\"livePrice\":1.68},{\"symbol\":\"TIA\",\"change24h\":-0.02,\"livePrice\":6.17},{\"symbol\":\"FET\",\"change24h\":-0.06,\"livePrice\":3.09},{\"symbol\":\"ALGO\",\"change24h\":-0.27,\"livePrice\":1.53},{\"symbol\":\"ATOM\",\"change24h\":-0.32,\"livePrice\":29.17},{\"symbol\":\"AAVE\",\"change24h\":-0.41,\"livePrice\":1221.15},{\"symbol\":\"WLD\",\"change24h\":-0.43,\"livePrice\":9.85},{\"symbol\":\"HBAR\",\"change24h\":-0.47,\"livePrice\":1.31},{\"symbol\":\"ADA\",\"change24h\":-0.53,\"livePrice\":2.65},{\"symbol\":\"DOGE\",\"change24h\":-0.67,\"livePrice\":1.36},{\"symbol\":\"HNT\",\"change24h\":-1.02,\"livePrice\":4.55},{\"symbol\":\"INJ\",\"change24h\":-1.04,\"livePrice\":82.38},{\"symbol\":\"SUI\",\"change24h\":-1.14,\"livePrice\":11.62},{\"symbol\":\"XLM\",\"change24h\":-1.38,\"livePrice\":3.49},{\"symbol\":\"RENDER\",\"change24h\":-2.02,\"livePrice\":27.83},{\"symbol\":\"ONDO\",\"change24h\":-2.27,\"livePrice\":5.58},{\"symbol\":\"ZEC\",\"change24h\":-2.44,\"livePrice\":7518.82},{\"symbol\":\"HYPE\",\"change24h\":-3.43,\"livePrice\":1119.28},{\"symbol\":\"POL\",\"change24h\":-4.01,\"livePrice\":1.3}]"
+      }
+    },
+    {
+      "id": "recngqjoA8OOefr3T",
+      "createdTime": "2026-06-21T21:23:50.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "WLD",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 233765,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 129378,
+        "fldLKj3Fv6Zt4tZCT": -4.69,
+        "fldS2g1AwXCq5O4LN": -104386,
+        "fldTfGayxyLUjW5Of": "ZEC",
+        "flde9C0N9RAXBfj2R": 10.12,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 2.12,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.31,
+        "fldt6wuGS43Vv2z8C": 6.47,
+        "fldutaRpK26xff8u8": 7369.25,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"WLD\",\"change24h\":2.12,\"livePrice\":10.12},{\"symbol\":\"SOL\",\"change24h\":1.7,\"livePrice\":1198.93},{\"symbol\":\"ENA\",\"change24h\":1.65,\"livePrice\":1.46},{\"symbol\":\"TRX\",\"change24h\":1.5,\"livePrice\":5.4},{\"symbol\":\"TAO\",\"change24h\":1.17,\"livePrice\":3824.79},{\"symbol\":\"BNB\",\"change24h\":1.12,\"livePrice\":9670.98},{\"symbol\":\"PAXG\",\"change24h\":0.96,\"livePrice\":68453},{\"symbol\":\"USDC\",\"change24h\":0.92,\"livePrice\":16.49},{\"symbol\":\"BTC\",\"change24h\":0.55,\"livePrice\":1049375},{\"symbol\":\"QNT\",\"change24h\":0.54,\"livePrice\":1155.21},{\"symbol\":\"AVAX\",\"change24h\":0.42,\"livePrice\":101.32},{\"symbol\":\"POL\",\"change24h\":0.29,\"livePrice\":1.32},{\"symbol\":\"DOGE\",\"change24h\":-0.12,\"livePrice\":1.36},{\"symbol\":\"XLM\",\"change24h\":-0.21,\"livePrice\":3.47},{\"symbol\":\"ETH\",\"change24h\":-0.23,\"livePrice\":28240},{\"symbol\":\"LINK\",\"change24h\":-0.31,\"livePrice\":128.87},{\"symbol\":\"SUI\",\"change24h\":-0.33,\"livePrice\":11.51},{\"symbol\":\"AAVE\",\"change24h\":-0.36,\"livePrice\":1220.34},{\"symbol\":\"XRP\",\"change24h\":-0.44,\"livePrice\":18.64},{\"symbol\":\"HBAR\",\"change24h\":-0.78,\"livePrice\":1.3},{\"symbol\":\"ADA\",\"change24h\":-0.97,\"livePrice\":2.62},{\"symbol\":\"AR\",\"change24h\":-1,\"livePrice\":32.37},{\"symbol\":\"ONDO\",\"change24h\":-1.23,\"livePrice\":5.51},{\"symbol\":\"OP\",\"change24h\":-1.27,\"livePrice\":1.65},{\"symbol\":\"TIA\",\"change24h\":-1.49,\"livePrice\":5.98},{\"symbol\":\"ICP\",\"change24h\":-1.49,\"livePrice\":36.82},{\"symbol\":\"FET\",\"change24h\":-1.7,\"livePrice\":3.01},{\"symbol\":\"ATOM\",\"change24h\":-1.78,\"livePrice\":28.91},{\"symbol\":\"ALGO\",\"change24h\":-2.24,\"livePrice\":1.49},{\"symbol\":\"HYPE\",\"change24h\":-2.31,\"livePrice\":1117.41},{\"symbol\":\"RENDER\",\"change24h\":-2.31,\"livePrice\":27.31},{\"symbol\":\"INJ\",\"change24h\":-2.33,\"livePrice\":80.06},{\"symbol\":\"ZEC\",\"change24h\":-4.69,\"livePrice\":7369.25}]"
+      }
+    },
+    {
+      "id": "recoCgvmKJD9YqC7U",
+      "createdTime": "2026-06-21T21:49:00.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254487,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 142905,
+        "fldS2g1AwXCq5O4LN": -111582,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.76,
+        "fldt6wuGS43Vv2z8C": 7.15,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recpy6KW3CE5V19QQ",
+      "createdTime": "2026-06-21T14:51:50.000Z",
+      "fields": {
+        "fld94gmFx1XSwHu7U": "JUP",
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 235058,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 128607,
+        "fldLKj3Fv6Zt4tZCT": -4.31,
+        "fldS2g1AwXCq5O4LN": -106451,
+        "fldTfGayxyLUjW5Of": "ZEC",
+        "flde9C0N9RAXBfj2R": 3.62,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldhxc45qB4N8SydS": 8.71,
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.29,
+        "fldt6wuGS43Vv2z8C": 6.43,
+        "fldutaRpK26xff8u8": 7384.19,
+        "flduycQyfkuaWGjhw": "[]",
+        "fldxCcxvxwJMtaRZG": "[{\"symbol\":\"JUP\",\"change24h\":8.71,\"livePrice\":3.62},{\"symbol\":\"ENA\",\"change24h\":3.45,\"livePrice\":1.49},{\"symbol\":\"AVAX\",\"change24h\":3.19,\"livePrice\":103.08},{\"symbol\":\"SOL\",\"change24h\":2.82,\"livePrice\":1206.61},{\"symbol\":\"GRT\",\"change24h\":2.04,\"livePrice\":0.32602},{\"symbol\":\"TAO\",\"change24h\":1.83,\"livePrice\":3857.76},{\"symbol\":\"HNT\",\"change24h\":1.3,\"livePrice\":4.56},{\"symbol\":\"OP\",\"change24h\":1.3,\"livePrice\":1.68},{\"symbol\":\"RAY\",\"change24h\":1.16,\"livePrice\":10.39},{\"symbol\":\"AR\",\"change24h\":0.57,\"livePrice\":32.9},{\"symbol\":\"TRX\",\"change24h\":0.48,\"livePrice\":5.33},{\"symbol\":\"BNB\",\"change24h\":0.47,\"livePrice\":9610.17},{\"symbol\":\"UNI\",\"change24h\":0.37,\"livePrice\":49.61},{\"symbol\":\"QNT\",\"change24h\":0.33,\"livePrice\":1157.65},{\"symbol\":\"BTC\",\"change24h\":0.18,\"livePrice\":1045499},{\"symbol\":\"LINK\",\"change24h\":0.13,\"livePrice\":129.78},{\"symbol\":\"USDC\",\"change24h\":0,\"livePrice\":16.34},{\"symbol\":\"PAXG\",\"change24h\":-0.01,\"livePrice\":67877},{\"symbol\":\"XRP\",\"change24h\":-0.04,\"livePrice\":18.7},{\"symbol\":\"XLM\",\"change24h\":-0.12,\"livePrice\":3.52},{\"symbol\":\"ADA\",\"change24h\":-0.34,\"livePrice\":2.64},{\"symbol\":\"HBAR\",\"change24h\":-0.35,\"livePrice\":1.31},{\"symbol\":\"SUI\",\"change24h\":-0.36,\"livePrice\":11.59},{\"symbol\":\"DOGE\",\"change24h\":-0.47,\"livePrice\":1.36},{\"symbol\":\"ETH\",\"change24h\":-0.57,\"livePrice\":28149},{\"symbol\":\"INJ\",\"change24h\":-0.63,\"livePrice\":81.29},{\"symbol\":\"ICP\",\"change24h\":-0.68,\"livePrice\":37.11},{\"symbol\":\"WLD\",\"change24h\":-0.73,\"livePrice\":9.95},{\"symbol\":\"VIRTUAL\",\"change24h\":-0.74,\"livePrice\":9.84},{\"symbol\":\"TIA\",\"change24h\":-0.76,\"livePrice\":6.08},{\"symbol\":\"ATOM\",\"change24h\":-0.84,\"livePrice\":28.97},{\"symbol\":\"FET\",\"change24h\":-1.16,\"livePrice\":3.06},{\"symbol\":\"AAVE\",\"change24h\":-1.24,\"livePrice\":1219.19},{\"symbol\":\"IMX\",\"change24h\":-1.51,\"livePrice\":2.33},{\"symbol\":\"POL\",\"change24h\":-1.92,\"livePrice\":1.3},{\"symbol\":\"ONDO\",\"change24h\":-2.09,\"livePrice\":5.53},{\"symbol\":\"ALGO\",\"change24h\":-2.1,\"livePrice\":1.5},{\"symbol\":\"RENDER\",\"change24h\":-2.91,\"livePrice\":27.57},{\"symbol\":\"HYPE\",\"change24h\":-3.61,\"livePrice\":1111.78},{\"symbol\":\"ZEC\",\"change24h\":-4.31,\"livePrice\":7384.19}]"
+      }
+    },
+    {
+      "id": "recqxmRPpRKXffAQN",
+      "createdTime": "2026-06-21T21:44:58.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254487,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 142990,
+        "fldS2g1AwXCq5O4LN": -111497,
+        "flde9cM9OdDfVj4il": "2026-06-21",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.77,
+        "fldt6wuGS43Vv2z8C": 7.15,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    },
+    {
+      "id": "recuKaSEKdmqHMkOV",
+      "createdTime": "2026-06-24T06:00:32.000Z",
+      "fields": {
+        "fldAt4aR6huZn458a": 0,
+        "fldCMADS5e3Am6104": 254141,
+        "fldKd0NGPlMW0kjhL": 0,
+        "fldKdijwPzixgP53m": 138633,
+        "fldS2g1AwXCq5O4LN": -115508,
+        "flde9cM9OdDfVj4il": "2026-06-24",
+        "fldkOGGPR4YJSj2Fl": "[]",
+        "fldpnRsRRogXKdBW7": 4.62,
+        "fldt6wuGS43Vv2z8C": 6.93,
+        "flduycQyfkuaWGjhw": "[]"
+      }
+    }
+  ]
+}

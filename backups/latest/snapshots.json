@@ -1,0 +1,56 @@
+{
+  "id": "tblLh1ZFJF3U7ekOi",
+  "fields": [
+    {
+      "id": "fldGPrapbeFU1M8mr",
+      "name": "Snapshot Date",
+      "type": "singleLineText"
+    },
+    {
+      "id": "flduj9mEMUNjhwcXf",
+      "name": "Total Portfolio Value (USD)",
+      "type": "currency"
+    },
+    {
+      "id": "fldJuxYUB5FI4Fsi8",
+      "name": "Total Invested (USD)",
+      "type": "currency"
+    },
+    {
+      "id": "fld0RfkomdeRxRNqZ",
+      "name": "Total P&L (USD)",
+      "type": "currency"
+    },
+    {
+      "id": "fldtkDdC5xHC3r4gu",
+      "name": "Total Return %",
+      "type": "number"
+    },
+    {
+      "id": "fldS9nti5RWKADrHC",
+      "name": "BTC Price",
+      "type": "currency"
+    },
+    {
+      "id": "fldqfIsxeLejpKY3w",
+      "name": "ETH Price",
+      "type": "currency"
+    },
+    {
+      "id": "fldpaCwB3zwlHOR61",
+      "name": "Notes",
+      "type": "multilineText"
+    }
+  ],
+  "recordCount": 1,
+  "records": [
+    {
+      "id": "reciKqI0f539Rrcsq",
+      "createdTime": "2026-06-14T17:15:01.000Z",
+      "fields": {
+        "fldGPrapbeFU1M8mr": "14 Jun 2026",
+        "fldpaCwB3zwlHOR61": "12 transactions logged (13–14 Jun). Categories: Subscriptions (Anthropic × 3 totalling ~R1,338.29), Groceries (Pick n Pay R136.55), Pharmacy (Canabliss R110), Home Maintenance (Therepairdesk R100), Electricity (R200), Smokes (Pre-rolled R80), Transfers (Live Better round-up R5, Capitec Rewards auto-save R24.71). All from Capitec account."
+      }
+    }
+  ]
+}

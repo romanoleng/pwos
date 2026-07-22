@@ -1,0 +1,169 @@
+{
+  "id": "tblTXNkBx8K7nfIhl",
+  "fields": [
+    {
+      "id": "fldCDKjnCjOW6sUu1",
+      "name": "Goal",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldSmsn73477TEYE0",
+      "name": "Current Balance (ZAR)",
+      "type": "currency"
+    },
+    {
+      "id": "fldcDGPSwZKG4ALbJ",
+      "name": "Target (ZAR)",
+      "type": "currency"
+    },
+    {
+      "id": "fldiHd4MmHDsHOWyU",
+      "name": "Priority",
+      "type": "singleSelect"
+    },
+    {
+      "id": "flda0qgDfdFeY7O04",
+      "name": "Status",
+      "type": "singleSelect"
+    },
+    {
+      "id": "fld64sfkThfhk7isF",
+      "name": "Monthly Contribution (ZAR)",
+      "type": "currency"
+    },
+    {
+      "id": "fldjQC4N5wCQludnZ",
+      "name": "Target Date",
+      "type": "date"
+    },
+    {
+      "id": "fldyFxgLSiA7cTL9a",
+      "name": "Notes",
+      "type": "multilineText"
+    }
+  ],
+  "recordCount": 10,
+  "records": [
+    {
+      "id": "rec4rTVTJOEvNp7Dx",
+      "createdTime": "2026-06-11T20:44:16.000Z",
+      "fields": {
+        "fld64sfkThfhk7isF": 500,
+        "fldCDKjnCjOW6sUu1": "Small Emergency Fund",
+        "fldSmsn73477TEYE0": 1000,
+        "flda0qgDfdFeY7O04": "Behind",
+        "fldcDGPSwZKG4ALbJ": 5000,
+        "fldiHd4MmHDsHOWyU": "🟠 High",
+        "fldyFxgLSiA7cTL9a": "Housed in GOtyme Bank savings goal account. R500/month contribution from Capitec Main. Target R5,000 — hit this first then redirect R500 to Big EF. At R500/month: ~9 months to target. Start date: Jun 2026. Last contribution: R500 on 25 Jun 2026 — balance now R1,000."
+      }
+    },
+    {
+      "id": "rec512hkJciX6up1f",
+      "createdTime": "2026-06-11T20:44:16.000Z",
+      "fields": {
+        "fld64sfkThfhk7isF": 1000,
+        "fldCDKjnCjOW6sUu1": "Big Emergency Fund",
+        "fldSmsn73477TEYE0": 1000,
+        "flda0qgDfdFeY7O04": "Behind",
+        "fldcDGPSwZKG4ALbJ": 50000,
+        "fldiHd4MmHDsHOWyU": "🔴 Critical"
+      }
+    },
+    {
+      "id": "recBlLCi99j4qjuNL",
+      "createdTime": "2026-07-05T14:51:35.000Z",
+      "fields": {
+        "fld64sfkThfhk7isF": 13300,
+        "fldCDKjnCjOW6sUu1": "CRYPTO FINAL PUSH — R250k EasyCrypto cap + R100k Tangem by 31 Dec 2026",
+        "fldSmsn73477TEYE0": 260000,
+        "flda0qgDfdFeY7O04": "In Progress",
+        "fldcDGPSwZKG4ALbJ": 340000
+      }
+    },
+    {
+      "id": "recGud0KiD0fg5dV1",
+      "createdTime": "2026-06-11T20:44:16.000Z",
+      "fields": {
+        "fldCDKjnCjOW6sUu1": "Other Goals",
+        "fldSmsn73477TEYE0": 2700,
+        "flda0qgDfdFeY7O04": "On Track",
+        "fldiHd4MmHDsHOWyU": "🟢 Low",
+        "fldyFxgLSiA7cTL9a": "i20, equipment, implants etc"
+      }
+    },
+    {
+      "id": "recQeDtRdLkGVpi4e",
+      "createdTime": "2026-06-11T20:44:16.000Z",
+      "fields": {
+        "fldCDKjnCjOW6sUu1": "Home Improvement",
+        "fldSmsn73477TEYE0": 4100,
+        "flda0qgDfdFeY7O04": "On Track",
+        "fldiHd4MmHDsHOWyU": "🟢 Low",
+        "fldyFxgLSiA7cTL9a": "Patio, Lounge, Kitchen etc"
+      }
+    },
+    {
+      "id": "recUTNPrU1Ht1ZbiO",
+      "createdTime": "2026-06-25T15:20:00.000Z",
+      "fields": {
+        "fld64sfkThfhk7isF": 300,
+        "fldCDKjnCjOW6sUu1": "ONDO — 1,000 Coin Target",
+        "fldSmsn73477TEYE0": 513.94,
+        "flda0qgDfdFeY7O04": "In Progress",
+        "fldcDGPSwZKG4ALbJ": 1000,
+        "fldiHd4MmHDsHOWyU": "High",
+        "fldjQC4N5wCQludnZ": "2027-08-01",
+        "fldyFxgLSiA7cTL9a": "Target: 1,000 ONDO total across Luno + Tangem Forever Bag. Current: 513.94 coins (321.63 Tangem FB + 192.31 Luno). Still needed: 486.06 coins @ ~R5.16 = ~R2,509. Route: buy on Luno, sweep to Tangem FB when meaningful. Priority coin — RWA tokenization thesis. M1: R15. Feb 2028 deadline."
+      }
+    },
+    {
+      "id": "recYgJQm1Hzvc5q0G",
+      "createdTime": "2026-06-11T20:44:16.000Z",
+      "fields": {
+        "fldCDKjnCjOW6sUu1": "Tax Savings",
+        "fldSmsn73477TEYE0": 1500,
+        "flda0qgDfdFeY7O04": "Behind",
+        "fldcDGPSwZKG4ALbJ": 8000,
+        "fldiHd4MmHDsHOWyU": "🔴 Critical",
+        "fldyFxgLSiA7cTL9a": "Must reach R8k before August provisional payment"
+      }
+    },
+    {
+      "id": "recfSVX2OlqmHr66N",
+      "createdTime": "2026-06-11T20:44:16.000Z",
+      "fields": {
+        "fld64sfkThfhk7isF": 250,
+        "fldCDKjnCjOW6sUu1": "2030FREEDOM",
+        "fldSmsn73477TEYE0": 250,
+        "flda0qgDfdFeY7O04": "On Track",
+        "fldiHd4MmHDsHOWyU": "🟡 Medium",
+        "fldyFxgLSiA7cTL9a": "Long-term compound goal"
+      }
+    },
+    {
+      "id": "reck95ASV4vLOuKAi",
+      "createdTime": "2026-06-25T15:48:32.000Z",
+      "fields": {
+        "fld64sfkThfhk7isF": 200,
+        "fldCDKjnCjOW6sUu1": "XLM — 1,000 Coin Target",
+        "fldSmsn73477TEYE0": 610.96,
+        "flda0qgDfdFeY7O04": "In Progress",
+        "fldcDGPSwZKG4ALbJ": 1000,
+        "fldiHd4MmHDsHOWyU": "High",
+        "fldjQC4N5wCQludnZ": "2027-08-01",
+        "fldyFxgLSiA7cTL9a": "Target: 1,000 XLM on Tangem Forever Bag. Current: 610.96 coins. Still needed: 389.04 coins @ ~R3.18 = ~R1,237. Route: buy on Luno, sweep to Tangem. M1: R10. Feb 2028 deadline. Payments/settlement narrative alongside XRP."
+      }
+    },
+    {
+      "id": "reclotL5t2Fib6wNp",
+      "createdTime": "2026-06-11T20:44:16.000Z",
+      "fields": {
+        "fldCDKjnCjOW6sUu1": "2027DIP",
+        "fldSmsn73477TEYE0": 250,
+        "flda0qgDfdFeY7O04": "On Track",
+        "fldiHd4MmHDsHOWyU": "🟡 Medium",
+        "fldyFxgLSiA7cTL9a": "Crypto dip buying reserve"
+      }
+    }
+  ]
+}

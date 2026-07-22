@@ -1,0 +1,80 @@
+{
+  "id": "tblMQL5IY55TIVu2W",
+  "fields": [
+    {
+      "id": "fldEwOwNj01jb01Oo",
+      "name": "Label",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldaylCjGgSpt1kAc",
+      "name": "Last Synced",
+      "type": "dateTime"
+    },
+    {
+      "id": "fldSmf2IqlGzMS7F3",
+      "name": "Cycle Start",
+      "type": "date"
+    },
+    {
+      "id": "fldjHZ45Lqz3UQIa7",
+      "name": "Cycle End",
+      "type": "date"
+    },
+    {
+      "id": "fldZJyPpZKG05IiKw",
+      "name": "Income",
+      "type": "currency"
+    },
+    {
+      "id": "fldWUKYxFp4dju2d4",
+      "name": "Total Spent",
+      "type": "currency"
+    },
+    {
+      "id": "fldWcit36QT5upYnq",
+      "name": "Remaining",
+      "type": "currency"
+    },
+    {
+      "id": "fldfLI6qeOPQlRGWp",
+      "name": "Days Remaining",
+      "type": "number"
+    },
+    {
+      "id": "fldoVAGbn6qQLS1ZC",
+      "name": "Daily Budget Left",
+      "type": "currency"
+    },
+    {
+      "id": "fldLyLqNvIm98UFQi",
+      "name": "Transaction Count",
+      "type": "number"
+    },
+    {
+      "id": "fldEiUVJYNyOUzQQv",
+      "name": "Category Breakdown",
+      "type": "multilineText"
+    }
+  ],
+  "recordCount": 1,
+  "records": [
+    {
+      "id": "recKwBZXrfzrMxTFb",
+      "createdTime": "2026-06-27T07:07:41.000Z",
+      "fields": {
+        "fldEiUVJYNyOUzQQv": "Transfer: R41000.00\nDebt Repayment: R15118.99\nStore Account Payments: R5083.34\nCrypto Buy: R3946.49\nSubscriptions: R3345.00\nCrypto: R2000.00\nHome Maintenance: R1260.00\nSavings: R800.00\nPersonal: R704.00\nGroceries: R533.72\nFood & Dining: R215.00\nUtilities: R200.00\nBank Fees: R10.75",
+        "fldEwOwNj01jb01Oo": "Current State",
+        "fldLyLqNvIm98UFQi": 62,
+        "fldSmf2IqlGzMS7F3": "2026-06-24",
+        "fldWUKYxFp4dju2d4": 74217.29,
+        "fldWcit36QT5upYnq": -26117.29,
+        "fldZJyPpZKG05IiKw": 48100,
+        "fldaylCjGgSpt1kAc": "2026-06-30T07:07:56.000Z",
+        "fldfLI6qeOPQlRGWp": 25,
+        "fldjHZ45Lqz3UQIa7": "2026-07-24",
+        "fldoVAGbn6qQLS1ZC": -1044.69
+      }
+    }
+  ]
+}

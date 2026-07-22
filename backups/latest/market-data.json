@@ -1,0 +1,501 @@
+{
+  "id": "tblMDxJG8FyYZuYtH",
+  "fields": [
+    {
+      "id": "fld16hk0Hxqjax3gP",
+      "name": "Coin",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldJRC8s6xHzW5XVi",
+      "name": "Symbol",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldTWcWMoFv2dCxxk",
+      "name": "Price USD",
+      "type": "currency"
+    },
+    {
+      "id": "fldf9L4pOwmMtolAg",
+      "name": "Market Cap",
+      "type": "currency"
+    },
+    {
+      "id": "fld6BEaHSghs0tAVR",
+      "name": "Change 24h %",
+      "type": "number"
+    },
+    {
+      "id": "fldNlhkJpV6Ikictk",
+      "name": "Change 7d %",
+      "type": "number"
+    },
+    {
+      "id": "fldkOynzifcMwuYkn",
+      "name": "Volume 24h",
+      "type": "currency"
+    },
+    {
+      "id": "fldUHHMpuxK5RehtW",
+      "name": "Sector",
+      "type": "singleSelect"
+    },
+    {
+      "id": "fldrYwKFTItHLIaAF",
+      "name": "CoinGecko ID",
+      "type": "singleLineText"
+    }
+  ],
+  "recordCount": 32,
+  "records": [
+    {
+      "id": "rec0RbsTEqQ9gKV2D",
+      "createdTime": "2026-06-10T20:45:56.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Bitcoin",
+        "fld6BEaHSghs0tAVR": 0.50388,
+        "fldJRC8s6xHzW5XVi": "BTC",
+        "fldNlhkJpV6Ikictk": -4.35037498577334,
+        "fldTWcWMoFv2dCxxk": 62621,
+        "fldf9L4pOwmMtolAg": 1255341696284,
+        "fldkOynzifcMwuYkn": 23687719175,
+        "fldrYwKFTItHLIaAF": "bitcoin"
+      }
+    },
+    {
+      "id": "rec1BEokLhh5dyHR3",
+      "createdTime": "2026-06-10T20:46:08.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Algorand",
+        "fld6BEaHSghs0tAVR": 0.90137,
+        "fldJRC8s6xHzW5XVi": "ALGO",
+        "fldNlhkJpV6Ikictk": -5.821876915205751,
+        "fldTWcWMoFv2dCxxk": 0.090996,
+        "fldf9L4pOwmMtolAg": 812542388,
+        "fldkOynzifcMwuYkn": 55009739,
+        "fldrYwKFTItHLIaAF": "algorand"
+      }
+    },
+    {
+      "id": "rec8UJjcCxGauw7Eq",
+      "createdTime": "2026-06-10T20:46:07.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Cosmos Hub",
+        "fld6BEaHSghs0tAVR": -4.58513,
+        "fldJRC8s6xHzW5XVi": "ATOM",
+        "fldNlhkJpV6Ikictk": -15.108785524258098,
+        "fldTWcWMoFv2dCxxk": 1.67,
+        "fldf9L4pOwmMtolAg": 860136154,
+        "fldkOynzifcMwuYkn": 31994234,
+        "fldrYwKFTItHLIaAF": "cosmos"
+      }
+    },
+    {
+      "id": "rec9IuikH4eOND0iW",
+      "createdTime": "2026-06-10T20:45:59.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "XRP",
+        "fld6BEaHSghs0tAVR": -0.46697,
+        "fldJRC8s6xHzW5XVi": "XRP",
+        "fldNlhkJpV6Ikictk": -8.212489776437074,
+        "fldTWcWMoFv2dCxxk": 1.098,
+        "fldf9L4pOwmMtolAg": 68099492020,
+        "fldkOynzifcMwuYkn": 1262442319,
+        "fldrYwKFTItHLIaAF": "ripple"
+      }
+    },
+    {
+      "id": "recA0FshfSJQGt1h8",
+      "createdTime": "2026-06-10T20:46:06.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Worldcoin",
+        "fld6BEaHSghs0tAVR": -6.07332,
+        "fldJRC8s6xHzW5XVi": "WLD",
+        "fldNlhkJpV6Ikictk": -19.24269653361313,
+        "fldTWcWMoFv2dCxxk": 0.531151,
+        "fldf9L4pOwmMtolAg": 1841377448,
+        "fldkOynzifcMwuYkn": 372226123,
+        "fldrYwKFTItHLIaAF": "worldcoin-wld"
+      }
+    },
+    {
+      "id": "recAJcMlzvmn9pYqv",
+      "createdTime": "2026-06-10T20:45:58.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Ethereum",
+        "fld6BEaHSghs0tAVR": 0.98427,
+        "fldJRC8s6xHzW5XVi": "ETH",
+        "fldNlhkJpV6Ikictk": -6.64879848995518,
+        "fldTWcWMoFv2dCxxk": 1665.06,
+        "fldf9L4pOwmMtolAg": 200961288687,
+        "fldkOynzifcMwuYkn": 8065954772,
+        "fldrYwKFTItHLIaAF": "ethereum"
+      }
+    },
+    {
+      "id": "recCRhnOThbwHuMbg",
+      "createdTime": "2026-06-10T20:46:03.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Sui",
+        "fld6BEaHSghs0tAVR": 1.94746,
+        "fldJRC8s6xHzW5XVi": "SUI",
+        "fldNlhkJpV6Ikictk": -12.388808876459239,
+        "fldTWcWMoFv2dCxxk": 0.699111,
+        "fldf9L4pOwmMtolAg": 2816710209,
+        "fldkOynzifcMwuYkn": 270953075,
+        "fldrYwKFTItHLIaAF": "sui"
+      }
+    },
+    {
+      "id": "recF14o5mb914Sxbm",
+      "createdTime": "2026-06-10T20:46:06.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Quant",
+        "fld6BEaHSghs0tAVR": 2.26507,
+        "fldJRC8s6xHzW5XVi": "QNT",
+        "fldNlhkJpV6Ikictk": -2.831496592655753,
+        "fldTWcWMoFv2dCxxk": 69.19,
+        "fldf9L4pOwmMtolAg": 1006311788,
+        "fldkOynzifcMwuYkn": 12819192,
+        "fldrYwKFTItHLIaAF": "quant-network"
+      }
+    },
+    {
+      "id": "recHx4WYtIaApR8kO",
+      "createdTime": "2026-06-10T20:45:59.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Solana",
+        "fld6BEaHSghs0tAVR": 0.48801,
+        "fldJRC8s6xHzW5XVi": "SOL",
+        "fldNlhkJpV6Ikictk": -5.276455449170808,
+        "fldTWcWMoFv2dCxxk": 69.24,
+        "fldf9L4pOwmMtolAg": 40194563249,
+        "fldkOynzifcMwuYkn": 1809251959,
+        "fldrYwKFTItHLIaAF": "solana"
+      }
+    },
+    {
+      "id": "recIw4J3uEX5C69ob",
+      "createdTime": "2026-06-10T20:46:15.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Immutable",
+        "fld6BEaHSghs0tAVR": 4.45379,
+        "fldJRC8s6xHzW5XVi": "IMX",
+        "fldNlhkJpV6Ikictk": -5.408172907471088,
+        "fldTWcWMoFv2dCxxk": 0.137454,
+        "fldf9L4pOwmMtolAg": 115794440,
+        "fldkOynzifcMwuYkn": 8447428,
+        "fldrYwKFTItHLIaAF": "immutable-x"
+      }
+    },
+    {
+      "id": "recIyFK3nv5OoJXDd",
+      "createdTime": "2026-06-10T20:46:12.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Zebec Network",
+        "fld6BEaHSghs0tAVR": 1.68797,
+        "fldJRC8s6xHzW5XVi": "ZBCN",
+        "fldNlhkJpV6Ikictk": -9.01850669970915,
+        "fldTWcWMoFv2dCxxk": 0.00237799,
+        "fldf9L4pOwmMtolAg": 233164235,
+        "fldkOynzifcMwuYkn": 10762803,
+        "fldrYwKFTItHLIaAF": "zebec-network"
+      }
+    },
+    {
+      "id": "recN0A4fTwqtnWJRt",
+      "createdTime": "2026-06-10T20:46:11.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Stacks",
+        "fld6BEaHSghs0tAVR": -0.35467,
+        "fldJRC8s6xHzW5XVi": "STX",
+        "fldNlhkJpV6Ikictk": -7.971103172654834,
+        "fldTWcWMoFv2dCxxk": 0.175029,
+        "fldf9L4pOwmMtolAg": 323839232,
+        "fldkOynzifcMwuYkn": 4626089,
+        "fldrYwKFTItHLIaAF": "blockstack"
+      }
+    },
+    {
+      "id": "recNbqR6huhg7p2cP",
+      "createdTime": "2026-06-10T20:46:13.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "The Graph",
+        "fld6BEaHSghs0tAVR": -0.51146,
+        "fldJRC8s6xHzW5XVi": "GRT",
+        "fldNlhkJpV6Ikictk": -5.9289281645454395,
+        "fldTWcWMoFv2dCxxk": 0.01875606,
+        "fldf9L4pOwmMtolAg": 202557112,
+        "fldkOynzifcMwuYkn": 14459240,
+        "fldrYwKFTItHLIaAF": "the-graph"
+      }
+    },
+    {
+      "id": "recQJyiP23TYVnaY2",
+      "createdTime": "2026-06-10T20:46:00.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Dogecoin",
+        "fld6BEaHSghs0tAVR": -0.17596,
+        "fldJRC8s6xHzW5XVi": "DOGE",
+        "fldNlhkJpV6Ikictk": -9.038696262319936,
+        "fldTWcWMoFv2dCxxk": 0.078842,
+        "fldf9L4pOwmMtolAg": 12203506381,
+        "fldkOynzifcMwuYkn": 458854204,
+        "fldrYwKFTItHLIaAF": "dogecoin"
+      }
+    },
+    {
+      "id": "recRD4WLeGKBmVSlZ",
+      "createdTime": "2026-06-10T20:46:11.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Pudgy Penguins",
+        "fld6BEaHSghs0tAVR": -0.97701,
+        "fldJRC8s6xHzW5XVi": "PENGU",
+        "fldNlhkJpV6Ikictk": -12.250068350980465,
+        "fldTWcWMoFv2dCxxk": 0.006225,
+        "fldf9L4pOwmMtolAg": 391305707,
+        "fldkOynzifcMwuYkn": 49721598,
+        "fldrYwKFTItHLIaAF": "pudgy-penguins"
+      }
+    },
+    {
+      "id": "recSV3CvEZ0VZiHYH",
+      "createdTime": "2026-06-10T20:46:10.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Injective",
+        "fld6BEaHSghs0tAVR": -2.26629,
+        "fldJRC8s6xHzW5XVi": "INJ",
+        "fldNlhkJpV6Ikictk": -18.18801824698537,
+        "fldTWcWMoFv2dCxxk": 4.48,
+        "fldf9L4pOwmMtolAg": 448382565,
+        "fldkOynzifcMwuYkn": 51981258,
+        "fldrYwKFTItHLIaAF": "injective-protocol"
+      }
+    },
+    {
+      "id": "recTQc8GlDlEmuzez",
+      "createdTime": "2026-06-10T20:46:04.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Bittensor",
+        "fld6BEaHSghs0tAVR": 0.8604,
+        "fldJRC8s6xHzW5XVi": "TAO",
+        "fldNlhkJpV6Ikictk": -12.892908144640383,
+        "fldTWcWMoFv2dCxxk": 221.04,
+        "fldf9L4pOwmMtolAg": 2121265933,
+        "fldkOynzifcMwuYkn": 167150080,
+        "fldrYwKFTItHLIaAF": "bittensor"
+      }
+    },
+    {
+      "id": "recVB7VtDg4B56DJZ",
+      "createdTime": "2026-06-10T20:46:03.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Hedera",
+        "fld6BEaHSghs0tAVR": -0.45033,
+        "fldJRC8s6xHzW5XVi": "HBAR",
+        "fldNlhkJpV6Ikictk": -3.6848101567023077,
+        "fldTWcWMoFv2dCxxk": 0.076888,
+        "fldf9L4pOwmMtolAg": 3342598975,
+        "fldkOynzifcMwuYkn": 55333338,
+        "fldrYwKFTItHLIaAF": "hedera-hashgraph"
+      }
+    },
+    {
+      "id": "recVZYWBZqNG6NlAh",
+      "createdTime": "2026-06-10T20:46:00.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Hyperliquid",
+        "fld6BEaHSghs0tAVR": -0.85854,
+        "fldJRC8s6xHzW5XVi": "HYPE",
+        "fldNlhkJpV6Ikictk": -14.81260309908555,
+        "fldTWcWMoFv2dCxxk": 62.38,
+        "fldf9L4pOwmMtolAg": 13876464702,
+        "fldkOynzifcMwuYkn": 645209322,
+        "fldrYwKFTItHLIaAF": "hyperliquid"
+      }
+    },
+    {
+      "id": "recbHe6oEnv0LdCRt",
+      "createdTime": "2026-06-10T20:46:12.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Celestia",
+        "fld6BEaHSghs0tAVR": -0.74056,
+        "fldJRC8s6xHzW5XVi": "TIA",
+        "fldNlhkJpV6Ikictk": -5.716072632107988,
+        "fldTWcWMoFv2dCxxk": 0.373125,
+        "fldf9L4pOwmMtolAg": 348559548,
+        "fldkOynzifcMwuYkn": 36265426,
+        "fldrYwKFTItHLIaAF": "celestia"
+      }
+    },
+    {
+      "id": "rechPraCVm8M0Ac7L",
+      "createdTime": "2026-06-10T20:46:13.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Optimism",
+        "fld6BEaHSghs0tAVR": 5.16557,
+        "fldJRC8s6xHzW5XVi": "OP",
+        "fldNlhkJpV6Ikictk": -5.283004883445908,
+        "fldTWcWMoFv2dCxxk": 0.101757,
+        "fldf9L4pOwmMtolAg": 219778086,
+        "fldkOynzifcMwuYkn": 40764200,
+        "fldrYwKFTItHLIaAF": "optimism"
+      }
+    },
+    {
+      "id": "reck3wbnr50ehxccG",
+      "createdTime": "2026-06-10T20:46:15.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "MATIC (migrated to POL)",
+        "fld6BEaHSghs0tAVR": 0,
+        "fldJRC8s6xHzW5XVi": "MATIC",
+        "fldNlhkJpV6Ikictk": 0,
+        "fldTWcWMoFv2dCxxk": 0,
+        "fldf9L4pOwmMtolAg": 0,
+        "fldkOynzifcMwuYkn": 115729,
+        "fldrYwKFTItHLIaAF": "matic-network"
+      }
+    },
+    {
+      "id": "reckDqf7FkJX65wNJ",
+      "createdTime": "2026-06-10T20:46:02.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Chainlink",
+        "fld6BEaHSghs0tAVR": 1.00884,
+        "fldJRC8s6xHzW5XVi": "LINK",
+        "fldNlhkJpV6Ikictk": -6.73780958669753,
+        "fldTWcWMoFv2dCxxk": 7.61,
+        "fldf9L4pOwmMtolAg": 5693573639,
+        "fldkOynzifcMwuYkn": 217323904,
+        "fldrYwKFTItHLIaAF": "chainlink"
+      }
+    },
+    {
+      "id": "recoRWWdUnOztUxwt",
+      "createdTime": "2026-06-10T20:46:14.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Arweave",
+        "fld6BEaHSghs0tAVR": 2.39466,
+        "fldJRC8s6xHzW5XVi": "AR",
+        "fldNlhkJpV6Ikictk": -4.463858506514248,
+        "fldTWcWMoFv2dCxxk": 1.98,
+        "fldf9L4pOwmMtolAg": 130130397,
+        "fldkOynzifcMwuYkn": 11428270,
+        "fldrYwKFTItHLIaAF": "arweave"
+      }
+    },
+    {
+      "id": "recoTo6bXJQFMXUPN",
+      "createdTime": "2026-06-10T20:46:04.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "PAX Gold",
+        "fld6BEaHSghs0tAVR": -1.12745,
+        "fldJRC8s6xHzW5XVi": "PAXG",
+        "fldNlhkJpV6Ikictk": -5.718621390699292,
+        "fldTWcWMoFv2dCxxk": 4063.03,
+        "fldf9L4pOwmMtolAg": 1838323411,
+        "fldkOynzifcMwuYkn": 159925468,
+        "fldrYwKFTItHLIaAF": "pax-gold"
+      }
+    },
+    {
+      "id": "recsciEIj9gk3a5ZU",
+      "createdTime": "2026-06-10T20:46:09.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "XDC Network",
+        "fld6BEaHSghs0tAVR": 0.06901,
+        "fldJRC8s6xHzW5XVi": "XDC",
+        "fldNlhkJpV6Ikictk": -3.7455197298911584,
+        "fldTWcWMoFv2dCxxk": 0.02909584,
+        "fldf9L4pOwmMtolAg": 580394171,
+        "fldkOynzifcMwuYkn": 6011804,
+        "fldrYwKFTItHLIaAF": "xdce-crowd-sale"
+      }
+    },
+    {
+      "id": "rectC8P1qfPlQL1uQ",
+      "createdTime": "2026-06-10T20:46:07.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Aave",
+        "fld6BEaHSghs0tAVR": 0.91308,
+        "fldJRC8s6xHzW5XVi": "AAVE",
+        "fldNlhkJpV6Ikictk": -5.134792884099864,
+        "fldTWcWMoFv2dCxxk": 72.31,
+        "fldf9L4pOwmMtolAg": 1097584672,
+        "fldkOynzifcMwuYkn": 146968810,
+        "fldrYwKFTItHLIaAF": "aave"
+      }
+    },
+    {
+      "id": "rectv8cf0esufLOMX",
+      "createdTime": "2026-06-10T20:46:09.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Ethena",
+        "fld6BEaHSghs0tAVR": -1.96471,
+        "fldJRC8s6xHzW5XVi": "ENA",
+        "fldNlhkJpV6Ikictk": -3.080781973278392,
+        "fldTWcWMoFv2dCxxk": 0.083805,
+        "fldf9L4pOwmMtolAg": 779237829,
+        "fldkOynzifcMwuYkn": 93211408,
+        "fldrYwKFTItHLIaAF": "ethena"
+      }
+    },
+    {
+      "id": "recushQkYKSPdmVlO",
+      "createdTime": "2026-06-10T20:46:08.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Render",
+        "fld6BEaHSghs0tAVR": 2.95415,
+        "fldJRC8s6xHzW5XVi": "RENDER",
+        "fldNlhkJpV6Ikictk": -7.104187080874272,
+        "fldTWcWMoFv2dCxxk": 1.6,
+        "fldf9L4pOwmMtolAg": 832609120,
+        "fldkOynzifcMwuYkn": 40338401,
+        "fldrYwKFTItHLIaAF": "render-token"
+      }
+    },
+    {
+      "id": "recwhu9jmY980I9fT",
+      "createdTime": "2026-06-10T20:46:01.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Cardano",
+        "fld6BEaHSghs0tAVR": -1.46709,
+        "fldJRC8s6xHzW5XVi": "ADA",
+        "fldNlhkJpV6Ikictk": -11.099648544867739,
+        "fldTWcWMoFv2dCxxk": 0.150153,
+        "fldf9L4pOwmMtolAg": 5592744920,
+        "fldkOynzifcMwuYkn": 331823881,
+        "fldrYwKFTItHLIaAF": "cardano"
+      }
+    },
+    {
+      "id": "recxeg7h0D0WgSH08",
+      "createdTime": "2026-06-10T20:46:01.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Stellar",
+        "fld6BEaHSghs0tAVR": -0.39625,
+        "fldJRC8s6xHzW5XVi": "XLM",
+        "fldNlhkJpV6Ikictk": -13.520085296710146,
+        "fldTWcWMoFv2dCxxk": 0.19166,
+        "fldf9L4pOwmMtolAg": 6488595658,
+        "fldkOynzifcMwuYkn": 167963493,
+        "fldrYwKFTItHLIaAF": "stellar"
+      }
+    },
+    {
+      "id": "recz6zI8whxt4ghLn",
+      "createdTime": "2026-06-10T20:46:05.000Z",
+      "fields": {
+        "fld16hk0Hxqjax3gP": "Ondo",
+        "fld6BEaHSghs0tAVR": -2.53123,
+        "fldJRC8s6xHzW5XVi": "ONDO",
+        "fldNlhkJpV6Ikictk": -16.423560708772435,
+        "fldTWcWMoFv2dCxxk": 0.305616,
+        "fldf9L4pOwmMtolAg": 1488162089,
+        "fldkOynzifcMwuYkn": 56602738,
+        "fldrYwKFTItHLIaAF": "ondo-finance"
+      }
+    }
+  ]
+}

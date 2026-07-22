@@ -1,0 +1,261 @@
+{
+  "id": "tblSufyNfR65shnBt",
+  "fields": [
+    {
+      "id": "fld1QIml3qV4jGEpd",
+      "name": "Category",
+      "type": "singleLineText"
+    },
+    {
+      "id": "fldGbX8xaJD4MtfM8",
+      "name": "Type",
+      "type": "singleSelect"
+    },
+    {
+      "id": "fldl87k7XXfFuzN2K",
+      "name": "Budgeted (ZAR)",
+      "type": "currency"
+    },
+    {
+      "id": "fldkfB2EJKlHYCGIN",
+      "name": "Actual (ZAR)",
+      "type": "currency"
+    },
+    {
+      "id": "fldHh2t1v4qfuffhy",
+      "name": "Month",
+      "type": "date"
+    },
+    {
+      "id": "fld1NDKCYIKWUgxQk",
+      "name": "Priority",
+      "type": "singleSelect"
+    },
+    {
+      "id": "fld8IL0p2VKGpmRAJ",
+      "name": "Notes",
+      "type": "multilineText"
+    },
+    {
+      "id": "fldlZO0g17Z4PQn7U",
+      "name": "Difference (ZAR)",
+      "type": "formula"
+    }
+  ],
+  "recordCount": 16,
+  "records": [
+    {
+      "id": "rec043LcOlwQXNKb1",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟡 Medium",
+        "fld1QIml3qV4jGEpd": "Crypto DCA",
+        "fldGbX8xaJD4MtfM8": "Savings",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 2000,
+        "fldlZO0g17Z4PQn7U": 2000
+      }
+    },
+    {
+      "id": "rec2tuDAxkoxlGpIh",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🔴 Critical",
+        "fld1QIml3qV4jGEpd": "Payflex",
+        "fld8IL0p2VKGpmRAJ": "Eliminate within 12 months — redirect after",
+        "fldGbX8xaJD4MtfM8": "Fixed",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 5000,
+        "fldlZO0g17Z4PQn7U": 5000
+      }
+    },
+    {
+      "id": "rec3S8oZWVbGdNaiR",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟠 High",
+        "fld1QIml3qV4jGEpd": "Petrol",
+        "fldGbX8xaJD4MtfM8": "Variable",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 4000,
+        "fldlZO0g17Z4PQn7U": 4000
+      }
+    },
+    {
+      "id": "rec8qraZNA1dlIdUm",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟡 Medium",
+        "fld1QIml3qV4jGEpd": "Internet",
+        "fldGbX8xaJD4MtfM8": "Fixed",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 900,
+        "fldlZO0g17Z4PQn7U": 900
+      }
+    },
+    {
+      "id": "rec9pqIuKEaxh8M1p",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟢 Low",
+        "fld1QIml3qV4jGEpd": "Car Savings",
+        "fld8IL0p2VKGpmRAJ": "Increase post-Payflex",
+        "fldGbX8xaJD4MtfM8": "Savings",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 500,
+        "fldlZO0g17Z4PQn7U": 500
+      }
+    },
+    {
+      "id": "recBajEfJfOnbLEpx",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟠 High",
+        "fld1QIml3qV4jGEpd": "Home Bond",
+        "fldGbX8xaJD4MtfM8": "Fixed",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 10000,
+        "fldlZO0g17Z4PQn7U": 10000
+      }
+    },
+    {
+      "id": "recBqeEXxHl8ttK7v",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🔴 Critical",
+        "fld1QIml3qV4jGEpd": "Tax Provision → SARS",
+        "fld8IL0p2VKGpmRAJ": "Transfer on income receipt",
+        "fldGbX8xaJD4MtfM8": "Tax",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 8000,
+        "fldlZO0g17Z4PQn7U": 8000
+      }
+    },
+    {
+      "id": "recSpvjZwugEgJW91",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟡 Medium",
+        "fld1QIml3qV4jGEpd": "Subscriptions",
+        "fld8IL0p2VKGpmRAJ": "Review quarterly",
+        "fldGbX8xaJD4MtfM8": "Fixed",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 2500,
+        "fldl87k7XXfFuzN2K": 1000,
+        "fldlZO0g17Z4PQn7U": -1500
+      }
+    },
+    {
+      "id": "recZ3yJB047DKAdwk",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟠 High",
+        "fld1QIml3qV4jGEpd": "Lisa & Liam",
+        "fldGbX8xaJD4MtfM8": "Variable",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 2000,
+        "fldlZO0g17Z4PQn7U": 2000
+      }
+    },
+    {
+      "id": "rechP9rGnoefF5ZOr",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟠 High",
+        "fld1QIml3qV4jGEpd": "Groceries",
+        "fldGbX8xaJD4MtfM8": "Variable",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 9000,
+        "fldlZO0g17Z4PQn7U": 9000
+      }
+    },
+    {
+      "id": "reckD5DnwSMhoEMxI",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟡 Medium",
+        "fld1QIml3qV4jGEpd": "Eating Out",
+        "fldGbX8xaJD4MtfM8": "Variable",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 1500,
+        "fldlZO0g17Z4PQn7U": 1500
+      }
+    },
+    {
+      "id": "recm3fzXPpIWEmD71",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟢 Low",
+        "fld1QIml3qV4jGEpd": "Miscellaneous",
+        "fldGbX8xaJD4MtfM8": "Variable",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 1000,
+        "fldlZO0g17Z4PQn7U": 1000
+      }
+    },
+    {
+      "id": "recpx5ALSLI5x2NIh",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟠 High",
+        "fld1QIml3qV4jGEpd": "Levies + Rates",
+        "fldGbX8xaJD4MtfM8": "Fixed",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 1500,
+        "fldlZO0g17Z4PQn7U": 1500
+      }
+    },
+    {
+      "id": "recsiOeXwA4HVkHnS",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🔴 Critical",
+        "fld1QIml3qV4jGEpd": "Emergency Fund",
+        "fldGbX8xaJD4MtfM8": "Savings",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 1000,
+        "fldlZO0g17Z4PQn7U": 1000
+      }
+    },
+    {
+      "id": "rect2G8zkeXVnUhaS",
+      "createdTime": "2026-06-11T20:43:57.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟠 High",
+        "fld1QIml3qV4jGEpd": "Kids Education (TFSA)",
+        "fldGbX8xaJD4MtfM8": "Savings",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 400,
+        "fldlZO0g17Z4PQn7U": 400
+      }
+    },
+    {
+      "id": "recyuWc6GgkKcFry3",
+      "createdTime": "2026-06-14T16:35:58.000Z",
+      "fields": {
+        "fld1NDKCYIKWUgxQk": "🟡 Medium",
+        "fld1QIml3qV4jGEpd": "Meal Prep",
+        "fld8IL0p2VKGpmRAJ": "Auria salad x4 @ R55 each = R220/week × 4 weeks. Review monthly. Part of family meal prep routine — initiated Jun 2026.",
+        "fldGbX8xaJD4MtfM8": "Variable",
+        "fldHh2t1v4qfuffhy": "2026-07-01",
+        "fldkfB2EJKlHYCGIN": 0,
+        "fldl87k7XXfFuzN2K": 880,
+        "fldlZO0g17Z4PQn7U": 880
+      }
+    }
+  ]
+}
