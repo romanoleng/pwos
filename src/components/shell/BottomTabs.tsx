@@ -1,34 +1,36 @@
 "use client";
 
+import { Home, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-import { TAB_ITEMS, isActivePath } from "@/lib/nav";
+import { isActivePath } from "@/lib/nav";
+import { TAB_CHOICES, useChosenTabs } from "@/lib/tabs";
 
 /**
  * Mobile navigation (< md). Fixed to the bottom, inside the safe area so it
  * clears the iPhone home indicator when installed as a PWA.
  *
- * The bar is solid purple with black icons. It used to be bg-surface, which in
- * dark mode sits a shade off the page background and simply disappeared.
- *
- * The purple is pinned rather than taken from --accent. Black on this lighter
- * purple is 6,81:1, comfortably past AA for the 10px labels — but on the light
- * theme's darker accent it falls to 3,82:1 and fails. One fixed colour keeps
- * the contrast honest in both themes and makes the bar a constant anchor
- * instead of something that restyles under you.
- *
- * Colour can no longer signal the active tab, since the whole bar is now the
- * accent. Active is solid black on a translucent pill; inactive is the dimmed
- * indigo, measured at 4,55:1 rather than eyeballed.
+ * The bar is solid purple with black icons — see the tab-bar commit for the
+ * contrast maths. The middle three tabs are chosen in Settings; Home and More
+ * are fixed, as the anchor and the escape hatch.
  */
 export function BottomTabs() {
   const pathname = usePathname();
+  const chosen = useChosenTabs();
+
+  const items = [
+    { href: "/", label: "Home", icon: Home },
+    ...chosen
+      .map((href) => TAB_CHOICES.find((c) => c.href === href))
+      .filter((c): c is NonNullable<typeof c> => c !== undefined),
+    { href: "/more", label: "More", icon: MoreHorizontal },
+  ];
 
   return (
     <nav className="pb-safe fixed inset-x-0 bottom-0 z-30 bg-tabbar shadow-[0_-1px_12px_rgba(0,0,0,0.28)] md:hidden">
       <ul className="grid grid-cols-5">
-        {TAB_ITEMS.map((item) => {
+        {items.map((item) => {
           const active = isActivePath(pathname, item.href);
           const Icon = item.icon;
           return (

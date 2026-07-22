@@ -10,6 +10,7 @@ import { Money } from "@/components/ui/Money";
 import { formatDate, formatPercent } from "@/lib/format";
 import { isKidInvestment } from "@/lib/kids";
 import type { GoalsSummary } from "@/lib/server/goals";
+import type { HomeSummary } from "@/lib/server/home";
 
 async function fetcher(url: string): Promise<GoalsSummary> {
   const response = await fetch(url);
@@ -19,10 +20,20 @@ async function fetcher(url: string): Promise<GoalsSummary> {
 
 export function GoalsScreen() {
   const { data, error, mutate } = useSWR<GoalsSummary>("/api/goals", fetcher);
+  // Same key Home uses, so this costs nothing extra — savings-type accounts
+  // belong on the savings screen, not only buried in the accounts list.
+  const { data: home, mutate: mutateHome } = useSWR<HomeSummary>(
+    "/api/home?period=cycle",
+    (url: string) => fetch(url).then((r) => r.json()),
+  );
   if (error) return <Card><CardBody className="text-sm text-loss">Couldn&apos;t load goals.</CardBody></Card>;
   if (!data) return <LoadingCard rows={3} />;
 
-  const refresh = () => void mutate();
+  const refresh = () => {
+    void mutate();
+    void mutateHome();
+  };
+  const savingsBanks = (home?.cards ?? []).filter((card) => card.kind === "savings");
   // Their investments are tracked individually on the Investments screen, so
   // only reachable cash is listed here.
   const savingsAccounts = data.kids.filter((kid) => !isKidInvestment(kid.accountType));
@@ -91,6 +102,43 @@ export function GoalsScreen() {
           </ul>
         )}
       </Card>
+
+      {savingsBanks.length > 0 ? (
+        <CollapsibleSection
+          id="savings:accounts"
+          title="Savings accounts"
+          description="The pots themselves. Goals above are labels on this money."
+          action={
+            <Money
+              value={savingsBanks.reduce((t, c) => t + (c.balanceZar ?? 0), 0)}
+              variant="whole"
+              className="text-sm"
+            />
+          }
+        >
+          <ul className="divide-y divide-line">
+            {savingsBanks.map((card) => (
+              <li
+                key={card.id}
+                className="flex items-center justify-between gap-3 px-4 py-3"
+              >
+                <p className="min-w-0 truncate text-sm font-medium">{card.label}</p>
+                {card.balanceZar === null ? (
+                  <span className="text-[11px] text-warn">Not recorded</span>
+                ) : (
+                  <EditableAmount
+                    editKey="netWorth.value"
+                    recordId={card.id}
+                    value={card.balanceZar}
+                    onSaved={refresh}
+                    className="text-sm"
+                  />
+                )}
+              </li>
+            ))}
+          </ul>
+        </CollapsibleSection>
+      ) : null}
 
       <CollapsibleSection
         id="goals:kids"

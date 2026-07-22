@@ -5,7 +5,6 @@
  * No server imports: this is consumed by client components.
  */
 import {
-  Banknote,
   Bitcoin,
   Briefcase,
   ChartPie,
@@ -13,13 +12,12 @@ import {
   ChartColumn,
   Home,
   Landmark,
-  MoreHorizontal,
   Receipt,
   RefreshCw,
+  PiggyBank,
   Scale,
   Settings,
   Shapes,
-  Target,
   TrendingUp,
   Wallet,
   type LucideIcon,
@@ -53,15 +51,15 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/accounts", label: "Accounts", icon: Landmark },
       { href: "/transactions", label: "Transactions", icon: Receipt },
       { href: "/budgets", label: "Budgets", icon: Wallet },
-      { href: "/goals", label: "Goals", icon: Target },
+      { href: "/savings", label: "Savings", icon: PiggyBank },
       { href: "/reset", label: "Reset", icon: RefreshCw, longLabel: "Payday reset" },
     ],
   },
   {
     title: "Invest",
     items: [
-      { href: "/crypto", label: "Crypto", icon: Bitcoin },
       { href: "/investments", label: "Investments", icon: TrendingUp },
+      { href: "/crypto", label: "Crypto", icon: Bitcoin },
     ],
   },
   {
@@ -85,18 +83,6 @@ export const NAV_GROUPS: NavGroup[] = [
 ];
 
 export const ALL_NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
-
-/**
- * Five is the ceiling for a thumb-reachable tab bar. These are the screens
- * worth opening daily; everything else lives behind "More".
- */
-export const TAB_ITEMS: NavItem[] = [
-  { href: "/", label: "Home", icon: Home },
-  { href: "/crypto", label: "Crypto", icon: Bitcoin },
-  { href: "/accounts", label: "Accounts", icon: Banknote },
-  { href: "/budgets", label: "Budget", icon: Wallet },
-  { href: "/more", label: "More", icon: MoreHorizontal },
-];
 
 /** Longest-prefix match so /crypto/BTC still highlights the Crypto tab. */
 export function isActivePath(pathname: string, href: string): boolean {

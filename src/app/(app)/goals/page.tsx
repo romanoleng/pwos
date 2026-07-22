@@ -1,13 +1,6 @@
-import type { Metadata } from "next";
-import { GoalsScreen } from "@/components/goals/GoalsScreen";
-import { PageHeader } from "@/components/ui/Card";
-export const metadata: Metadata = { title: "Goals" };
-export const dynamic = "force-dynamic";
+import { redirect } from "next/navigation";
+
+/** Goals became Savings — one screen for everything being built. */
 export default function GoalsPage() {
-  return (
-    <>
-      <PageHeader title="Goals" description="The freedom number, savings goals and the kids' accounts." />
-      <GoalsScreen />
-    </>
-  );
+  redirect("/savings");
 }
