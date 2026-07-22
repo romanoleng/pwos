@@ -10,7 +10,7 @@ import {
   Briefcase,
   ChartPie,
   CreditCard,
-  FileText,
+  ChartColumn,
   Home,
   Landmark,
   MoreHorizontal,
@@ -75,7 +75,7 @@ export const NAV_GROUPS: NavGroup[] = [
   {
     title: "More",
     items: [
-      { href: "/reports", label: "Reports", icon: FileText },
+      { href: "/stats", label: "Stats", icon: ChartColumn, longLabel: "Stats" },
       { href: "/settings", label: "Settings", icon: Settings },
       // Not a tab or sidebar entry — reached from Settings — but listed so the
       // mobile header can title it.
