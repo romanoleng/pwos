@@ -5,6 +5,7 @@
 import "server-only";
 
 import { getBudgetCycle } from "@/lib/budget";
+import type { RecordKind } from "@/lib/records";
 
 import { moneyOrNull, sql } from "./db";
 
@@ -12,7 +13,11 @@ export type ResetRow = {
   recordId: string; label: string; editKey: string;
   currentZar: number | null; hint?: string;
 };
-export type ResetGroup = { title: string; description: string; rows: ResetRow[] };
+export type ResetGroup = {
+  title: string; description: string; rows: ResetRow[];
+  /** Registry kind, so rows here can be added and archived. See lib/records.ts. */
+  recordKind: RecordKind | null;
+};
 export type ResetState = {
   groups: ResetGroup[];
   cycle: { start: string; end: string; budgetMonth: string };
@@ -33,14 +38,15 @@ export async function getResetState(): Promise<ResetState> {
     sql<{ id: string; name: string; current_zar: string }>`
       select id::text, name, current_zar from goals where not archived order by current_zar desc`,
     sql<{ id: string; account: string; child: string | null; balance_zar: string }>`
-      select id::text, account, child, balance_zar from kids_accounts order by balance_zar desc`,
+      select id::text, account, child, balance_zar from kids_accounts where not archived order by balance_zar desc`,
     sql<{ id: string; name: string; value_zar: string }>`
       select id::text, name, value_zar from assets where not archived order by value_zar desc`,
   ]);
 
-  const groups: ResetGroup[] = [
+  const groups: ResetGroup[] = ([
     {
       title: "Cards and cash",
+      recordKind: "account",
       description: "What each account actually holds right now.",
       rows: accounts.map((r) => ({
         recordId: r.id, label: r.label, editKey: "netWorth.value",
@@ -50,6 +56,7 @@ export async function getResetState(): Promise<ResetState> {
     },
     {
       title: "Debt",
+      recordKind: "debt",
       description: "Outstanding balances.",
       rows: debts.map((r) => ({
         recordId: r.id, label: r.name, editKey: "debt.balance",
@@ -58,6 +65,7 @@ export async function getResetState(): Promise<ResetState> {
     },
     {
       title: "Budget for this cycle",
+      recordKind: null,
       description: `${cycle.start} → ${cycle.end}. What you're allocating, not what you've spent.`,
       rows: budgets.map((r) => ({
         recordId: r.id, label: r.category, editKey: "budget.budgeted",
@@ -66,6 +74,7 @@ export async function getResetState(): Promise<ResetState> {
     },
     {
       title: "Savings goals",
+      recordKind: "goal",
       description: "Current balance in each goal.",
       rows: goals.map((r) => ({
         recordId: r.id, label: r.name, editKey: "goal.balance",
@@ -74,6 +83,7 @@ export async function getResetState(): Promise<ResetState> {
     },
     {
       title: "Lisa & Liam",
+      recordKind: "kidAccount",
       description: "Kids' account balances.",
       rows: kids.map((r) => ({
         recordId: r.id, label: r.child ? `${r.account} · ${r.child}` : r.account,
@@ -82,13 +92,14 @@ export async function getResetState(): Promise<ResetState> {
     },
     {
       title: "Other assets",
+      recordKind: "asset",
       description: "Vehicle, property and investments. Crypto is live and not listed.",
       rows: assets.map((r) => ({
         recordId: r.id, label: r.name, editKey: "asset.value",
         currentZar: moneyOrNull(r.value_zar),
       })),
     },
-  ].filter((g) => g.rows.length > 0);
+  ] satisfies ResetGroup[]).filter((g) => g.rows.length > 0);
 
   return { cycle: { start: cycle.start, end: cycle.end, budgetMonth: cycle.budgetMonth }, groups };
 }

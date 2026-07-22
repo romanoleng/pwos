@@ -1,14 +1,17 @@
 "use client";
 
-import { ArrowRight, Check, RotateCcw } from "lucide-react";
+import { Archive, ArrowRight, Check, Plus, RotateCcw } from "lucide-react";
 import { useMemo, useState } from "react";
 import useSWR from "swr";
 
+import { archiveRecord, restoreRecord } from "@/app/actions/records";
 import { applyReset, revertReset, type ResetPrevious } from "@/app/actions/reset";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
+import { RecordEditor } from "@/components/ui/RecordEditor";
 import { useToast } from "@/components/ui/Toast";
 import { formatDate } from "@/lib/format";
+import type { RecordKind } from "@/lib/records";
 import type { ResetState } from "@/lib/server/reset";
 
 async function fetcher(url: string): Promise<ResetState> {
@@ -31,6 +34,7 @@ export function ResetScreen() {
   const [draft, setDraft] = useState<Record<string, string>>({});
   const [stage, setStage] = useState<"edit" | "review">("edit");
   const [saving, setSaving] = useState(false);
+  const [adding, setAdding] = useState<RecordKind | null>(null);
 
   const changes = useMemo(() => {
     if (!data) return [];
@@ -68,6 +72,29 @@ export function ResetScreen() {
   }
   if (!data) {
     return <Card><CardBody className="py-10 text-center text-sm text-muted">Loading…</CardBody></Card>;
+  }
+
+  async function onArchive(kind: RecordKind, recordId: string, label: string) {
+    const result = await archiveRecord(kind, recordId);
+    if (!result.ok) {
+      toast.show({ message: result.error, tone: "error" });
+      return;
+    }
+    void mutate();
+    // Archived, not deleted — undo only flips the flag back.
+    toast.show({
+      message: `${label} archived`,
+      tone: "neutral",
+      onUndo: async () => {
+        const undone = await restoreRecord(kind, recordId);
+        void mutate();
+        toast.show(
+          undone.ok
+            ? { message: `${label} restored`, tone: "neutral" }
+            : { message: `Couldn't undo: ${undone.error}`, tone: "error" },
+        );
+      },
+    });
   }
 
   async function commit() {
@@ -110,7 +137,7 @@ export function ResetScreen() {
         <Card>
           <CardHeader
             title="Review before writing"
-            description={`${changes.length} ${changes.length === 1 ? "value" : "values"} will change in Airtable. Nothing else is touched.`}
+            description={`${changes.length} ${changes.length === 1 ? "value" : "values"} will change. Nothing else is touched.`}
           />
           <ul className="divide-y divide-line">
             {changes.map((change) => (
@@ -172,7 +199,22 @@ export function ResetScreen() {
 
       {data.groups.map((group) => (
         <Card key={group.title}>
-          <CardHeader title={group.title} description={group.description} />
+          <CardHeader
+            title={group.title}
+            description={group.description}
+            action={
+              group.recordKind ? (
+                <button
+                  type="button"
+                  onClick={() => setAdding(group.recordKind)}
+                  className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium hover:bg-surface-2"
+                >
+                  <Plus size={13} strokeWidth={2} />
+                  Add
+                </button>
+              ) : null
+            }
+          />
           <ul className="divide-y divide-line">
             {group.rows.map((row) => {
               const key = `${row.editKey}:${row.recordId}`;
@@ -185,9 +227,24 @@ export function ResetScreen() {
                 <li key={key} className="flex items-center gap-3 px-4 py-2.5">
                   <div className="min-w-0 flex-1">
                     <p className="truncate text-sm">{row.label}</p>
-                    <p className="mt-0.5 text-[11px] text-faint">
-                      now <Money value={row.currentZar ?? 0} variant="whole" />
-                      {row.hint ? ` · ${row.hint}` : ""}
+                    <p className="mt-0.5 flex items-center gap-2 text-[11px] text-faint">
+                      <span>
+                        now <Money value={row.currentZar ?? 0} variant="whole" />
+                        {row.hint ? ` · ${row.hint}` : ""}
+                      </span>
+                      {group.recordKind ? (
+                        <button
+                          type="button"
+                          onClick={() =>
+                            void onArchive(group.recordKind!, row.recordId, row.label)
+                          }
+                          aria-label={`Archive ${row.label}`}
+                          title="Archive — hides it everywhere, keeps the history"
+                          className="text-faint transition-colors hover:text-warn"
+                        >
+                          <Archive size={12} strokeWidth={1.75} />
+                        </button>
+                      ) : null}
                     </p>
                   </div>
                   <input
@@ -210,6 +267,15 @@ export function ResetScreen() {
           </ul>
         </Card>
       ))}
+
+      {adding ? (
+        <RecordEditor
+          open
+          kind={adding}
+          onClose={() => setAdding(null)}
+          onSaved={() => void mutate()}
+        />
+      ) : null}
 
       <div className="pb-safe sticky bottom-0 -mx-4 border-t border-line bg-bg/95 px-4 py-3 backdrop-blur-md md:mx-0 md:rounded-xl md:border">
         <div className="flex items-center justify-between gap-3">
