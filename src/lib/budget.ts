@@ -79,6 +79,7 @@ export function isInCycle(dateIso: string | null | undefined, cycle: BudgetCycle
 }
 
 export type BudgetLine = {
+  recordId: string;
   category: string;
   type: string | null;
   budgetedZar: number;

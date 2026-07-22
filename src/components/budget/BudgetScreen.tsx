@@ -3,6 +3,7 @@
 import useSWR from "swr";
 
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { EditableAmount } from "@/components/ui/EditableAmount";
 import { Money, Percent } from "@/components/ui/Money";
 import { spendPace, type BudgetSummary } from "@/lib/budget";
 import { formatDate, formatPercent } from "@/lib/format";
@@ -17,9 +18,10 @@ async function fetcher(url: string): Promise<BudgetSummary> {
 }
 
 export function BudgetScreen() {
-  const { data, error } = useSWR<BudgetSummary>("/api/budget", fetcher, {
+  const { data, error, mutate } = useSWR<BudgetSummary>("/api/budget", fetcher, {
     refreshInterval: 120_000,
   });
+  const refresh = () => void mutate();
 
   if (error) {
     return (
@@ -150,7 +152,7 @@ export function BudgetScreen() {
       <Card>
         <CardHeader
           title="Categories"
-          description="Spend computed from your logged transactions, not the stored Actual column."
+          description="Tap a budget figure to change it. Spend is computed from your logged transactions."
         />
         {lines.length === 0 ? (
           <CardBody className="py-8 text-center text-xs text-muted">
@@ -161,7 +163,7 @@ export function BudgetScreen() {
             {lines.map((line) => {
               const over = line.remainingZar < 0;
               return (
-                <li key={line.category} className="px-4 py-3">
+                <li key={line.recordId} className="px-4 py-3">
                   <div className="flex items-baseline justify-between gap-3">
                     <p className="text-sm font-medium">
                       {line.category}
@@ -171,12 +173,16 @@ export function BudgetScreen() {
                         </span>
                       ) : null}
                     </p>
+                    {/* Spent is derived from the ledger, so only the budget
+                        itself can be edited here. */}
                     <p className="shrink-0 text-sm">
                       <Money value={line.actualZar} variant="whole" />
                       <span className="text-faint"> / </span>
-                      <Money
+                      <EditableAmount
+                        editKey="budget.budgeted"
+                        recordId={line.recordId}
                         value={line.budgetedZar}
-                        variant="whole"
+                        onSaved={refresh}
                         className="text-muted"
                       />
                     </p>

@@ -17,8 +17,8 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
   const cycle = getBudgetCycle(now);
 
   const [lines, unbudgeted, income] = await Promise.all([
-    sql<{ category: string; kind: string | null; budgeted_zar: string; actual_zar: string; txn_count: string }>`
-      select b.category, b.kind, b.budgeted_zar,
+    sql<{ id: string; category: string; kind: string | null; budgeted_zar: string; actual_zar: string; txn_count: string }>`
+      select b.id::text, b.category, b.kind, b.budgeted_zar,
              coalesce(sum(-t.amount_zar), 0) as actual_zar,
              count(t.id)                     as txn_count
       from budgets b
@@ -57,6 +57,7 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
     const budgetedZar = money(r.budgeted_zar);
     const actualZar = money(r.actual_zar);
     return {
+      recordId: r.id,
       category: r.category,
       type: r.kind,
       budgetedZar,
