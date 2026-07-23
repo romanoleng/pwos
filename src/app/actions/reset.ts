@@ -3,7 +3,7 @@
 import { revalidateTag } from "next/cache";
 
 import { editableField, validateEditable } from "@/lib/editable";
-import { moneyOrNull, query } from "@/lib/server/db";
+import { atomic, moneyOrNull } from "@/lib/server/db";
 
 import type { MutationResult } from "./holdings";
 
@@ -60,30 +60,37 @@ export async function applyReset(
   }
 
   try {
-    const previous: ResetPrevious[] = [];
-    let applied = 0;
+    // ONE transaction for the whole reset — the previous loop issued each
+    // update as its own HTTP request (its own transaction on the Neon driver),
+    // so a failure midway left some balances changed and, worse, discarded the
+    // undo data collected so far. `atomic` sends them together: all apply or
+    // none, and the captured previous values are always complete.
+    const results = await atomic<{ previous: unknown }>((c) =>
+      changes.map((change) => {
+        const field = editableField(change.editKey)!;
+        const table = TABLE_BY_KEY[field.table];
+        const cast = TEXT_ID.has(table) ? "" : "::bigint";
+        return c.query(
+          `update ${table} u set ${field.fieldId} = $1
+           from ${table} old where old.id = u.id and u.id = $2${cast}
+           returning old.${field.fieldId} as previous`,
+          [change.value, change.recordId],
+        );
+      }),
+    );
 
-    for (const change of changes) {
-      const field = editableField(change.editKey)!;
-      const table = TABLE_BY_KEY[field.table];
-      const cast = TEXT_ID.has(table) ? "" : "::bigint";
-      const rows = await query<{ previous: unknown }>(
-        `update ${table} u set ${field.fieldId} = $1
-         from ${table} old where old.id = u.id and u.id = $2${cast}
-         returning old.${field.fieldId} as previous`,
-        [change.value, change.recordId],
-      );
-      if (rows.length === 0) continue;
+    const previous: ResetPrevious[] = [];
+    results.forEach((rows, i) => {
+      if (rows.length === 0) return;
       previous.push({
-        editKey: change.editKey,
-        recordId: change.recordId,
+        editKey: changes[i].editKey,
+        recordId: changes[i].recordId,
         value: moneyOrNull(rows[0].previous),
       });
-      applied += 1;
-    }
+    });
 
     invalidateAll();
-    return { ok: true, data: { applied, previous } };
+    return { ok: true, data: { applied: previous.length, previous } };
   } catch (error) {
     console.error("[applyReset]", error);
     return {
@@ -96,13 +103,21 @@ export async function applyReset(
 /** Restores every value captured by applyReset. Powers the undo. */
 export async function revertReset(previous: ResetPrevious[]): Promise<MutationResult> {
   try {
-    for (const entry of previous) {
-      const field = editableField(entry.editKey);
-      if (!field) continue;
-      const table = TABLE_BY_KEY[field.table];
-      const cast = TEXT_ID.has(table) ? "" : "::bigint";
-      await query(`update ${table} set ${field.fieldId} = $1 where id = $2${cast}`,
-        [entry.value, entry.recordId]);
+    // Same all-or-nothing guarantee as applyReset — a half-undo would be as
+    // confusing as a half-apply.
+    const valid = previous.filter((entry) => editableField(entry.editKey));
+    if (valid.length > 0) {
+      await atomic((c) =>
+        valid.map((entry) => {
+          const field = editableField(entry.editKey)!;
+          const table = TABLE_BY_KEY[field.table];
+          const cast = TEXT_ID.has(table) ? "" : "::bigint";
+          return c.query(
+            `update ${table} set ${field.fieldId} = $1 where id = $2${cast}`,
+            [entry.value, entry.recordId],
+          );
+        }),
+      );
     }
     invalidateAll();
     return { ok: true, data: undefined };

@@ -405,6 +405,16 @@ function PortfolioHeader({
           </Stat>
         </dl>
 
+        {totals.pnlExcludedCount > 0 ? (
+          <p className="mt-3 text-[11px] leading-snug text-faint">
+            P&amp;L is measured over positions with a cost basis and a price.{" "}
+            {totals.pnlExcludedCount}{" "}
+            {totals.pnlExcludedCount === 1 ? "position is" : "positions are"} left
+            out — no cost entered or no price — so the figure isn&apos;t softened
+            by the gaps.
+          </p>
+        ) : null}
+
         <div className="mt-6">
           <div className="flex items-baseline justify-between text-xs">
             <span className="text-muted">

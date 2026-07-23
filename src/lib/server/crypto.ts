@@ -259,7 +259,26 @@ export async function getPortfolio(): Promise<Portfolio> {
 
   const sortedByChange = [...movers].sort((a, b) => b.change24hPct - a.change24hPct);
 
-  const pnl = totalValue - totalInvested;
+  // Aggregate P&L is computed ONLY over positions that have BOTH a live/stored
+  // price AND a real cost basis. Otherwise two data gaps quietly flatter the
+  // headline: a coin with value but R0 cost entered would count as pure profit
+  // (softening the loss — which the spec forbids), and an unpriced coin with a
+  // cost would drag P&L down as if the money were lost rather than unknown.
+  // Both are excluded here and their count surfaced so the UI can say so.
+  // Per-coin/-wallet rows still show value − invested directly, where an R0
+  // cost is visible on the row itself and so isn't misleading.
+  const pnlHoldings = holdings.filter((h) => h.valueZar !== null && h.investedZar > 0);
+  const pnlValue = pnlHoldings.reduce((sum, h) => sum + (h.valueZar ?? 0), 0);
+  const pnlInvested = pnlHoldings.reduce((sum, h) => sum + h.investedZar, 0);
+  const pnl = pnlValue - pnlInvested;
+  const pnlPct = pnlInvested > 0 ? (pnl / pnlInvested) * 100 : null;
+  // Positions carrying money that couldn't be included in P&L (no cost, or no
+  // price) — surfaced rather than silently folded in.
+  const pnlExcludedCount = holdings.filter(
+    (h) =>
+      !(h.valueZar !== null && h.investedZar > 0) &&
+      ((h.valueZar ?? 0) > 0 || h.investedZar > 0),
+  ).length;
 
   // 60d/90d: no batched CoinGecko endpoint reaches that far back, so these
   // come from the app's own daily snapshots — as the change in unrealised
@@ -271,7 +290,8 @@ export async function getPortfolio(): Promise<Portfolio> {
       valueZar: totalValue,
       investedZar: totalInvested,
       pnlZar: pnl,
-      pnlPct: totalInvested > 0 ? (pnl / totalInvested) * 100 : null,
+      pnlPct,
+      pnlExcludedCount,
       change24hPct,
       change24hZar,
       windows: {

@@ -207,6 +207,11 @@ async function buildContext(): Promise<string> {
   lines.push(
     `- Total value: ${rand(portfolio.totals.valueZar)}, invested: ${rand(portfolio.totals.investedZar)}, unrealised P&L: ${rand(portfolio.totals.pnlZar)} (${pct(portfolio.totals.pnlPct)})`,
   );
+  if (portfolio.totals.pnlExcludedCount > 0) {
+    lines.push(
+      `- The P&L above is measured only over positions that have a cost basis and a price; ${portfolio.totals.pnlExcludedCount} position(s) are excluded (no cost entered or no price), so it isn't softened by those gaps.`,
+    );
+  }
   if (portfolio.milestoneHits.length > 0) {
     lines.push(
       `- MILESTONE HIT (price has crossed a trigger, not yet actioned): ${portfolio.milestoneHits.map((h) => h.symbol).join(", ")}`,
@@ -246,7 +251,9 @@ async function buildContext(): Promise<string> {
   lines.push("");
   lines.push("## The freedom goal");
   lines.push(`- Target: ${rand(FREEDOM_TARGET_ZAR)} by ${FREEDOM_TARGET_LABEL}`);
-  lines.push(`- Current assets toward it: ${rand(goals.freedom.currentZar)} (${pct(goals.freedom.progressPct)})`);
+  lines.push(
+    `- Progress is measured by NET WORTH (assets minus debt), because the R2m is meant to clear the home loan and debt review. Current: ${rand(goals.freedom.currentZar)} (${pct(goals.freedom.progressPct)}). This can be below zero while debt outweighs assets — don't dress that up.`,
+  );
 
   if (goals.goals.length > 0) {
     lines.push("");

@@ -93,8 +93,12 @@ export async function getGoals(): Promise<GoalsSummary> {
   return {
     freedom: {
       targetZar: FREEDOM_TARGET_ZAR, label: FREEDOM_TARGET_LABEL,
-      currentZar: netWorth.assetsZar,
-      progressPct: (netWorth.assetsZar / FREEDOM_TARGET_ZAR) * 100,
+      // Net worth, not gross assets: the R2m is defined to clear the home loan
+      // and the debt review (~R1.16m), so counting assets while ignoring those
+      // liabilities would report progress the debt hasn't actually made. Net
+      // worth can be negative — progress then reads below zero, honestly.
+      currentZar: netWorth.netZar,
+      progressPct: (netWorth.netZar / FREEDOM_TARGET_ZAR) * 100,
     },
     goals, kids,
     planned: plannedRows.map((r) => ({

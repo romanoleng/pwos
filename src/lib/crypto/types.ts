@@ -101,6 +101,12 @@ export type PortfolioTotals = {
   investedZar: number;
   pnlZar: number;
   pnlPct: number | null;
+  /**
+   * How many positions were left out of the P&L above because they have no
+   * cost basis entered or no available price — so the figure is over the
+   * positions that can honestly be measured, not softened by the gaps.
+   */
+  pnlExcludedCount: number;
   /** Weighted 24h move across holdings that have live prices. */
   change24hPct: number | null;
   change24hZar: number | null;
