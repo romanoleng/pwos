@@ -249,6 +249,23 @@
   bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
 }
 
+/* The Ask button mirrors the + button's vertical position but sits on the
+   LEFT on mobile, so the two never overlap. Horizontal placement (and the
+   desktop move to bottom-right, where the + button is hidden) is Tailwind on
+   the button itself; only the bottom offset lives here, tracking the tab bar
+   exactly as .log-fab does. */
+.ask-fab {
+  bottom: calc(4.5rem + env(safe-area-inset-bottom, 0px));
+}
+[data-nav="top"] .ask-fab {
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+}
+@media (min-width: 768px) {
+  .ask-fab {
+    bottom: 1.5rem;
+  }
+}
+
 /* ≥ md the bar and FAB are hidden and the sidebar takes over — restore the
    desktop paddings (md:px-8 md:py-8) these rules would otherwise outrank. */
 @media (min-width: 768px) {

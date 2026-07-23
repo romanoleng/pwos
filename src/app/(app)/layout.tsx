@@ -1,3 +1,4 @@
+import { AssistantChat } from "@/components/shell/AssistantChat";
 import { BottomTabs } from "@/components/shell/BottomTabs";
 import { LogFab } from "@/components/shell/LogFab";
 import { Sidebar } from "@/components/shell/Sidebar";
@@ -32,6 +33,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         </main>
       </div>
       <LogFab />
+      <AssistantChat />
       <BottomTabs />
     </div>
     </ToastProvider>

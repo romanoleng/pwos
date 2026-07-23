@@ -15,6 +15,7 @@ const SECRET_KEYS = [
   "PRICE_API_KEY",
   "AUTH_SECRET",
   "APP_PASSWORD",
+  "ANTHROPIC_API_KEY",
 ] as const;
 
 /**
@@ -85,6 +86,13 @@ export const env = {
   /** Optional — CoinGecko's public tier works for V1. */
   get priceApiKey(): string | undefined {
     return read("PRICE_API_KEY");
+  },
+  /**
+   * Optional — powers the in-app "Ask" assistant. Absent on a fresh clone, so
+   * the assistant degrades to a friendly "not set up yet" rather than 500ing.
+   */
+  get anthropicApiKey(): string | undefined {
+    return read("ANTHROPIC_API_KEY");
   },
 };
 

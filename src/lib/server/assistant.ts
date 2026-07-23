@@ -1,0 +1,195 @@
+/**
+ * The in-app "Ask" assistant (Tier-1, read-only).
+ *
+ * This is the first, deliberately small step toward the wealth-OS vision: an
+ * assistant that understands *this* person's money and answers questions about
+ * it in plain language. V1 is read-only by construction — see the guardrails.
+ *
+ * Guardrails (why this can't leak the backend or mutate anything):
+ *  1. NO tools are passed to the model. Read-only isn't a policy the model is
+ *     asked to honour — it physically has no way to call anything, so it cannot
+ *     write to the database or reach any external system. It can only talk.
+ *  2. The prompt carries a *compact financial snapshot* — the same figures the
+ *     screens already show — never secrets, connection strings, table names,
+ *     column ids, or env vars. There is nothing backend-shaped in the context
+ *     for it to reveal.
+ *  3. The system prompt scopes it hard to Romano's PWOS finances and tells it
+ *     to decline anything else (code, the app's internals, general chit-chat).
+ *  4. The route that calls this is behind the same auth gate as every other
+ *     `/api/` route (src/proxy.ts), so only the signed-in user reaches it.
+ */
+import "server-only";
+
+import Anthropic from "@anthropic-ai/sdk";
+
+import { FREEDOM_TARGET_LABEL, FREEDOM_TARGET_ZAR } from "@/lib/constants";
+
+import { getBudgetSummary } from "./budget";
+import { getDebtSummary } from "./debt";
+import { env } from "./env";
+import { getGoals } from "./goals";
+import { getHome } from "./home";
+import { getNetWorth } from "./networth";
+
+/** A single turn in the conversation. Only these two roles are ever accepted. */
+export type AssistantTurn = { role: "user" | "assistant"; content: string };
+
+export class AssistantNotConfiguredError extends Error {
+  constructor() {
+    super("The assistant isn't set up yet — ANTHROPIC_API_KEY is missing.");
+    this.name = "AssistantNotConfiguredError";
+  }
+}
+
+/** en-ZA rand, no cents — matches how figures read across the app. */
+function rand(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return "unknown";
+  return new Intl.NumberFormat("en-ZA", {
+    style: "currency",
+    currency: "ZAR",
+    maximumFractionDigits: 0,
+  }).format(value);
+}
+
+function pct(value: number | null | undefined): string {
+  if (value === null || value === undefined || Number.isNaN(value)) return "unknown";
+  return `${value.toFixed(1)}%`;
+}
+
+/**
+ * The financial snapshot the model reasons over. Deliberately built from the
+ * same summary functions the screens use, so the assistant can never be more
+ * (or less) informed than what Romano sees. Plain figures only — nothing that
+ * describes the backend.
+ */
+async function buildContext(): Promise<string> {
+  const [home, budget, netWorth, debt, goals] = await Promise.all([
+    getHome("cycle"),
+    getBudgetSummary(),
+    getNetWorth(),
+    getDebtSummary(),
+    getGoals(),
+  ]);
+
+  const lines: string[] = [];
+
+  lines.push("## Available to spend right now");
+  lines.push(`- Spendable (reachable cash): ${rand(home.available.spendableZar)}`);
+  lines.push(`- Total cash across accounts: ${rand(home.available.totalCashZar)}`);
+
+  lines.push("");
+  lines.push("## Accounts");
+  for (const card of home.cards) {
+    const bal = card.balanceZar === null ? "not recorded" : rand(card.balanceZar);
+    lines.push(`- ${card.label} (${card.kind}${card.spendable ? ", spendable" : ""}): ${bal}`);
+  }
+
+  lines.push("");
+  lines.push("## This budget cycle");
+  lines.push(`- Cycle: ${home.budget.cycleStart} to ${home.budget.cycleEnd}, ${home.budget.daysLeft} days left`);
+  lines.push(`- Budgeted: ${rand(budget.totals.budgetedZar)}, spent: ${rand(budget.totals.actualZar)}, remaining: ${rand(budget.totals.remainingZar)}`);
+  if (home.budget.dailyAllowanceZar !== null) {
+    lines.push(`- Per-day allowance for the rest of the cycle: ${rand(home.budget.dailyAllowanceZar)}`);
+  }
+  lines.push(`- Income this cycle: ${rand(budget.totals.incomeZar)}`);
+  if (budget.lines.length > 0) {
+    lines.push("- By category (spent / budgeted):");
+    for (const line of budget.lines) {
+      lines.push(`  - ${line.category}: ${rand(line.actualZar)} / ${rand(line.budgetedZar)}`);
+    }
+  }
+  if (budget.unbudgetedZar > 0) {
+    lines.push(`- Spent outside any budget line: ${rand(budget.unbudgetedZar)}`);
+  }
+
+  lines.push("");
+  lines.push("## Net worth (derived live)");
+  lines.push(`- Assets: ${rand(netWorth.assetsZar)}, liabilities: ${rand(netWorth.liabilitiesZar)}, net: ${rand(netWorth.netZar)}`);
+  lines.push("- Assets by class:");
+  for (const cls of netWorth.classes) {
+    lines.push(`  - ${cls.category}: ${rand(cls.valueZar)}${cls.live ? " (live)" : ""}`);
+  }
+
+  lines.push("");
+  lines.push("## Debt");
+  lines.push(`- Total owed: ${rand(debt.totalZar)}, monthly commitment: ${rand(debt.monthlyZar)}`);
+  if (debt.estimatedZar > 0) {
+    lines.push(`- Of which estimated (not statement figures): ${rand(debt.estimatedZar)}`);
+  }
+  if (debt.duplicates.length > 0) {
+    lines.push(`- ${debt.duplicates.length} possible duplicate debt(s) flagged — not yet confirmed or merged.`);
+  }
+  for (const row of debt.rows) {
+    const est = row.balanceEstimated ? " (estimated)" : "";
+    lines.push(`  - ${row.name}: ${rand(row.balanceZar)}${est}, ${rand(row.monthlyZar)}/mo`);
+  }
+
+  lines.push("");
+  lines.push("## The freedom goal");
+  lines.push(`- Target: ${rand(FREEDOM_TARGET_ZAR)} by ${FREEDOM_TARGET_LABEL}`);
+  lines.push(`- Current assets toward it: ${rand(goals.freedom.currentZar)} (${pct(goals.freedom.progressPct)})`);
+
+  if (goals.goals.length > 0) {
+    lines.push("");
+    lines.push("## Savings goals");
+    for (const goal of goals.goals) {
+      const target = goal.targetZar ? ` / ${rand(goal.targetZar)}` : "";
+      lines.push(`- ${goal.name}: ${rand(goal.currentZar)}${target}, ${rand(goal.monthlyZar)}/mo`);
+    }
+  }
+
+  if (home.recent.length > 0) {
+    lines.push("");
+    lines.push("## Recent transactions");
+    for (const t of home.recent) {
+      const cat = t.category ? ` [${t.category}]` : "";
+      lines.push(`- ${t.date ?? "—"}: ${t.description}${cat} ${rand(t.amountZar)} (${t.type})`);
+    }
+  }
+
+  return lines.join("\n");
+}
+
+const SYSTEM_PREAMBLE = `You are the assistant inside PWOS, Romano's private Personal Wealth Operating System — a South African personal-finance app. You help Romano understand his own money.
+
+Rules:
+- Answer ONLY using the financial snapshot below. It is Romano's real, current data.
+- You are read-only. You cannot change anything, log transactions, or take actions — if asked to, explain that this version can only answer questions, and tell him which screen to use (e.g. "tap the + button to log a spend").
+- Stay strictly on Romano's personal finances: his budget, spending, accounts, debt, savings, net worth, crypto, and the R2,000,000 freedom goal. Politely decline anything unrelated — coding, the app's internals or how it's built, general knowledge, or other people's finances.
+- Never discuss or speculate about the app's technical implementation, databases, servers, code, or configuration. You don't have that information and it isn't your job.
+- Money is in South African rand (ZAR). Use the en-ZA format, e.g. R1 234. Amounts are shown without cents.
+- Be concise, warm and direct — like a sharp financial coach texting back. Short paragraphs or tight bullet points. Lead with the answer.
+- If the snapshot doesn't contain what's needed to answer, say so plainly rather than guessing. Don't invent figures.
+- The goal is the freedom number: R2,000,000 by February 2028, which clears the home loan and debt. When it helps, connect his question back to that.
+
+Here is Romano's current financial snapshot:
+
+`;
+
+/**
+ * Ask the assistant a question. `history` is the running conversation (oldest
+ * first); the latest user turn must be last. Returns the assistant's reply text.
+ *
+ * No `tools` array is passed — that's the read-only guarantee, not a request.
+ */
+export async function askAssistant(history: AssistantTurn[]): Promise<string> {
+  const apiKey = env.anthropicApiKey;
+  if (!apiKey) throw new AssistantNotConfiguredError();
+
+  const context = await buildContext();
+  const client = new Anthropic({ apiKey });
+
+  const message = await client.messages.create({
+    model: "claude-opus-4-8",
+    max_tokens: 1024,
+    system: SYSTEM_PREAMBLE + context,
+    messages: history.map((turn) => ({ role: turn.role, content: turn.content })),
+  });
+
+  // Concatenate the text blocks; a read-only reply is text only, but be tolerant.
+  return message.content
+    .filter((block): block is Anthropic.TextBlock => block.type === "text")
+    .map((block) => block.text)
+    .join("")
+    .trim();
+}

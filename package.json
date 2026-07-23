@@ -11,6 +11,7 @@
     "backup": "node scripts/backup.mjs"
   },
   "dependencies": {
+    "@anthropic-ai/sdk": "^0.113.0",
     "@neondatabase/serverless": "^1.1.0",
     "jose": "^6.2.3",
     "lucide-react": "^1.25.0",
