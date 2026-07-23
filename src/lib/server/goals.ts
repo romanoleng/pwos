@@ -55,7 +55,7 @@ export async function getGoals(): Promise<GoalsSummary> {
     sql<{ id: string; account: string; child: string | null; institution: string | null;
           account_type: string | null; balance_zar: string; monthly_zar: string }>`
       select id::text, account, child, institution, account_type, balance_zar, monthly_zar
-      from kids_accounts order by child, monthly_zar desc, balance_zar desc`,
+      from kids_accounts where not archived order by child, monthly_zar desc, balance_zar desc`,
     getNetWorth(),
     sql<{ id: string; category: string; budgeted_zar: string; actual_zar: string }>`
       select b.id::text, b.category, b.budgeted_zar,

@@ -43,19 +43,14 @@ const POTS: Pot[] = [
   { id: "sav-iphone-20", label: "iPhone 20", entity: "personal", balance: 0.00, bank: "GOtyme" },
 ];
 
-// The kids' own pots — kept OUT of Romano's net worth (kids_accounts).
-const KIDS = [
-  { account: "Lisa Savings", child: "Lisa", balance: 0.00 },
-  { account: "Liam Savings", child: "Liam", balance: 1.22 },
-];
-
 export async function loadBankSavings(): Promise<MutationResult<{ accounts: number }>> {
   try {
     await ensureInstitutionColumn();
 
-    // Archive-current + upsert-new + add-kids, all in ONE transaction so it
-    // can't half-apply. The kids inserts are guarded so a re-run won't
-    // duplicate them.
+    // Archive-current + upsert-new, in ONE transaction so it can't half-apply.
+    // Lisa & Liam are NOT given savings pots here — they only have their
+    // Capitec cash cards; their investments are managed separately (Romano's
+    // correction, 2026-07-24).
     await atomic((c) => [
       c.query(`update accounts set archived = true where kind = 'savings' and not archived`, []),
       ...POTS.map((p) =>
@@ -67,14 +62,6 @@ export async function loadBankSavings(): Promise<MutationResult<{ accounts: numb
                  spendable = excluded.spendable, balance_zar = excluded.balance_zar,
                  institution = excluded.institution, archived = false`,
           [p.id, p.label, p.entity, p.balance, p.bank],
-        ),
-      ),
-      ...KIDS.map((k) =>
-        c.query(
-          `insert into kids_accounts (account, child, institution, account_type, balance_zar)
-           select $1, $2, 'Capitec', 'Savings', $3
-           where not exists (select 1 from kids_accounts where account = $1 and child = $2)`,
-          [k.account, k.child, k.balance],
         ),
       ),
     ]);

@@ -163,7 +163,7 @@ export async function getHome(
     sql<{ name: string; kind: string }>`
       select name, kind::text from categories order by kind, sort_order, name`,
     sql<{ id: string; child: string | null; account: string }>`
-      select id::text, child, account from kids_accounts order by child, account`,
+      select id::text, child, account from kids_accounts where not archived order by child, account`,
   ]);
 
   const cycle = await getCurrentCycle();
