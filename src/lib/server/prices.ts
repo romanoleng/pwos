@@ -248,3 +248,17 @@ export async function getPrices(ids: string[]): Promise<PriceSnapshot> {
 export function invalidatePriceCache(): void {
   cache = null;
 }
+
+/**
+ * Live ZAR per USD, derived from a coin priced in both currencies — the same
+ * trick the snapshot writer uses, without a separate FX provider. Bitcoin is
+ * the probe because it is always covered. Null when upstream is down; callers
+ * must then refuse to convert rather than guess a rate.
+ */
+export async function getZarPerUsd(): Promise<number | null> {
+  const snapshot = await getPrices(["bitcoin"]);
+  const btc = snapshot.prices.get("bitcoin");
+  if (!btc || btc.usd <= 0) return null;
+  const rate = btc.zar / btc.usd;
+  return Number.isFinite(rate) && rate > 0 ? rate : null;
+}

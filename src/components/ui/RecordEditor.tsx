@@ -36,7 +36,12 @@ export function RecordEditor({
     setError(null);
 
     const input: Record<string, unknown> = {};
-    for (const field of type.fields) input[field.name] = formData.get(field.name);
+    for (const field of type.fields) {
+      input[field.name] = formData.get(field.name);
+      if (field.currencyToggle) {
+        input[`${field.name}__currency`] = formData.get(`${field.name}__currency`);
+      }
+    }
 
     const result = await createRecord(kind, input);
     setSaving(false);
@@ -48,7 +53,14 @@ export function RecordEditor({
 
     onClose();
     onSaved();
-    toast.show({ message: `${result.data.label} added`, tone: "success" });
+    // The note carries the conversion receipt ($4 → R72,10 at R18,03/$), so
+    // a dollar entry never turns into a rand figure silently.
+    toast.show({
+      message: result.data.note
+        ? `${result.data.label} added · ${result.data.note}`
+        : `${result.data.label} added`,
+      tone: "success",
+    });
   }
 
   return (
@@ -107,12 +119,36 @@ export function RecordEditor({
                 ))}
               </select>
             ) : field.kind === "currency" ? (
-              <AmountInput
-                name={field.name}
-                required={field.required}
-                placeholder={field.placeholder ?? "0,00"}
-                allowNegative={field.allowNegative}
-              />
+              field.currencyToggle ? (
+                // Unit picker: dollars convert to rands server-side at the
+                // live rate on save. The stored value is always ZAR.
+                <div className="flex items-stretch gap-1.5">
+                  <div className="min-w-0 flex-1">
+                    <AmountInput
+                      name={field.name}
+                      required={field.required}
+                      placeholder={field.placeholder ?? "0,00"}
+                      allowNegative={field.allowNegative}
+                    />
+                  </div>
+                  <select
+                    name={`${field.name}__currency`}
+                    defaultValue="ZAR"
+                    aria-label={`${field.label} currency`}
+                    className="mt-1.5 h-10 shrink-0 rounded-lg border border-line bg-surface-2 px-2 text-base outline-none focus:border-accent sm:text-sm"
+                  >
+                    <option value="ZAR">R</option>
+                    <option value="USD">$</option>
+                  </select>
+                </div>
+              ) : (
+                <AmountInput
+                  name={field.name}
+                  required={field.required}
+                  placeholder={field.placeholder ?? "0,00"}
+                  allowNegative={field.allowNegative}
+                />
+              )
             ) : (
               <input
                 name={field.name}

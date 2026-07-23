@@ -2,8 +2,10 @@
 
 import { revalidateTag } from "next/cache";
 
+import { parseAmount } from "@/lib/amount";
 import { recordType, slugify, validateRecord } from "@/lib/records";
 import { query, sql } from "@/lib/server/db";
+import { getZarPerUsd } from "@/lib/server/prices";
 
 import type { MutationResult } from "./holdings";
 
@@ -25,9 +27,30 @@ function invalidate(tags: string[]): void {
 export async function createRecord(
   kind: string,
   input: Record<string, unknown>,
-): Promise<MutationResult<{ recordId: string; label: string }>> {
+): Promise<MutationResult<{ recordId: string; label: string; note?: string }>> {
   const type = recordType(kind);
   if (!type) return { ok: false, error: "That kind of record can't be added here." };
+
+  // A currency field with a unit picker may arrive in dollars (the Tangem
+  // Visa's $4 float). Convert HERE, at the live rate, before validation — the
+  // stored value is always ZAR. No rate, no guess: the save is refused.
+  let note: string | undefined;
+  for (const field of type.fields) {
+    if (!field.currencyToggle) continue;
+    if (input[`${field.name}__currency`] !== "USD") continue;
+    const usd = parseAmount(input[field.name] as string | number | null);
+    if (usd === null) continue; // blank or invalid — validateRecord decides
+    const rate = await getZarPerUsd();
+    if (rate === null) {
+      return {
+        ok: false,
+        error: "Couldn't fetch a USD rate right now — enter the rand amount instead.",
+      };
+    }
+    const zar = Math.round(usd * rate * 100) / 100;
+    input[field.name] = zar;
+    note = `$${usd} → R${zar.toFixed(2)} at R${rate.toFixed(2)}/$`;
+  }
 
   const validated = validateRecord(type, input);
   if ("error" in validated) return { ok: false, error: validated.error };
@@ -60,7 +83,7 @@ export async function createRecord(
     );
 
     invalidate(type.invalidates);
-    return { ok: true, data: { recordId: inserted[0].id, label } };
+    return { ok: true, data: { recordId: inserted[0].id, label, note } };
   } catch (error) {
     console.error("[createRecord]", kind, error);
     const message = error instanceof Error ? error.message : "Couldn't add it.";

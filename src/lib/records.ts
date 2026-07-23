@@ -34,6 +34,12 @@ export type RecordField = {
   placeholder?: string;
   /** Currency fields only: may start below zero (an account in arrears). */
   allowNegative?: boolean;
+  /**
+   * Currency fields only: offer a ZAR/USD unit picker. A dollar figure is
+   * converted to rands at the live rate WHEN SAVED — the stored value is ZAR
+   * and does not track the exchange rate afterwards.
+   */
+  currencyToggle?: boolean;
 };
 
 export type RecordType = {
@@ -68,7 +74,8 @@ export const RECORD_TYPES: Record<RecordKind, RecordType> = {
       },
       {
         name: "balance_zar", label: "Balance", kind: "currency",
-        hint: MONEY_HINT, allowNegative: true,
+        hint: `${MONEY_HINT} Dollars convert to rands at today's rate when you save.`,
+        allowNegative: true, currencyToggle: true,
       },
       {
         // Until 2026-07-23 this flag only existed in the database, so a new
