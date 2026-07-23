@@ -41,6 +41,44 @@ export class AssistantNotConfiguredError extends Error {
   }
 }
 
+/**
+ * A failure with a message safe to show Romano. Carries a short, actionable
+ * reason (invalid key, no model access, out of credit) rather than a blank
+ * "try again" — this is a private single-user app, so a named cause costs far
+ * less to fix than a silent one.
+ */
+export class AssistantReplyError extends Error {
+  constructor(readonly userMessage: string) {
+    super(userMessage);
+    this.name = "AssistantReplyError";
+  }
+}
+
+/** Turn an SDK/API failure into something Romano can act on. */
+function describeApiError(error: unknown): string {
+  if (error instanceof Anthropic.APIError) {
+    const status = error.status;
+    if (status === 401) {
+      return "Your Claude API key was rejected. Check ANTHROPIC_API_KEY in Vercel — it may be mistyped or from the wrong account.";
+    }
+    if (status === 403) {
+      return "That Claude API key doesn't have access to this model. Check the key's permissions at console.anthropic.com.";
+    }
+    if (status === 404) {
+      return "The assistant's model isn't available on your account. This usually means the account needs model access enabled.";
+    }
+    if (status === 429) {
+      return "You're out of Claude API credit or hitting a rate limit. Add credit at console.anthropic.com → Billing, then try again.";
+    }
+    if (status === 400) {
+      return `The request was rejected: ${error.message}`;
+    }
+    return `Claude API error (${status ?? "network"}): ${error.message}`;
+  }
+  if (error instanceof Error) return error.message;
+  return "Unknown error.";
+}
+
 /** en-ZA rand, no cents — matches how figures read across the app. */
 function rand(value: number | null | undefined): string {
   if (value === null || value === undefined || Number.isNaN(value)) return "unknown";
@@ -176,15 +214,32 @@ export async function askAssistant(history: AssistantTurn[]): Promise<string> {
   const apiKey = env.anthropicApiKey;
   if (!apiKey) throw new AssistantNotConfiguredError();
 
-  const context = await buildContext();
-  const client = new Anthropic({ apiKey });
+  // Assembling the snapshot and calling the model are separate failure modes.
+  // Keep them apart so a stumbling upstream (e.g. a slow price feed) can't be
+  // misreported as an API-key problem, and vice versa.
+  let context: string;
+  try {
+    context = await buildContext();
+  } catch (error) {
+    console.error("[assistant] context build failed", error);
+    throw new AssistantReplyError(
+      "Couldn't read your latest figures just now. Try again in a moment.",
+    );
+  }
 
-  const message = await client.messages.create({
-    model: "claude-opus-4-8",
-    max_tokens: 1024,
-    system: SYSTEM_PREAMBLE + context,
-    messages: history.map((turn) => ({ role: turn.role, content: turn.content })),
-  });
+  const client = new Anthropic({ apiKey });
+  let message: Anthropic.Message;
+  try {
+    message = await client.messages.create({
+      model: "claude-opus-4-8",
+      max_tokens: 1024,
+      system: SYSTEM_PREAMBLE + context,
+      messages: history.map((turn) => ({ role: turn.role, content: turn.content })),
+    });
+  } catch (error) {
+    console.error("[assistant] model call failed", error);
+    throw new AssistantReplyError(describeApiError(error));
+  }
 
   // Concatenate the text blocks; a read-only reply is text only, but be tolerant.
   return message.content

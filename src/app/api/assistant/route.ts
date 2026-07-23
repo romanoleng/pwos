@@ -3,6 +3,7 @@ import { NextResponse, type NextRequest } from "next/server";
 import {
   askAssistant,
   AssistantNotConfiguredError,
+  AssistantReplyError,
   type AssistantTurn,
 } from "@/lib/server/assistant";
 
@@ -67,6 +68,12 @@ export async function POST(request: NextRequest) {
         },
         { status: 503 },
       );
+    }
+    if (error instanceof AssistantReplyError) {
+      // A named, actionable reason (bad key, no credit, no model access) — this
+      // is a private single-user app, so the specific cause is safe to show and
+      // saves a trip to the server logs.
+      return NextResponse.json({ error: error.userMessage }, { status: 502 });
     }
     console.error("[assistant]", error);
     return NextResponse.json(
