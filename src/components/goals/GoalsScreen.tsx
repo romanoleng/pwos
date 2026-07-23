@@ -1,5 +1,7 @@
 "use client";
 
+import { Plus } from "lucide-react";
+import { useState } from "react";
 import useSWR from "swr";
 
 import { LoadingCard } from "@/components/ui/LoadingCard";
@@ -9,6 +11,8 @@ import { EditableAmount } from "@/components/ui/EditableAmount";
 import { EditableName } from "@/components/ui/EditableName";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money } from "@/components/ui/Money";
+import { RecordEditor } from "@/components/ui/RecordEditor";
+import type { RecordKind } from "@/lib/records";
 import { formatDate } from "@/lib/format";
 import { isKidInvestment } from "@/lib/kids";
 import type { GoalsSummary } from "@/lib/server/goals";
@@ -28,6 +32,8 @@ export function GoalsScreen() {
     "/api/home?period=cycle",
     (url: string) => fetch(url).then((r) => r.json()),
   );
+  const [adding, setAdding] = useState<RecordKind | null>(null);
+
   if (error) return <Card><CardBody className="text-sm text-loss">Couldn&apos;t load goals.</CardBody></Card>;
   if (!data) return <LoadingCard rows={3} />;
 
@@ -137,6 +143,24 @@ export function GoalsScreen() {
             ))}
           </ul>
         )}
+        <div className="flex flex-wrap gap-2 border-t border-line px-4 py-3">
+          <button
+            type="button"
+            onClick={() => setAdding("goal")}
+            className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium hover:bg-surface-2"
+          >
+            <Plus size={13} strokeWidth={2} />
+            Goal
+          </button>
+          <button
+            type="button"
+            onClick={() => setAdding("account")}
+            className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium hover:bg-surface-2"
+          >
+            <Plus size={13} strokeWidth={2} />
+            Savings account
+          </button>
+        </div>
       </CollapsibleSection>
 
       <CollapsibleSection
@@ -178,6 +202,16 @@ export function GoalsScreen() {
             ))}
           </ul>
         )}
+        <div className="flex border-t border-line px-4 py-3">
+          <button
+            type="button"
+            onClick={() => setAdding("kidAccount")}
+            className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium hover:bg-surface-2"
+          >
+            <Plus size={13} strokeWidth={2} />
+            Kid&apos;s account
+          </button>
+        </div>
       </CollapsibleSection>
 
       <p className="text-[11px] leading-relaxed text-faint">
@@ -185,6 +219,15 @@ export function GoalsScreen() {
         where a pot sits, e.g. &ldquo;GOtyme · Big Emergency&rdquo;. The trash
         icon archives (never deletes); everything can be undone.
       </p>
+
+      {adding ? (
+        <RecordEditor
+          open
+          kind={adding}
+          onClose={() => setAdding(null)}
+          onSaved={refresh}
+        />
+      ) : null}
     </div>
   );
 }

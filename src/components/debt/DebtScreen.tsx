@@ -1,13 +1,16 @@
 "use client";
 
-import { AlertTriangle, ChevronDown } from "lucide-react";
+import { AlertTriangle, ChevronDown, Plus } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
 
 import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { DeleteRecordButton } from "@/components/ui/DeleteRecordButton";
 import { EditableAmount } from "@/components/ui/EditableAmount";
+import { EditableName } from "@/components/ui/EditableName";
 import { Money } from "@/components/ui/Money";
+import { RecordEditor } from "@/components/ui/RecordEditor";
 import { payoffOrder, type DebtSummary } from "@/lib/debt";
 import { formatDate, formatPercent } from "@/lib/format";
 
@@ -20,6 +23,7 @@ async function fetcher(url: string): Promise<DebtSummary> {
 export function DebtScreen() {
   const { data, error, mutate } = useSWR<DebtSummary>("/api/debt", fetcher);
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
 
   if (error) {
     return (
@@ -108,6 +112,16 @@ export function DebtScreen() {
         <CardHeader
           title="Payoff order"
           description="Highest interest first; ties broken by smallest balance."
+          action={
+            <button
+              type="button"
+              onClick={() => setAdding(true)}
+              className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium hover:bg-surface-2"
+            >
+              <Plus size={13} strokeWidth={2} />
+              Add
+            </button>
+          }
         />
         <ul className="divide-y divide-line">
           {ordered.map((row) => {
@@ -152,6 +166,16 @@ export function DebtScreen() {
             {open ? (
               <div className="space-y-2.5 border-t border-line bg-bg/40 px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-faint">Name</span>
+                  <EditableName
+                    kind="debt"
+                    recordId={row.recordId}
+                    value={row.name}
+                    onSaved={refresh}
+                    className="text-sm font-medium"
+                  />
+                </div>
+                <div className="flex items-center justify-between gap-3">
                   <span className="text-[11px] text-faint">Outstanding balance</span>
                   <EditableAmount
                     editKey="debt.balance"
@@ -171,6 +195,15 @@ export function DebtScreen() {
                     className="text-sm"
                   />
                 </div>
+                <div className="flex justify-end">
+                  <DeleteRecordButton
+                    kind="debt"
+                    recordId={row.recordId}
+                    label={row.name}
+                    onDone={refresh}
+                    className="border border-line"
+                  />
+                </div>
               </div>
             ) : null}
             </li>
@@ -180,9 +213,18 @@ export function DebtScreen() {
       </Card>
 
       <p className="text-[11px] text-faint">
-        Tap any balance or monthly figure to edit it. Changes save immediately and can
-        be undone.
+        Tap a debt to edit its balance, monthly payment or name. Changes save
+        immediately and can be undone.
       </p>
+
+      {adding ? (
+        <RecordEditor
+          open
+          kind="debt"
+          onClose={() => setAdding(false)}
+          onSaved={() => void mutate()}
+        />
+      ) : null}
     </div>
   );
 }
