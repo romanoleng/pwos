@@ -299,10 +299,20 @@ export async function createCategory(input: {
   if (name.length > 60) return { ok: false, error: "That name is too long." };
 
   try {
-    const existing = await sql<{ name: string }>`
-      select name from categories where lower(name) = ${name.toLowerCase()}`;
+    const existing = await sql<{ name: string; kind: string; archived: boolean }>`
+      select name, kind::text, archived from categories where lower(name) = ${name.toLowerCase()}`;
     if (existing.length > 0) {
-      return { ok: false, error: `${existing[0].name} already exists.` };
+      const it = existing[0];
+      // A name can only exist once across all kinds, so a collision with a
+      // DIFFERENT kind is the usual "it says it exists but I can't find it when
+      // logging" confusion — the log picker only shows the kind you're logging.
+      // Spell out why rather than a bare "already exists".
+      const reason = it.archived
+        ? `"${it.name}" already exists but is archived — restore it in Settings › Categories.`
+        : it.kind !== input.kind
+          ? `"${it.name}" already exists as a ${it.kind} category, so it only shows when you log a ${it.kind}. Use a different name for an ${input.kind} line, or change its kind in Settings › Categories.`
+          : `"${it.name}" already exists.`;
+      return { ok: false, error: reason };
     }
 
     // Sort new categories to the end rather than renumbering existing ones.
