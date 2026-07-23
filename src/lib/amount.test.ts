@@ -40,6 +40,13 @@ describe("parseAmount", () => {
 
   it("handles negatives", () => {
     assert.equal(parseAmount("-50,50"), -50.5);
+    // An account in arrears (the ABSA card): sign and symbol in either order,
+    // and the Unicode minus some keyboards emit.
+    assert.equal(parseAmount("-150"), -150);
+    assert.equal(parseAmount("-R150"), -150);
+    assert.equal(parseAmount("R-150"), -150);
+    assert.equal(parseAmount("−150"), -150);
+    assert.equal(parseAmount("-1 234,56"), -1234.56);
   });
 
   it("returns null rather than guessing at nonsense", () => {

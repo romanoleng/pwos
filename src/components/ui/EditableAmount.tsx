@@ -79,27 +79,58 @@ export function EditableAmount({
 
   if (!field) return <Money value={value ?? 0} variant={variant} className={className} />;
 
+  // Fields without a floor may go negative — an account in arrears is a real
+  // balance. The phone's decimal keypad has no minus key at all, so the sign
+  // needs its own button; desktop can also just type "-".
+  const allowsNegative = field.min === undefined || field.min < 0;
+
   if (editing) {
     return (
-      <input
-        autoFocus
-        type="text"
-        inputMode="decimal"
-        pattern="[0-9\s.,\-Rr]*"
-        value={draft}
-        disabled={saving}
-        onChange={(event) => setDraft(event.target.value)}
-        onBlur={commit}
-        onKeyDown={(event) => {
-          if (event.key === "Enter") {
-            event.preventDefault();
-            void commit();
-          }
-          if (event.key === "Escape") setEditing(false);
-        }}
-        aria-label={field.label}
-        className="tnum h-8 w-28 rounded border border-accent bg-surface-2 px-1.5 text-right text-base outline-none sm:h-7 sm:text-sm"
-      />
+      <span className="inline-flex items-center gap-1">
+        {allowsNegative ? (
+          <button
+            type="button"
+            aria-label="Flip sign"
+            title="Flip sign"
+            // preventDefault keeps focus in the input, so tapping this
+            // doesn't fire the blur-commit with the old sign.
+            onPointerDown={(event) => event.preventDefault()}
+            onClick={() =>
+              setDraft((current) =>
+                current.trim().startsWith("-")
+                  ? current.replace("-", "")
+                  : `-${current.trim() || ""}`,
+              )
+            }
+            className={`h-8 w-7 shrink-0 rounded border text-sm sm:h-7 ${
+              draft.trim().startsWith("-")
+                ? "border-loss/50 bg-loss/10 text-loss"
+                : "border-line text-muted hover:border-line-2 hover:text-ink"
+            }`}
+          >
+            ±
+          </button>
+        ) : null}
+        <input
+          autoFocus
+          type="text"
+          inputMode="decimal"
+          pattern="[0-9\s.,\-Rr]*"
+          value={draft}
+          disabled={saving}
+          onChange={(event) => setDraft(event.target.value)}
+          onBlur={commit}
+          onKeyDown={(event) => {
+            if (event.key === "Enter") {
+              event.preventDefault();
+              void commit();
+            }
+            if (event.key === "Escape") setEditing(false);
+          }}
+          aria-label={field.label}
+          className="tnum h-8 w-28 rounded border border-accent bg-surface-2 px-1.5 text-right text-base outline-none sm:h-7 sm:text-sm"
+        />
+      </span>
     );
   }
 

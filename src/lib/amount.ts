@@ -28,7 +28,11 @@ export function parseAmount(input: string | number | null | undefined): number |
   if (input === null || input === undefined) return null;
 
   // Strip spaces of every kind, including the non-breaking ones Intl emits.
-  const text = input.replace(/[\s  ]/g, "").replace(/^R/i, "");
+  // \u2212 is the Unicode minus some keyboards and Intl emit; the currency
+  // symbol may sit either side of the sign (-R150 and R-150 both occur when
+  // an arrears balance is typed or pasted).
+  const text = input.replace(/[\s  ]/g, "").replace(/\u2212/g, "-")
+    .replace(/^(-?)R/i, "$1");
   if (text === "") return null;
 
   const lastComma = text.lastIndexOf(",");
