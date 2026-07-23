@@ -28,16 +28,14 @@ export function AssistantChat() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
-  const inputRef = useRef<HTMLInputElement>(null);
 
-  // Keep the newest message in view and, when the panel opens, land the cursor
-  // in the box so a question can be typed straight away.
+  // Keep the newest message in view. We deliberately do NOT auto-focus the
+  // input on open: like WhatsApp, opening the chat shows the whole thread with
+  // the input bar resting at the bottom, and the keyboard only rises when the
+  // bar is tapped — so the conversation is readable before you commit to typing.
   useEffect(() => {
     if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
   }, [turns, busy]);
-  useEffect(() => {
-    if (open) inputRef.current?.focus();
-  }, [open]);
 
   async function send() {
     const text = draft.trim();
@@ -136,7 +134,6 @@ export function AssistantChat() {
               }}
             >
               <input
-                ref={inputRef}
                 value={draft}
                 onChange={(e) => setDraft(e.target.value)}
                 placeholder="Ask about your money…"
