@@ -4,6 +4,7 @@ import { ChevronDown, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
+import { loadEasyCryptoBuys } from "@/app/actions/loadCryptoBuys";
 import { CoinSheet } from "@/components/crypto/CoinSheet";
 import { LiveIndicator } from "@/components/crypto/LiveIndicator";
 import { PortfolioChart } from "@/components/crypto/PortfolioChart";
@@ -14,6 +15,7 @@ import { MilestoneLadder } from "@/components/crypto/MilestoneLadder";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money, Percent, Sensitive } from "@/components/ui/Money";
+import { useToast } from "@/components/ui/Toast";
 import { FREEDOM_TARGET_ZAR } from "@/lib/constants";
 import type { ChangeWindowKey, Holding, MoverWindowKey, Portfolio } from "@/lib/crypto/types";
 import {
@@ -45,6 +47,8 @@ async function fetcher(url: string): Promise<Portfolio> {
 
 export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
   const { mutate } = useSWRConfig();
+  const toast = useToast();
+  const [loadingBuys, setLoadingBuys] = useState(false);
   const [editor, setEditor] = useState<
     { kind: "edit"; holding: Holding } | { kind: "add"; wallet?: string } | null
   >(null);
@@ -142,6 +146,25 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
       <PortfolioChart totals={data.totals} />
 
       <div className="flex flex-wrap justify-end gap-2">
+        <button
+          type="button"
+          disabled={loadingBuys}
+          onClick={async () => {
+            setLoadingBuys(true);
+            const result = await loadEasyCryptoBuys();
+            setLoadingBuys(false);
+            if (result.ok) {
+              refresh();
+              toast.show({ message: `Logged ${result.data.count} EasyCrypto buys`, tone: "success" });
+            } else {
+              toast.show({ message: result.error, tone: "error" });
+            }
+          }}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[11px] text-muted transition-colors hover:border-line-2 hover:text-ink disabled:opacity-60"
+        >
+          <Plus size={13} strokeWidth={1.75} />
+          {loadingBuys ? "Logging…" : "Log my EasyCrypto buys"}
+        </button>
         <button
           type="button"
           onClick={() => setEditor({ kind: "add" })}
