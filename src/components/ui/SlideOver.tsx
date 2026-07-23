@@ -31,11 +31,22 @@ export function SlideOver({
 }) {
   const panelRef = useRef<HTMLDivElement>(null);
 
+  // Latest onClose without making the open-effect depend on it. Callers pass an
+  // inline arrow (e.g. the logger's `() => { reset(); onClose(); }`), which is a
+  // new function every render — if the focus effect below depended on it, every
+  // keystroke in a controlled field would re-run and yank focus back to the
+  // autofocus field. That was the "typing a new category bounces me to the
+  // amount" bug.
+  const onCloseRef = useRef(onClose);
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  });
+
   useEffect(() => {
     if (!open) return;
 
     function onKeyDown(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") onCloseRef.current();
     }
     document.addEventListener("keydown", onKeyDown);
 
@@ -45,7 +56,8 @@ export function SlideOver({
 
     // Move focus into the panel so keyboard and screen-reader users land here.
     // A field marked data-autofocus (the amount in the logger) wins over
-    // whatever happens to come first in the DOM.
+    // whatever happens to come first in the DOM. Runs once per open — not on
+    // every render — so it never steals focus mid-typing.
     const firstField =
       panelRef.current?.querySelector<HTMLElement>("[data-autofocus]") ??
       panelRef.current?.querySelector<HTMLElement>("input, select, textarea, button");
@@ -55,7 +67,7 @@ export function SlideOver({
       document.removeEventListener("keydown", onKeyDown);
       document.body.style.overflow = previousOverflow;
     };
-  }, [open, onClose]);
+  }, [open]);
 
   if (!open) return null;
 
