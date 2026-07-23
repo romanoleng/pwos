@@ -4,6 +4,7 @@ import { Plus } from "lucide-react";
 import { useState } from "react";
 import useSWR from "swr";
 
+import { loadBankSavings } from "@/app/actions/loadSavings";
 import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody } from "@/components/ui/Card";
 import { DeleteRecordButton } from "@/components/ui/DeleteRecordButton";
@@ -12,6 +13,7 @@ import { EditableName } from "@/components/ui/EditableName";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money } from "@/components/ui/Money";
 import { RecordEditor } from "@/components/ui/RecordEditor";
+import { useToast } from "@/components/ui/Toast";
 import type { RecordKind } from "@/lib/records";
 import { formatDate } from "@/lib/format";
 import { isKidInvestment } from "@/lib/kids";
@@ -33,6 +35,8 @@ export function GoalsScreen() {
     (url: string) => fetch(url).then((r) => r.json()),
   );
   const [adding, setAdding] = useState<RecordKind | null>(null);
+  const [importing, setImporting] = useState(false);
+  const toast = useToast();
 
   if (error) return <Card><CardBody className="text-sm text-loss">Couldn&apos;t load goals.</CardBody></Card>;
   if (!data) return <LoadingCard rows={3} />;
@@ -42,12 +46,50 @@ export function GoalsScreen() {
     void mutateHome();
   };
   const savingsBanks = (home?.cards ?? []).filter((card) => card.kind === "savings");
+  // The one-time bank-pots loader is offered only until tagged savings exist,
+  // so tapping it later can never wipe pots being actively maintained.
+  const needsBankImport = home !== undefined && !savingsBanks.some((c) => c.institution);
+
+  async function importBankSavings() {
+    setImporting(true);
+    const result = await loadBankSavings();
+    setImporting(false);
+    if (result.ok) {
+      toast.show({ message: `Loaded ${result.data.accounts} savings pots`, tone: "success" });
+      refresh();
+    } else {
+      toast.show({ message: result.error, tone: "error" });
+    }
+  }
   // Their investments are tracked individually on the Investments screen, so
   // only reachable cash is listed here.
   const savingsAccounts = data.kids.filter((kid) => !isKidInvestment(kid.accountType));
 
   return (
     <div className="space-y-4">
+      {needsBankImport ? (
+        <Card>
+          <CardBody className="flex flex-col gap-2.5">
+            <div>
+              <p className="text-sm font-semibold tracking-tight">Load your bank savings</p>
+              <p className="mt-1 text-[11px] leading-relaxed text-faint">
+                Replaces what&apos;s here with your real Capitec &amp; GOtyme pots, each
+                tagged with its bank. Lisa &amp; Liam&apos;s go under the kids. Anything
+                here now is archived, not deleted — nothing is lost.
+              </p>
+            </div>
+            <button
+              type="button"
+              disabled={importing}
+              onClick={() => void importBankSavings()}
+              className="h-10 w-full rounded-lg bg-accent text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            >
+              {importing ? "Loading…" : "Load Capitec + GOtyme pots"}
+            </button>
+          </CardBody>
+        </Card>
+      ) : null}
+
       {/* The crypto freedom card lived here; removed 2026-07-24 (Romano's ask)
           — it's the crypto module's long-term target, not savings, and this
           screen is about the pots. It still leads the Crypto tab.
