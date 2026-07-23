@@ -23,8 +23,10 @@ async function fetcher<T>(url: string): Promise<T> {
   return response.json();
 }
 
-/** §5 keeps Investments a summary in V1; crypto has its own module. */
-const INVESTMENT_CLASSES = ["Investments", "Property", "Savings"];
+/** §5 keeps Investments a summary in V1; crypto has its own module.
+ *  "Savings" is deliberately absent — those pots live on the Savings screen
+ *  (Romano's ask, 2026-07-24), so showing them here too was redundant. */
+const INVESTMENT_CLASSES = ["Investments", "Property"];
 
 export function InvestmentsScreen() {
   const { data, error, mutate } = useSWR<NetWorthSummary>("/api/networth", fetcher);

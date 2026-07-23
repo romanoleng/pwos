@@ -2,7 +2,7 @@
 
 import { revalidateTag } from "next/cache";
 
-import { query, sql } from "@/lib/server/db";
+import { money, query, sql } from "@/lib/server/db";
 
 import type { MutationResult } from "./holdings";
 
@@ -76,7 +76,16 @@ export type MergeUndo = {
   target: string;
   /** Transactions retagged, so the merge can be reversed exactly. */
   transactionIds: string[];
-  budgetIds: string[];
+  /**
+   * The source's budget lines exactly as they stood before the merge. The
+   * merge folds each into the target and deletes the source rows, so undo has
+   * to rebuild them from here — the old `budgetIds` referenced rows that no
+   * longer exist and could never restore anything.
+   */
+  budgets: { cycleStart: string; budgetedZar: number; kind: string | null }[];
+  /** Cycles where the target already had a line (source folded in) versus where
+   *  it didn't (the source row was simply retagged) — the two undo differently. */
+  foldedCycles: string[];
 };
 
 /**
@@ -115,10 +124,16 @@ export async function mergeCategories(
       update transactions set category = ${target}
       where category = ${source} returning id::text`;
 
+    // Capture the source's budget lines and which cycles the target ALREADY had
+    // BEFORE folding — undo needs both to unwind exactly (see undoMerge).
+    const sourceBudgets = await sql<{ cycle_start: string; budgeted_zar: string; kind: string | null }>`
+      select cycle_start::text, budgeted_zar, kind from budgets where category = ${source}`;
+    const targetBudgets = await sql<{ cycle_start: string }>`
+      select cycle_start::text from budgets where category = ${target}`;
+    const targetCycles = new Set(targetBudgets.map((r) => r.cycle_start));
+
     // A budget line for the source folds its amount into the target's line for
     // the same cycle, rather than being dropped or duplicating the category.
-    const budgets = await sql<{ id: string }>`
-      select id::text from budgets where category = ${source}`;
     await sql`
       update budgets b set budgeted_zar = b.budgeted_zar + s.budgeted_zar
       from budgets s
@@ -142,7 +157,14 @@ export async function mergeCategories(
         undo: {
           source, target,
           transactionIds: moved.map((r) => r.id),
-          budgetIds: budgets.map((r) => r.id),
+          budgets: sourceBudgets.map((r) => ({
+            cycleStart: r.cycle_start,
+            budgetedZar: money(r.budgeted_zar),
+            kind: r.kind,
+          })),
+          foldedCycles: sourceBudgets
+            .map((r) => r.cycle_start)
+            .filter((c) => targetCycles.has(c)),
         },
       },
     };
@@ -155,6 +177,8 @@ export async function mergeCategories(
 /** Put a merge back. Only the rows this merge touched are moved. */
 export async function undoMerge(undo: MergeUndo): Promise<MutationResult> {
   try {
+    // Un-archive first: the budgets FK references categories(name), so the
+    // source name must be live again before its budget lines are rebuilt.
     await sql`update categories set archived = false where name = ${undo.source}`;
     if (undo.transactionIds.length > 0) {
       await query(
@@ -162,6 +186,35 @@ export async function undoMerge(undo: MergeUndo): Promise<MutationResult> {
         [undo.source, undo.transactionIds],
       );
     }
+
+    // Rebuild the source's budget lines. The merge either folded a source line
+    // into an existing target line (subtract it back out and recreate the
+    // source line) or, where the target had none, simply retagged it (rename
+    // the target line back to source). `foldedCycles` says which.
+    const folded = new Set(undo.foldedCycles);
+    for (const b of undo.budgets ?? []) {
+      if (folded.has(b.cycleStart)) {
+        await query(
+          `update budgets set budgeted_zar = greatest(budgeted_zar - $1, 0)
+           where category = $2 and cycle_start = $3::date`,
+          [b.budgetedZar, undo.target, b.cycleStart],
+        );
+        await query(
+          `insert into budgets (cycle_start, category, budgeted_zar, kind)
+           values ($1::date, $2, $3, $4)
+           on conflict (cycle_start, category)
+             do update set budgeted_zar = excluded.budgeted_zar`,
+          [b.cycleStart, undo.source, b.budgetedZar, b.kind],
+        );
+      } else {
+        await query(
+          `update budgets set category = $1
+           where category = $2 and cycle_start = $3::date`,
+          [undo.source, undo.target, b.cycleStart],
+        );
+      }
+    }
+
     invalidate();
     return { ok: true, data: undefined };
   } catch (error) {

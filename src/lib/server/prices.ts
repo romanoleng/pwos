@@ -198,8 +198,12 @@ export async function getPrices(ids: string[]): Promise<PriceSnapshot> {
   const unique = [...new Set(ids.filter(Boolean))].sort();
 
   const fresh = cache && Date.now() - cache.at < CACHE_TTL_MS;
-  const covered =
-    cache && unique.every((id) => cache!.prices.has(id) || cache!.prices.size > 0);
+  // Every requested id must actually be in the cache. The old `|| size > 0`
+  // made this always true, so a coin added (or a symbol newly resolved to an
+  // id) within the TTL was served from a cache that lacked it — shown as
+  // fallback/unpriced instead of live until the window elapsed. A missing id
+  // now forces a refetch.
+  const covered = cache !== null && unique.every((id) => cache!.prices.has(id));
 
   if (fresh && covered) {
     return {

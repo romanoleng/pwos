@@ -206,16 +206,25 @@ export async function getHome(
         balanceZar: a.storedZar,
         lastActivity: a.lastActivity,
       })),
-    budget: {
-      remainingZar: budget.totals.remainingZar,
-      budgetedZar: budget.totals.budgetedZar,
-      spentZar: budget.totals.actualZar,
-      daysLeft: cycle.remainingDays,
-      dailyAllowanceZar: budget.dailyAllowanceZar,
-      overspent: budget.totals.remainingZar < 0,
-      cycleStart: cycle.start,
-      cycleEnd: cycle.end,
-    },
+    // Spend is ALL real expenses this cycle, budgeted lines plus anything spent
+    // in a category with no line — money out is money out. Leaving unbudgeted
+    // spend off (as this once did) overstated "budget left" and the per-day
+    // allowance, and disagreed with the period figure on the same screen.
+    budget: (() => {
+      const spentZar = budget.totals.actualZar + budget.unbudgetedZar;
+      const remainingZar = budget.totals.budgetedZar - spentZar;
+      return {
+        remainingZar,
+        budgetedZar: budget.totals.budgetedZar,
+        spentZar,
+        daysLeft: cycle.remainingDays,
+        dailyAllowanceZar:
+          cycle.remainingDays > 0 ? remainingZar / cycle.remainingDays : null,
+        overspent: remainingZar < 0,
+        cycleStart: cycle.start,
+        cycleEnd: cycle.end,
+      };
+    })(),
     today: { spendZar: money(todayRow[0]?.spend), count: Number(todayRow[0]?.n ?? 0) },
     scheduled: {
       count: Number(scheduledRow[0]?.n ?? 0),

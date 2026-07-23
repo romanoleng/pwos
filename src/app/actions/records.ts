@@ -63,9 +63,21 @@ export async function createRecord(
     const params: (string | number | boolean | null)[] = columns.map((c) => values[c]);
 
     // accounts.id is a readable text key rather than a sequence, so it has to
-    // be generated here — and made unique, since two "Savings" accounts at
-    // different banks are perfectly reasonable.
+    // be generated here.
     if (type.idIsText) {
+      // A transfer resolves its destination by account NAME, so two accounts
+      // sharing a name (case-insensitively) would let money land in whichever
+      // one happens to sort first — silently. Require distinct names; "Savings
+      // (Capitec)" and "Savings (Discovery)" are both fine and clearer anyway.
+      const dupLabel = await sql<{ id: string }>`
+        select id from accounts where lower(label) = ${label.toLowerCase()} and not archived`;
+      if (dupLabel.length > 0) {
+        return {
+          ok: false,
+          error: `An account called "${label}" already exists. Give this one a distinct name (e.g. add the bank) so transfers can't be sent to the wrong one.`,
+        };
+      }
+
       let id = slugify(label);
       const clash = await sql<{ id: string }>`select id from accounts where id = ${id}`;
       if (clash.length > 0) id = `${id}-${Date.now().toString(36).slice(-4)}`;

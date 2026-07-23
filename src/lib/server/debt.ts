@@ -37,12 +37,17 @@ export async function getDebtSummary(): Promise<DebtSummary> {
 
   // Explicitly marked duplicates, plus any exact name collisions.
   const marked = rows.filter((r) => r.duplicate_of !== null);
+  const markedIds = new Set(marked.map((r) => r.id));
   const overcount = marked.reduce((total, r) => total + money(r.balance_zar), 0);
   const totalZar = debts.reduce((total, d) => total + d.balanceZar, 0);
 
+  // Shown in the UI as-is, but the count excludes rows already handled by the
+  // explicit `duplicate_of` mark — otherwise a row that is BOTH marked and a
+  // name collision would be subtracted twice, deflating the deduped total.
   const nameGroups = findDuplicates(debts);
-  const heuristicOvercount = nameGroups.reduce(
-    (total, g) => total + (g.countedZar - g.dedupedZar), 0);
+  const heuristicOvercount = findDuplicates(
+    debts.filter((d) => !markedIds.has(d.recordId)),
+  ).reduce((total, g) => total + (g.countedZar - g.dedupedZar), 0);
 
   return {
     rows: debts,

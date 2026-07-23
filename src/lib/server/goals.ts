@@ -4,6 +4,8 @@ import "server-only";
 import { FREEDOM_TARGET_LABEL, FREEDOM_TARGET_ZAR } from "@/lib/constants";
 import { isKidInvestment } from "@/lib/kids";
 
+import { cutoverFloor } from "./cutover";
+import { getCurrentCycle } from "./cycle";
 import { isoDate, money, moneyOrNull, sql } from "./db";
 import { getNetWorth } from "./networth";
 
@@ -41,6 +43,10 @@ function monthsToTarget(current: number, target: number | null, monthly: number)
 }
 
 export async function getGoals(): Promise<GoalsSummary> {
+  // The same cycle every other screen uses — not `max(cycle_start)`, which a
+  // future-dated budget row would push past the current cycle.
+  const cycle = await getCurrentCycle();
+  const floor = await cutoverFloor();
   const [goalRows, kidRows, netWorth, plannedRows] = await Promise.all([
     sql<{ id: string; name: string; current_zar: string; target_zar: string | null;
           monthly_zar: string; priority: string | null; status: string | null; target_date: string | null }>`
@@ -58,8 +64,10 @@ export async function getGoals(): Promise<GoalsSummary> {
       join categories c on c.name = b.category and c.kind = 'contribution'
       left join transactions t
         on t.category = b.category and t.type = 'contribution'
-       and t.occurred_on >= b.cycle_start
-      where b.cycle_start = (select max(cycle_start) from budgets)
+       and t.occurred_on >= ${cycle.start}::date
+       and t.occurred_on <  ${cycle.end}::date
+       and (${floor}::date is null or t.occurred_on >= ${floor}::date)
+      where b.cycle_start = ${cycle.start}::date
       group by b.id, b.category, b.budgeted_zar
       order by b.budgeted_zar desc`,
   ]);

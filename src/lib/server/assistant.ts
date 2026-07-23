@@ -181,21 +181,51 @@ async function buildContext(): Promise<string> {
     byCoin.set(h.symbol, entry);
   }
   const coins = [...byCoin.entries()].sort((a, b) => b[1].valueZar - a[1].valueZar);
+
+  // Nearest un-hit milestone per coin, with its verbatim sell/keep instruction —
+  // so the assistant can advise against Romano's OWN plan, not invent targets.
+  const nextMs = new Map<
+    string,
+    { level: number; triggerZar: number; distancePct: number | null; raw: string }
+  >();
+  for (const h of portfolio.holdings) {
+    const ms = h.nextMilestone;
+    if (!ms || ms.milestone.triggerZar === null) continue;
+    const current = nextMs.get(h.symbol);
+    if (!current || (ms.distancePct ?? Infinity) < (current.distancePct ?? Infinity)) {
+      nextMs.set(h.symbol, {
+        level: ms.milestone.level,
+        triggerZar: ms.milestone.triggerZar,
+        distancePct: ms.distancePct,
+        raw: ms.milestone.raw,
+      });
+    }
+  }
+
   lines.push("");
   lines.push("## Crypto portfolio");
   lines.push(
     `- Total value: ${rand(portfolio.totals.valueZar)}, invested: ${rand(portfolio.totals.investedZar)}, unrealised P&L: ${rand(portfolio.totals.pnlZar)} (${pct(portfolio.totals.pnlPct)})`,
   );
+  if (portfolio.milestoneHits.length > 0) {
+    lines.push(
+      `- MILESTONE HIT (price has crossed a trigger, not yet actioned): ${portfolio.milestoneHits.map((h) => h.symbol).join(", ")}`,
+    );
+  }
   if (coins.length > 0) {
-    lines.push("- Holdings by coin (quantity · current value · invested/cost · P&L · unit price):");
+    lines.push("- Holdings by coin (quantity · current value · invested/cost · P&L · unit price · next milestone):");
     for (const [symbol, e] of coins) {
       const pnl = e.valueZar - e.investedZar;
+      const ms = nextMs.get(symbol);
+      const milestone = ms
+        ? ` · next M${ms.level} at ${rand(ms.triggerZar)}${ms.distancePct !== null ? ` (needs ${ms.distancePct >= 0 ? "+" : ""}${ms.distancePct.toFixed(0)}%)` : ""} — plan: "${ms.raw}"`
+        : "";
       lines.push(
-        `  - ${symbol}: ${qty(e.qty)} · value ${rand(e.valueZar)} · invested ${rand(e.investedZar)} · P&L ${rand(pnl)} · ${rand(e.priceZar)} each`,
+        `  - ${symbol}: ${qty(e.qty)} · value ${rand(e.valueZar)} · invested ${rand(e.investedZar)} · P&L ${rand(pnl)} · ${rand(e.priceZar)} each${milestone}`,
       );
     }
     lines.push(
-      "- Note: some coins may show R0 invested where the cost basis hasn't been entered yet — say so rather than treating it as a real zero.",
+      "- Note: some coins show R0 invested where the cost basis hasn't been entered yet — say so rather than treating it as a real zero. M5 is the hard Feb-2028 full exit; there are no breakeven sells.",
     );
   }
 
@@ -258,6 +288,7 @@ Rules:
 - Answer ONLY using the financial snapshot below. It is Romano's real, current data.
 - You are read-only. You cannot change anything, log transactions, or take actions — if asked to, explain that this version can only answer questions, and tell him which screen to use (e.g. "tap the + button to log a spend").
 - Your job is to know EVERYTHING the app tracks and answer accurately from it. That includes his children Lisa and Liam and their accounts, which the app tracks as part of the family's finances — answer freely about them; they are in scope, not "someone else's money". The snapshot below is the source of truth; if a figure is in it, use it.
+- On crypto you act like his portfolio manager: discuss holdings, P&L, weightings, movers and especially his milestones (M1–M5 sell/keep triggers). Explain how close each coin is to its next trigger and what HIS OWN recorded plan says to do at it — quote the plan text. Do not invent new price targets or give generic buy/sell calls beyond what his milestones state. Milestone discipline is sacred: no breakeven sells; M5 is the hard February-2028 full exit. Frame it as his plan, not your advice.
 - Stay on the family's finances as the app records them: budget, spending, accounts, debt, savings, net worth, crypto, the kids' accounts, and the R2,000,000 freedom goal. Politely decline only genuinely unrelated things — coding, the app's internals or how it's built, general knowledge, or strangers' finances.
 - Never discuss or speculate about the app's technical implementation, databases, servers, code, or configuration. You don't have that information and it isn't your job.
 - Money is in South African rand (ZAR). Use the en-ZA format, e.g. R1 234. Amounts are shown without cents.

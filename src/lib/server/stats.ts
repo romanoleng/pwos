@@ -151,16 +151,23 @@ export async function getStats(periodKind: PeriodKind = "cycle"): Promise<StatsS
         and (${floor}::date is null or occurred_on >= ${floor}::date)
       group by 1 order by 1`,
 
-    // The cycle before this one, for the "compared with" line.
+    // The cycle before this one, for the "compared with" line. Shown only when
+    // that whole cycle sits AFTER any reset — a previous cycle that predates the
+    // reset is suppressed (below), but one entirely post-reset is real and safe.
     sql<{ income: string; expense: string }>`
       select
         coalesce(sum(amount_zar)  filter (where type = 'income'), 0)  as income,
         coalesce(sum(-amount_zar) filter (where type = 'expense'), 0) as expense
       from transactions
-      where ${floor}::date is null and ${bounds.previousStart}::date is not null
+      where ${bounds.previousStart}::date is not null
+        and (${floor}::date is null or ${bounds.previousStart}::date >= ${floor}::date)
         and occurred_on >= ${bounds.previousStart}::date
         and occurred_on <  ${bounds.start}::date`,
   ]);
+
+  // A previous cycle is only shown when it lies entirely after the reset floor.
+  const showPrevious =
+    bounds.previousStart !== null && (floor === null || bounds.previousStart >= floor);
 
   const incomeZar = money(totals[0]?.income);
   const expenseZar = money(totals[0]?.expense);
@@ -185,13 +192,12 @@ export async function getStats(periodKind: PeriodKind = "cycle"): Promise<StatsS
       incomeZar: money(m.income),
       expenseZar: money(m.expense),
     })),
-    previous:
-      bounds.previousStart === null
-        ? null
-        : {
-            label: "previous cycle",
-            incomeZar: money(previous[0]?.income),
-            expenseZar: money(previous[0]?.expense),
-          },
+    previous: showPrevious
+      ? {
+          label: "previous cycle",
+          incomeZar: money(previous[0]?.income),
+          expenseZar: money(previous[0]?.expense),
+        }
+      : null,
   };
 }

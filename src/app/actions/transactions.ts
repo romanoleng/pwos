@@ -451,10 +451,14 @@ export async function restoreTransaction(
               ${(f.to_kid_account_id as string) ?? null}::bigint,
               ${(f.notes as string) ?? null}, ${f.starts_cycle === true})
       returning id::text`;
-    // Restoring a still-future entry re-queues its move instead of applying
-    // it early — the same rule as logging it in the first place.
+    // Restoring a still-future SERIES entry re-queues its move rather than
+    // applying it early — the same rule as logging it. A transfer is never a
+    // series and applies both legs immediately on create, so it is recognised
+    // by having a destination and is re-applied straight away, both legs
+    // together — never deferring one side while applying the other.
     const stillFuture = occurredOn > toLocalISODate(new Date());
-    if (f.account_id && stillFuture) {
+    const hasDestination = Boolean(f.to_account_id || f.to_kid_account_id);
+    if (f.account_id && stillFuture && !hasDestination) {
       await ensureScheduleTable();
       await sql`insert into pending_balance_moves (transaction_id, account_id, delta_zar, apply_on)
                 values (${created[0].id}::bigint, ${f.account_id as string}::text,
@@ -463,6 +467,14 @@ export async function restoreTransaction(
     } else if (f.account_id) {
       await sql`update accounts set balance_zar = coalesce(balance_zar, 0) + ${money(f.amount_zar)}
                 where id = ${f.account_id as string} and balance_zar is not null`;
+    }
+    // The transfer's DESTINATION leg — mirrors createTransaction so undoing a
+    // deleted transfer puts the money back on BOTH sides. Without this the
+    // source was re-debited and the destination never re-credited, so the money
+    // silently disappeared. No null guard, matching the credit on create.
+    if (f.to_account_id) {
+      await sql`update accounts set balance_zar = coalesce(balance_zar, 0) + ${Math.abs(money(f.amount_zar))}
+                where id = ${f.to_account_id as string}`;
     }
     if (f.to_kid_account_id) {
       await sql`update kids_accounts set balance_zar = balance_zar + ${Math.abs(money(f.amount_zar))}
