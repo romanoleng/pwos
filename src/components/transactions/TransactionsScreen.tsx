@@ -384,13 +384,6 @@ export function TransactionsScreen() {
                   <div className="flex gap-2">
                     <button
                       type="button"
-                      onClick={() => setExpanded(null)}
-                      className="rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:text-ink"
-                    >
-                      Collapse
-                    </button>
-                    <button
-                      type="button"
                       onClick={() =>
                         setEditing({
                           recordId: row.recordId,

@@ -2,7 +2,7 @@
 
 import { Home, MoreHorizontal } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 import { isActivePath } from "@/lib/nav";
 import { TAB_CHOICES, useChosenTabs } from "@/lib/tabs";
@@ -21,6 +21,7 @@ import { TAB_CHOICES, useChosenTabs } from "@/lib/tabs";
  */
 export function BottomTabs() {
   const pathname = usePathname();
+  const router = useRouter();
   const chosen = useChosenTabs();
 
   const items = [
@@ -39,19 +40,39 @@ export function BottomTabs() {
         {items.map((item) => {
           const active = isActivePath(pathname, item.href);
           const Icon = item.icon;
+          const className = `flex flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 text-[10px] transition-transform active:scale-95 ${
+            active ? "font-semibold text-accent" : "font-medium text-muted"
+          }`;
+          const inner = (
+            <>
+              <span className="flex h-7 w-13 items-center justify-center">
+                <Icon size={20} strokeWidth={active ? 2.25 : 1.75} />
+              </span>
+              {item.label}
+            </>
+          );
+          // More is a toggle, not a one-way trip: on /more a second tap goes
+          // back to where you were (Romano's ask, 2026-07-24) — it reads like
+          // a menu, so tapping it again should close it. Home and the middle
+          // tabs stay plain links.
+          if (item.href === "/more") {
+            return (
+              <li key={item.href}>
+                <button
+                  type="button"
+                  aria-current={active ? "page" : undefined}
+                  onClick={() => (active ? router.back() : router.push("/more"))}
+                  className={`w-full ${className}`}
+                >
+                  {inner}
+                </button>
+              </li>
+            );
+          }
           return (
             <li key={item.href}>
-              <Link
-                href={item.href}
-                aria-current={active ? "page" : undefined}
-                className={`flex flex-col items-center gap-0.5 px-1 pb-1.5 pt-2 text-[10px] transition-transform active:scale-95 ${
-                  active ? "font-semibold text-accent" : "font-medium text-muted"
-                }`}
-              >
-                <span className="flex h-7 w-13 items-center justify-center">
-                  <Icon size={20} strokeWidth={active ? 2.25 : 1.75} />
-                </span>
-                {item.label}
+              <Link href={item.href} aria-current={active ? "page" : undefined} className={className}>
+                {inner}
               </Link>
             </li>
           );

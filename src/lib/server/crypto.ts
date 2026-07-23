@@ -248,6 +248,8 @@ export async function getPortfolio(): Promise<Portfolio> {
         symbol: holding.symbol,
         wallet: holding.wallet,
         change24hPct: holding.change24hPct,
+        change7dPct: holding.change7dPct,
+        change30dPct: holding.change30dPct,
         priceZar: holding.priceZar,
         valueZar: holding.valueZar ?? 0,
       });
@@ -289,6 +291,7 @@ export async function getPortfolio(): Promise<Portfolio> {
       .filter((m) => m.change24hPct < 0)
       .reverse()
       .slice(0, 5),
+    movers,
     holdings: [...holdings].sort((a, b) => (b.valueZar ?? 0) - (a.valueZar ?? 0)),
     milestoneHits: holdings
       .filter((h) => h.milestonesHitCount > 0 && h.priceSource === "live")

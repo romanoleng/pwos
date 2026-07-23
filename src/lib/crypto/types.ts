@@ -66,9 +66,15 @@ export type Mover = {
   symbol: string;
   wallet: string;
   change24hPct: number;
+  /** Null when CoinGecko's markets call didn't return the longer window. */
+  change7dPct: number | null;
+  change30dPct: number | null;
   priceZar: number;
   valueZar: number;
 };
+
+/** The windows the movers list can be sorted by (live per-coin data only). */
+export type MoverWindowKey = "24h" | "7d" | "30d";
 
 export type ChangeWindowKey = "24h" | "7d" | "30d" | "60d" | "90d";
 
@@ -138,6 +144,8 @@ export type Portfolio = {
   core5: Core5Position[];
   gainers: Mover[];
   losers: Mover[];
+  /** Every priced coin with its 24h/7d/30d moves — the client sorts per window. */
+  movers: Mover[];
   /** Every holding, sorted by value descending. */
   holdings: Holding[];
   /** Holdings whose live price has crossed an un-actioned milestone. */

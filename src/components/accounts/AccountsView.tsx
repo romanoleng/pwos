@@ -7,7 +7,9 @@ import useSWR from "swr";
 
 import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody } from "@/components/ui/Card";
+import { DeleteRecordButton } from "@/components/ui/DeleteRecordButton";
 import { EditableAmount } from "@/components/ui/EditableAmount";
+import { EditableName } from "@/components/ui/EditableName";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money } from "@/components/ui/Money";
 import { RecordEditor } from "@/components/ui/RecordEditor";
@@ -200,6 +202,17 @@ export function AccountsScreen() {
             {open ? (
               <div className="space-y-3 border-t border-line bg-bg/40 px-4 py-3">
                 <div className="flex items-center justify-between gap-3">
+                  <span className="text-[11px] text-faint">Name</span>
+                  <EditableName
+                    kind="account"
+                    recordId={entry.account.id}
+                    value={entry.account.label}
+                    onSaved={() => void mutate()}
+                    className="text-sm font-medium"
+                  />
+                </div>
+
+                <div className="flex items-center justify-between gap-3">
                   <span className="text-[11px] text-faint">Balance</span>
                   {entry.netWorthRecordId ? (
                     <EditableAmount
@@ -216,7 +229,7 @@ export function AccountsScreen() {
                   )}
                 </div>
 
-                <div className="flex flex-wrap gap-2">
+                <div className="flex flex-wrap items-center gap-2">
                   <Link
                     href={`/transactions?account=${encodeURIComponent(entry.account.label)}`}
                     className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-line-2 hover:text-ink"
@@ -231,13 +244,13 @@ export function AccountsScreen() {
                     <Pencil size={12} strokeWidth={1.75} />
                     Update all balances
                   </Link>
-                  <button
-                    type="button"
-                    onClick={() => setExpanded(null)}
-                    className="rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:text-ink"
-                  >
-                    Collapse
-                  </button>
+                  <DeleteRecordButton
+                    kind="account"
+                    recordId={entry.account.id}
+                    label={entry.account.label}
+                    onDone={() => void mutate()}
+                    className="ml-auto border border-line"
+                  />
                 </div>
               </div>
             ) : null}

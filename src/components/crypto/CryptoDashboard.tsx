@@ -14,7 +14,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money, Percent, Sensitive } from "@/components/ui/Money";
 import { FREEDOM_TARGET_ZAR } from "@/lib/constants";
-import type { ChangeWindowKey, Holding, Portfolio } from "@/lib/crypto/types";
+import type { ChangeWindowKey, Holding, MoverWindowKey, Portfolio } from "@/lib/crypto/types";
 import {
   EMPTY_FILTER,
   filterHoldings,
@@ -96,7 +96,7 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
     );
   }
 
-  const { meta, wallets, core5, gainers, losers, milestoneHits } = data;
+  const { meta, wallets, core5, movers, milestoneHits } = data;
 
   const filtering = isFilterActive(filter);
   const visible = sortHoldings(
@@ -152,7 +152,7 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
 
       <div className="grid gap-4 lg:grid-cols-2">
         <Core5Card holdings={core5} />
-        <MoversCard gainers={gainers} losers={losers} />
+        <MoversCard movers={movers} />
       </div>
 
       <HoldingsToolbar
@@ -495,43 +495,100 @@ function Core5Card({ holdings }: { holdings: Portfolio["core5"] }) {
   );
 }
 
-function MoversCard({ gainers, losers }: { gainers: Portfolio["gainers"]; losers: Portfolio["losers"] }) {
+const MOVER_WINDOWS: { key: MoverWindowKey; label: string }[] = [
+  { key: "24h", label: "24h" },
+  { key: "7d", label: "7d" },
+  { key: "30d", label: "30d" },
+];
+
+function moverChange(mover: Portfolio["movers"][number], window: MoverWindowKey): number | null {
+  return window === "24h"
+    ? mover.change24hPct
+    : window === "7d"
+      ? mover.change7dPct
+      : mover.change30dPct;
+}
+
+function MoversCard({ movers }: { movers: Portfolio["movers"] }) {
+  // 24h/7d/30d are live per-coin from CoinGecko. 60d/90d would need per-coin
+  // snapshot history the app doesn't store yet (snapshots hold portfolio
+  // totals, not each coin), so they're honestly not offered here.
+  const [window, setWindow] = useState<MoverWindowKey>("24h");
+
+  const ranked = movers
+    .map((mover) => ({ mover, change: moverChange(mover, window) }))
+    .filter((row): row is { mover: Portfolio["movers"][number]; change: number } => row.change !== null)
+    .sort((a, b) => b.change - a.change);
+  const gainers = ranked.filter((row) => row.change > 0).slice(0, 6);
+  const losers = ranked
+    .filter((row) => row.change < 0)
+    .slice(-6)
+    .reverse();
+
   return (
     <Card>
-      <CardHeader title="24h movers" description="Across every wallet." />
-      <CardBody className="grid gap-5 sm:grid-cols-2">
-        <MoverList title="Gainers" movers={gainers} empty="Nothing up today." />
-        <MoverList title="Losers" movers={losers} empty="Nothing down today." />
-      </CardBody>
+      <CardHeader
+        title="Movers"
+        description="Across every wallet."
+        action={
+          <div className="flex gap-0.5 rounded-lg border border-line p-0.5">
+            {MOVER_WINDOWS.map((option) => (
+              <button
+                key={option.key}
+                type="button"
+                aria-pressed={window === option.key}
+                onClick={() => setWindow(option.key)}
+                className={`rounded-md px-2 py-1 text-[11px] transition-colors ${
+                  window === option.key ? "bg-raise text-ink" : "text-muted hover:text-ink"
+                }`}
+              >
+                {option.label}
+              </button>
+            ))}
+          </div>
+        }
+      />
+      {ranked.length === 0 ? (
+        <CardBody className="text-xs text-faint">
+          No {window} moves yet — the longer windows fill in as CoinGecko reports them.
+        </CardBody>
+      ) : (
+        <CardBody className="grid gap-5 sm:grid-cols-2">
+          <MoverList title="Gainers" rows={gainers} window={window} empty={`Nothing up over ${window}.`} />
+          <MoverList title="Losers" rows={losers} window={window} empty={`Nothing down over ${window}.`} />
+        </CardBody>
+      )}
     </Card>
   );
 }
 
 function MoverList({
   title,
-  movers,
+  rows,
+  window,
   empty,
 }: {
   title: string;
-  movers: Portfolio["gainers"];
+  rows: { mover: Portfolio["movers"][number]; change: number }[];
+  window: MoverWindowKey;
   empty: string;
 }) {
   return (
     <div>
       <p className="mb-2 text-[10px] font-medium uppercase tracking-[0.08em] text-faint">
-        {title}
+        {title} · {window}
       </p>
-      {movers.length === 0 ? (
+      {rows.length === 0 ? (
         <p className="text-xs text-faint">{empty}</p>
       ) : (
         <ul className="space-y-1.5">
-          {movers.map((mover) => (
+          {rows.map(({ mover, change }) => (
             <li
-              key={`$<Sensitive>{mover.symbol}</Sensitive>-${mover.wallet}`}
+              key={`${mover.symbol}-${mover.wallet}`}
               className="flex items-baseline justify-between gap-2 text-xs"
             >
               <span className="font-medium"><Sensitive>{mover.symbol}</Sensitive></span>
-              <Percent value={mover.change24hPct} signed />
+              <Percent value={change} signed />
             </li>
           ))}
         </ul>
@@ -628,13 +685,6 @@ function HoldingsTable({
                   >
                     <Pencil size={12} strokeWidth={1.75} />
                     Edit position
-                  </button>
-                  <button
-                    type="button"
-                    onClick={() => setExpanded(null)}
-                    className="rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:text-ink"
-                  >
-                    Collapse
                   </button>
                 </div>
                 <dl className="mb-3 grid grid-cols-2 gap-x-4 gap-y-2 sm:grid-cols-4">

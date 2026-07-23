@@ -94,6 +94,43 @@ export async function createRecord(
   }
 }
 
+/**
+ * Rename a record's human name (its label column), app-wide (Romano's ask,
+ * 2026-07-24 — "rename every savings, investment, account… everywhere").
+ *
+ * Same registry boundary as the rest: the client sends a KIND, never a table
+ * or column. accounts.label, goals.name, debts.name, kids_accounts.account —
+ * the registry knows which column carries the name for each kind.
+ */
+export async function renameRecord(
+  kind: string,
+  recordId: string,
+  name: string,
+): Promise<MutationResult<{ name: string }>> {
+  const type = recordType(kind);
+  if (!type) return { ok: false, error: "That kind of record can't be renamed here." };
+
+  const trimmed = name.trim();
+  if (!trimmed) return { ok: false, error: "Give it a name." };
+  if (trimmed.length > 120) return { ok: false, error: "That name is too long." };
+
+  try {
+    const rows = await query<{ name: string }>(
+      `update ${type.table} set ${type.labelColumn} = $1
+       where id = $2${type.idIsText ? "" : "::bigint"}
+       returning ${type.labelColumn} as name`,
+      [trimmed, recordId],
+    );
+    if (rows.length === 0) return { ok: false, error: "That record no longer exists." };
+
+    invalidate(type.invalidates);
+    return { ok: true, data: { name: rows[0].name } };
+  } catch (error) {
+    console.error("[renameRecord]", kind, error);
+    return { ok: false, error: error instanceof Error ? error.message : "Couldn't rename it." };
+  }
+}
+
 export async function archiveRecord(
   kind: string,
   recordId: string,

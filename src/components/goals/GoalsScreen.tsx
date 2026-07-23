@@ -4,7 +4,9 @@ import useSWR from "swr";
 
 import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { DeleteRecordButton } from "@/components/ui/DeleteRecordButton";
 import { EditableAmount } from "@/components/ui/EditableAmount";
+import { EditableName } from "@/components/ui/EditableName";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money } from "@/components/ui/Money";
 import { formatDate, formatPercent } from "@/lib/format";
@@ -40,22 +42,9 @@ export function GoalsScreen() {
 
   return (
     <div className="space-y-4">
-      <Card>
-        <CardBody>
-          <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
-            Freedom · {data.freedom.label}
-          </p>
-          <p className="mt-1.5 flex flex-wrap items-baseline gap-x-3">
-            <Money value={data.freedom.currentZar} variant="whole" className="text-2xl font-semibold tracking-tight" />
-            <span className="text-sm text-muted">of <Money value={data.freedom.targetZar} variant="compact" /></span>
-          </p>
-          <div className="mt-3 h-1.5 w-full overflow-hidden rounded-full bg-raise">
-            <div className="h-full rounded-full bg-accent" style={{ width: `${Math.min(100, data.freedom.progressPct)}%` }} />
-          </div>
-          <p className="mt-2 text-xs text-faint">{formatPercent(data.freedom.progressPct)}</p>
-        </CardBody>
-      </Card>
-
+      {/* The crypto freedom card lived here; removed 2026-07-24 (Romano's ask)
+          — it's the crypto module's long-term target, not savings, and this
+          screen is about the pots. It still leads the Crypto tab. */}
       <Card>
         <CardHeader
           title="Savings goals"
@@ -69,8 +58,9 @@ export function GoalsScreen() {
             {data.goals.map((goal) => (
               <li key={goal.recordId} className="px-4 py-3">
                 <div className="flex items-baseline justify-between gap-3">
-                  <p className="text-sm font-medium">{goal.name}
-                    {goal.status ? <span className="ml-2 rounded bg-raise px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-muted">{goal.status}</span> : null}
+                  <p className="flex min-w-0 items-center text-sm font-medium">
+                    <EditableName kind="goal" recordId={goal.recordId} value={goal.name} onSaved={refresh} />
+                    {goal.status ? <span className="ml-2 shrink-0 rounded bg-raise px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-muted">{goal.status}</span> : null}
                   </p>
                   <p className="shrink-0 text-sm">
                     <EditableAmount editKey="goal.balance" recordId={goal.recordId} value={goal.currentZar} onSaved={refresh} />
@@ -89,12 +79,13 @@ export function GoalsScreen() {
                     {" /mo"}
                     {goal.targetDate ? ` · target ${formatDate(goal.targetDate)}` : ""}
                   </span>
-                  <span>
+                  <span className="flex items-center gap-2">
                     {goal.monthsToTarget !== null
                       ? `${goal.monthsToTarget} ${goal.monthsToTarget === 1 ? "month" : "months"} at this rate`
                       : goal.monthlyZar <= 0 && goal.targetZar
                         ? "no contribution set"
                         : ""}
+                    <DeleteRecordButton kind="goal" recordId={goal.recordId} label={goal.name} onDone={refresh} />
                   </span>
                 </p>
               </li>
@@ -122,18 +113,23 @@ export function GoalsScreen() {
                 key={card.id}
                 className="flex items-center justify-between gap-3 px-4 py-3"
               >
-                <p className="min-w-0 truncate text-sm font-medium">{card.label}</p>
-                {card.balanceZar === null ? (
-                  <span className="text-[11px] text-warn">Not recorded</span>
-                ) : (
-                  <EditableAmount
-                    editKey="netWorth.value"
-                    recordId={card.id}
-                    value={card.balanceZar}
-                    onSaved={refresh}
-                    className="text-sm"
-                  />
-                )}
+                <p className="flex min-w-0 items-center gap-1 text-sm font-medium">
+                  <EditableName kind="account" recordId={card.id} value={card.label} onSaved={refresh} />
+                </p>
+                <span className="flex shrink-0 items-center gap-1">
+                  {card.balanceZar === null ? (
+                    <span className="text-[11px] text-warn">Not recorded</span>
+                  ) : (
+                    <EditableAmount
+                      editKey="netWorth.value"
+                      recordId={card.id}
+                      value={card.balanceZar}
+                      onSaved={refresh}
+                      className="text-sm"
+                    />
+                  )}
+                  <DeleteRecordButton kind="account" recordId={card.id} label={card.label} onDone={refresh} />
+                </span>
               </li>
             ))}
           </ul>
@@ -157,7 +153,9 @@ export function GoalsScreen() {
             {savingsAccounts.map((kid) => (
               <li key={kid.recordId} className="flex items-center justify-between gap-3 px-4 py-3">
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-medium">{kid.account}</p>
+                  <p className="flex min-w-0 items-center text-sm font-medium">
+                    <EditableName kind="kidAccount" recordId={kid.recordId} value={kid.account} onSaved={refresh} />
+                  </p>
                   <p className="mt-0.5 text-[11px] text-faint">
                     {[kid.child, kid.institution].filter(Boolean).join(" · ") || "—"}
                     {kid.monthlyZar > 0 ? (
@@ -169,14 +167,21 @@ export function GoalsScreen() {
                     ) : null}
                   </p>
                 </div>
-                <EditableAmount editKey="kids.balance" recordId={kid.recordId} value={kid.balanceZar} onSaved={refresh} className="text-sm" />
+                <span className="flex shrink-0 items-center gap-1">
+                  <EditableAmount editKey="kids.balance" recordId={kid.recordId} value={kid.balanceZar} onSaved={refresh} className="text-sm" />
+                  <DeleteRecordButton kind="kidAccount" recordId={kid.recordId} label={kid.account} onDone={refresh} />
+                </span>
               </li>
             ))}
           </ul>
         )}
       </CollapsibleSection>
 
-      <p className="text-[11px] text-faint">Tap any figure to edit it. Changes save immediately and can be undone.</p>
+      <p className="text-[11px] leading-relaxed text-faint">
+        Tap any figure to edit it, or a name to rename it — a good way to note
+        where a pot sits, e.g. &ldquo;GOtyme · Big Emergency&rdquo;. The trash
+        icon archives (never deletes); everything can be undone.
+      </p>
     </div>
   );
 }
