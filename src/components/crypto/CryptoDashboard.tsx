@@ -155,7 +155,7 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
             setLoadingBuys(false);
             if (result.ok) {
               refresh();
-              toast.show({ message: `Logged ${result.data.count} EasyCrypto buys`, tone: "success" });
+              toast.show({ message: `Logged ${result.data.count} EasyCrypto buys · R2 000`, tone: "success" });
             } else {
               toast.show({ message: result.error, tone: "error" });
             }

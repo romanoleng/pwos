@@ -24,6 +24,10 @@ const BUYS = [
   { symbol: "LINK", coin: "Chainlink", quantity: 1.375, invested: 200 },
   { symbol: "ECNMG", coin: "ECNMG", quantity: 7.18, invested: 48 },
   { symbol: "ATOM", coin: "Cosmos", quantity: 1.3316, invested: 33 },
+  { symbol: "HBAR", coin: "Hedera", quantity: 404.99, invested: 500 },
+  { symbol: "ENA", coin: "Ethena", quantity: 327.08, invested: 500 },
+  { symbol: "POL", coin: "Polygon Ecosystem Token", quantity: 256.79, invested: 341 },
+  { symbol: "FET", coin: "Artificial Superintelligence Alliance", quantity: 68.21, invested: 178 },
 ];
 
 export async function loadEasyCryptoBuys(): Promise<MutationResult<{ count: number }>> {
