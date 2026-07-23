@@ -19,6 +19,10 @@ import type { MutationResult } from "./holdings";
  *   - categories, accounts, debts, goals, kids' accounts (the structure)
  *   - crypto holdings and cost basis (positions, not history)
  *   - the audit trail
+ *   - account balances. A balance is current reality, not history — a savings
+ *     pot doesn't empty because a new budget cycle began. It once nulled every
+ *     non-spendable balance, which would wipe the Capitec/GOtyme savings pots
+ *     Romano maintains by hand; removed 2026-07-24 so a reset keeps them.
  */
 
 function invalidate(): void {
@@ -53,22 +57,13 @@ export async function runFreshStart(
         (select count(*)::text from transactions where occurred_on < ${cutoverDate}::date) as txns,
         (select count(*)::text from budgets      where cycle_start < ${cutoverDate}::date) as lines`;
 
-    // Balances are set to NULL, not 0. NULL means "not recorded yet" and the
-    // app says so; 0 would claim the account is genuinely empty, which is the
-    // confident-but-wrong figure this app exists to avoid.
-    //
-    // The spared set is the SPENDABLE accounts — data, not the hardcoded
-    // Capitec Main + GOtyme pair, which stopped being the whole story the day
-    // a third payment card (the Tangem Visa) could be flagged spendable. The
-    // cleared figures come back with the returning clause so undo can restore
-    // them instead of just clearing the cutover date.
-    const cleared = await sql<{ id: string; balance_zar: string }>`
-      update accounts set balance_zar = null
-      where not archived and balance_zar is not null and not spendable
-      returning id, balance_zar`;
+    // Balances are kept as-is (see the header note): a reset hides history, it
+    // doesn't empty your accounts. Nothing is cleared, so there is nothing for
+    // the undo to restore beyond the cutover date itself.
+    const cleared: { id: string; balance_zar: string }[] = [];
 
     const kept = await sql<{ label: string }>`
-      select label from accounts where not archived and spendable order by label`;
+      select label from accounts where not archived and balance_zar is not null order by label`;
 
     await sql`
       update app_settings
