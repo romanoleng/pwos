@@ -48,6 +48,9 @@ export type HomeTransaction = {
   description: string;
   amountZar: number;
   category: string | null;
+  /** Loaded so an edit opened from Home can't silently clear these. */
+  subcategory: string | null;
+  notes: string | null;
   accountLabel: string | null;
   type: string;
 };
@@ -128,9 +131,10 @@ export async function getHome(
     getAccounts(),
     getBudgetSummary(),
     sql<{ id: string; occurred_on: string; description: string; amount_zar: string;
-          category: string | null; account_label: string | null; type: string }>`
+          category: string | null; subcategory: string | null; notes: string | null;
+          account_label: string | null; type: string }>`
       select t.id::text, t.occurred_on::text, t.description, t.amount_zar,
-             t.category, a.label as account_label, t.type::text
+             t.category, t.subcategory, t.notes, a.label as account_label, t.type::text
       from transactions t left join accounts a on a.id = t.account_id
       where t.occurred_on <= ${todayIso}::date
       order by t.occurred_on desc, t.id desc limit 8`,
@@ -224,6 +228,8 @@ export async function getHome(
       description: t.description,
       amountZar: money(t.amount_zar),
       category: t.category,
+      subcategory: t.subcategory,
+      notes: t.notes,
       accountLabel: t.account_label,
       type: t.type,
     })),

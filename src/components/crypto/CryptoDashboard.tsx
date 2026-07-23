@@ -4,6 +4,7 @@ import { ChevronDown, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
+import { CoinSheet } from "@/components/crypto/CoinSheet";
 import { LiveIndicator } from "@/components/crypto/LiveIndicator";
 import { PortfolioChart } from "@/components/crypto/PortfolioChart";
 import { SnapshotButton } from "@/components/crypto/SnapshotButton";
@@ -47,6 +48,8 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
   const [editor, setEditor] = useState<
     { kind: "edit"; holding: Holding } | { kind: "add"; wallet?: string } | null
   >(null);
+  // The coin tapped in Core 5 or Movers — its detail sheet (Romano's ask).
+  const [openCoin, setOpenCoin] = useState<string | null>(null);
   const refresh = () => void mutate("/api/crypto/portfolio");
 
   const [filter, setFilter] = useState<HoldingFilter>(EMPTY_FILTER);
@@ -151,8 +154,8 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
       </div>
 
       <div className="grid gap-4 lg:grid-cols-2">
-        <Core5Card holdings={core5} />
-        <MoversCard movers={movers} />
+        <Core5Card holdings={core5} onPick={setOpenCoin} />
+        <MoversCard movers={movers} onPick={setOpenCoin} />
       </div>
 
       <HoldingsToolbar
@@ -274,6 +277,18 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
           onClose={() => setEditor(null)}
           onSaved={refresh}
           knownWallets={wallets.map((w) => w.wallet)}
+        />
+      ) : null}
+
+      {openCoin ? (
+        <CoinSheet
+          symbol={openCoin}
+          holdings={allHoldings.filter((h) => h.symbol === openCoin)}
+          onClose={() => setOpenCoin(null)}
+          onEdit={(holding) => {
+            setOpenCoin(null);
+            setEditor({ kind: "edit", holding });
+          }}
         />
       ) : null}
     </div>
@@ -446,7 +461,13 @@ function MilestoneHitBanner({ holdings }: { holdings: Holding[] }) {
   );
 }
 
-function Core5Card({ holdings }: { holdings: Portfolio["core5"] }) {
+function Core5Card({
+  holdings,
+  onPick,
+}: {
+  holdings: Portfolio["core5"];
+  onPick: (symbol: string) => void;
+}) {
   return (
     <Card>
       <CardHeader
@@ -460,33 +481,36 @@ function Core5Card({ holdings }: { holdings: Portfolio["core5"] }) {
       ) : (
         <ul className="divide-y divide-line">
           {holdings.map((holding) => (
-            <li
-              key={holding.symbol}
-              className="flex items-center justify-between gap-3 px-4 py-2.5"
-            >
-              <div className="min-w-0">
-                <p className="text-sm font-medium"><Sensitive>{holding.symbol}</Sensitive></p>
-                <p className="truncate text-[11px] text-faint">
-                  {formatQuantity(holding.quantity)}
-                  {holding.walletCount > 1
-                    ? ` · ${holding.walletCount} wallets`
-                    : ""}
-                </p>
-              </div>
-              <div className="text-right">
-                <Money
-                  value={holding.valueZar}
-                  variant="whole"
-                  className="text-sm"
-                />
-                <p className="text-[11px]">
-                  {holding.change24hPct !== null ? (
-                    <Percent value={holding.change24hPct} signed />
-                  ) : (
-                    <span className="text-faint">—</span>
-                  )}
-                </p>
-              </div>
+            <li key={holding.symbol}>
+              <button
+                type="button"
+                onClick={() => onPick(holding.symbol)}
+                className="flex w-full items-center justify-between gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-2"
+              >
+                <div className="min-w-0">
+                  <p className="text-sm font-medium"><Sensitive>{holding.symbol}</Sensitive></p>
+                  <p className="truncate text-[11px] text-faint">
+                    {formatQuantity(holding.quantity)}
+                    {holding.walletCount > 1
+                      ? ` · ${holding.walletCount} wallets`
+                      : ""}
+                  </p>
+                </div>
+                <div className="text-right">
+                  <Money
+                    value={holding.valueZar}
+                    variant="whole"
+                    className="text-sm"
+                  />
+                  <p className="text-[11px]">
+                    {holding.change24hPct !== null ? (
+                      <Percent value={holding.change24hPct} signed />
+                    ) : (
+                      <span className="text-faint">—</span>
+                    )}
+                  </p>
+                </div>
+              </button>
             </li>
           ))}
         </ul>
@@ -509,7 +533,13 @@ function moverChange(mover: Portfolio["movers"][number], window: MoverWindowKey)
       : mover.change30dPct;
 }
 
-function MoversCard({ movers }: { movers: Portfolio["movers"] }) {
+function MoversCard({
+  movers,
+  onPick,
+}: {
+  movers: Portfolio["movers"];
+  onPick: (symbol: string) => void;
+}) {
   // 24h/7d/30d are live per-coin from CoinGecko. 60d/90d would need per-coin
   // snapshot history the app doesn't store yet (snapshots hold portfolio
   // totals, not each coin), so they're honestly not offered here.
@@ -554,8 +584,8 @@ function MoversCard({ movers }: { movers: Portfolio["movers"] }) {
         </CardBody>
       ) : (
         <CardBody className="grid gap-5 sm:grid-cols-2">
-          <MoverList title="Gainers" rows={gainers} window={window} empty={`Nothing up over ${window}.`} />
-          <MoverList title="Losers" rows={losers} window={window} empty={`Nothing down over ${window}.`} />
+          <MoverList title="Gainers" rows={gainers} window={window} empty={`Nothing up over ${window}.`} onPick={onPick} />
+          <MoverList title="Losers" rows={losers} window={window} empty={`Nothing down over ${window}.`} onPick={onPick} />
         </CardBody>
       )}
     </Card>
@@ -567,11 +597,13 @@ function MoverList({
   rows,
   window,
   empty,
+  onPick,
 }: {
   title: string;
   rows: { mover: Portfolio["movers"][number]; change: number }[];
   window: MoverWindowKey;
   empty: string;
+  onPick: (symbol: string) => void;
 }) {
   return (
     <div>
@@ -581,14 +613,17 @@ function MoverList({
       {rows.length === 0 ? (
         <p className="text-xs text-faint">{empty}</p>
       ) : (
-        <ul className="space-y-1.5">
+        <ul className="space-y-0.5">
           {rows.map(({ mover, change }) => (
-            <li
-              key={`${mover.symbol}-${mover.wallet}`}
-              className="flex items-baseline justify-between gap-2 text-xs"
-            >
-              <span className="font-medium"><Sensitive>{mover.symbol}</Sensitive></span>
-              <Percent value={change} signed />
+            <li key={`${mover.symbol}-${mover.wallet}`}>
+              <button
+                type="button"
+                onClick={() => onPick(mover.symbol)}
+                className="flex w-full items-baseline justify-between gap-2 rounded-md px-1 py-1 text-left text-xs transition-colors hover:bg-surface-2"
+              >
+                <span className="font-medium"><Sensitive>{mover.symbol}</Sensitive></span>
+                <Percent value={change} signed />
+              </button>
             </li>
           ))}
         </ul>

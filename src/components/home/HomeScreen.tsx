@@ -13,7 +13,7 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 
-import { LogTransaction } from "@/components/transactions/LogTransaction";
+import { LogTransaction, type EditingTransaction } from "@/components/transactions/LogTransaction";
 import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
@@ -49,6 +49,7 @@ export function HomeScreen() {
     refreshInterval: 120_000,
   });
   const [logging, setLogging] = useState(false);
+  const [editing, setEditing] = useState<EditingTransaction | null>(null);
 
   if (error) {
     return (
@@ -237,20 +238,37 @@ export function HomeScreen() {
         ) : (
           <ul className="divide-y divide-line">
             {recent.map((row) => (
-              <li key={row.recordId} className="flex items-center gap-3 px-4 py-2.5">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm">{row.description}</p>
-                  <p className="mt-0.5 truncate text-[11px] text-faint">
-                    {row.date ? formatDate(row.date) : "—"}
-                    {row.accountLabel ? ` · ${row.accountLabel}` : ""}
-                    {row.category ? ` · ${row.category}` : ""}
-                  </p>
-                </div>
-                <Money
-                  value={row.amountZar}
-                  className="shrink-0 text-sm"
-                  tone={row.amountZar < 0 ? "flat" : "gain"}
-                />
+              <li key={row.recordId}>
+                <button
+                  type="button"
+                  onClick={() =>
+                    setEditing({
+                      recordId: row.recordId,
+                      description: row.description,
+                      amountZar: row.amountZar,
+                      category: row.category,
+                      subcategory: row.subcategory,
+                      accountLabel: row.accountLabel,
+                      date: row.date,
+                      notes: row.notes,
+                    })
+                  }
+                  className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-2"
+                >
+                  <div className="min-w-0 flex-1">
+                    <p className="truncate text-sm">{row.description}</p>
+                    <p className="mt-0.5 truncate text-[11px] text-faint">
+                      {row.date ? formatDate(row.date) : "—"}
+                      {row.accountLabel ? ` · ${row.accountLabel}` : ""}
+                      {row.category ? ` · ${row.category}` : ""}
+                    </p>
+                  </div>
+                  <Money
+                    value={row.amountZar}
+                    className="shrink-0 text-sm"
+                    tone={row.amountZar < 0 ? "flat" : "gain"}
+                  />
+                </button>
               </li>
             ))}
           </ul>
@@ -279,6 +297,25 @@ export function HomeScreen() {
         quickLinks={defaults.quickLinks}
         frequent={defaults.frequent}
       />
+
+      {editing ? (
+        <LogTransaction
+          key={editing.recordId}
+          open
+          editing={editing}
+          onClose={() => setEditing(null)}
+          onSaved={() => {
+            setEditing(null);
+            void mutate();
+          }}
+          accounts={defaults.accounts}
+          allCategories={defaults.allCategories}
+          kidAccounts={defaults.kidAccounts}
+          suggestsNewCycle={defaults.suggestsNewCycle}
+          quickLinks={defaults.quickLinks}
+          frequent={defaults.frequent}
+        />
+      ) : null}
     </div>
   );
 }
