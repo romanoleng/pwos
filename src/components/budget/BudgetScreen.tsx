@@ -2,7 +2,7 @@
 
 import { Plus, Trash2 } from "lucide-react";
 import { useState } from "react";
-import useSWR from "swr";
+import useSWR, { useSWRConfig } from "swr";
 
 import {
   copyBudgetsForward, deleteBudgetLine, restoreBudgetLine, seedBudgetsBlank,
@@ -33,11 +33,19 @@ export function BudgetScreen() {
   const { data, error, mutate } = useSWR<BudgetSummary>("/api/budget", fetcher, {
     refreshInterval: 120_000,
   });
+  const { mutate: mutateAll } = useSWRConfig();
   const toast = useToast();
   const [adding, setAdding] = useState(false);
   const [incomeDraft, setIncomeDraft] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
-  const refresh = () => void mutate();
+  // A budget edit changes figures Home also shows (budget left, per-day).
+  // Refetch every API-backed screen, not just this one — otherwise Home can
+  // keep the old number for up to its 2-minute refresh window and the edit
+  // looks like it didn't take.
+  const refresh = () => {
+    void mutate();
+    void mutateAll((key) => typeof key === "string" && key.startsWith("/api/"));
+  };
 
   async function saveIncome(raw: string) {
     const value = parseAmount(raw);
