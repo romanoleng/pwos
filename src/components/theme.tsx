@@ -3,7 +3,7 @@
 import { Moon, Sun } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
-export type Theme = "dark" | "light" | "emerald" | "ember" | "ultraviolet";
+export type Theme = "dark" | "light" | "ledger" | "emerald" | "ember";
 
 /**
  * The five themes. Each is a full token set in globals.css keyed on
@@ -22,11 +22,19 @@ export const THEMES: {
   // ids stay "dark"/"light" while the palettes and names are Midnight/Paper —
   // stored preferences and the pre-paint fallback key on the id, not the name.
   { id: "dark", name: "Midnight", hint: "The default. Deep navy.", appearance: "dark" },
+  { id: "ledger", name: "Ledger", hint: "Clean neutral — white cards, steel blue.", appearance: "light" },
   { id: "light", name: "Paper", hint: "Warm ivory.", appearance: "light" },
   { id: "emerald", name: "Emerald", hint: "Terminal green on deep forest.", appearance: "dark" },
   { id: "ember", name: "Ember", hint: "Molten coral on warm charcoal.", appearance: "dark" },
-  { id: "ultraviolet", name: "Ultraviolet", hint: "Synthwave — fuchsia on violet.", appearance: "dark" },
 ];
+
+/** Where the sun/moon toggle lands when there's no remembered pick per family. */
+const FAMILY_DEFAULT: Record<"dark" | "light", Theme> = {
+  dark: "dark",
+  // Ledger, not Paper — the neutral finance light is the house light theme
+  // (2026-07-23); Paper stays available in the picker.
+  light: "ledger",
+};
 
 const STORAGE_KEY = "pwos-theme";
 const THEME_IDS = THEMES.map((t) => t.id);
@@ -101,7 +109,7 @@ export function ThemeToggle({ className = "" }: { className?: string }) {
   const target = appearanceOf(theme) === "dark" ? "light" : "dark";
 
   const flip = () => {
-    let next: Theme = target; // family defaults: "dark" and "light" themselves
+    let next: Theme = FAMILY_DEFAULT[target];
     try {
       const remembered = localStorage.getItem(`${STORAGE_KEY}:${target}`);
       if (isTheme(remembered) && appearanceOf(remembered) === target) {

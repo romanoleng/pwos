@@ -25,12 +25,6 @@
   --faint: #5f6a86;
 
   --accent: #8a86f5;
-  /* Mobile tab bar. Dark and Light share this purple; the colour themes
-     override it with their own accent (always with near-black icons — the
-     contrast maths from the tab-bar commit holds for every accent used). */
-  --tabbar: #8a86f5;
-  --tabbar-ink: #000000;
-  --tabbar-dim: #29284a;
   --gain: #5fb98a;
   --loss: #cf7a68;
   --warn: #d4a24a;
@@ -56,9 +50,6 @@
   --faint: #98907c;
 
   --accent: #5b55e0;
-  --tabbar: #8a86f5;
-  --tabbar-ink: #000000;
-  --tabbar-dim: #29284a;
   --gain: #2c8a62;
   --loss: #b04f3b;
   --warn: #94660f;
@@ -91,8 +82,6 @@
   --faint: #567a63;
 
   --accent: #10a06c;
-  --tabbar: #10a06c;
-  --tabbar-dim: #06402c;
   /* gain lifted well above the accent so a profit still reads as its own
      signal inside an already-green world */
   --gain: #86dfae;
@@ -118,8 +107,6 @@
   --faint: #85685a;
 
   --accent: #ec6a45;
-  --tabbar: #ec6a45;
-  --tabbar-dim: #5a2313;
   --gain: #6cc793;
   /* loss pushed to true crimson — on this ground a warm red-orange would
      read as decoration, not damage */
@@ -130,30 +117,36 @@
   color-scheme: dark;
 }
 
-/* Ultraviolet — synthwave: fuchsia on deep violet, cyan for info. */
-[data-theme="ultraviolet"] {
-  --bg: #0d0716;
-  --surface: #150b22;
-  --surface-2: #1b102c;
-  --raise: #231637;
+/* Ledger — the finance light: soft neutral ground, true white cards, steel
+   blue accent. Added 2026-07-23 (Romano's ask, replacing Ultraviolet in the
+   lineup) and the default the sun/moon toggle lands on. The semantic set is
+   Paper's, already tuned for AA on near-white surfaces; the accent is a
+   muted steel blue — deliberately not purple, and dark enough that white
+   text on an accent button clears AA. */
+[data-theme="ledger"] {
+  --bg: #fafafa;
+  --surface: #ffffff;
+  --surface-2: #f4f4f5;
+  --raise: #ececee;
 
-  --line: #301f4a;
-  --line-2: #3f2a61;
+  --line: #e4e4e7;
+  --line-2: #d1d1d6;
 
-  --ink: #f0eaf8;
-  --muted: #a894c6;
-  --faint: #6f5c8e;
+  --ink: #1b1c1f;
+  --muted: #54555e;
+  /* Darker than Paper's faint: it sits on surface-2 inputs too, and 4.5:1
+     must hold there, not just on white. Measured 4.87:1 on surface-2. */
+  --faint: #696a76;
 
-  --accent: #d452e6;
-  --tabbar: #d452e6;
-  --tabbar-dim: #4a1a55;
-  --gain: #4fd6a2;
-  /* salmon rather than rose — rose sits too close to the fuchsia accent */
-  --loss: #ef6a5a;
-  --warn: #e3b341;
-  --info: #58c7e8;
+  --accent: #3a5f8a;
+  /* 5.37:1 on white — Paper's gain reads 4.27:1 here, under AA for the
+     small semibold figures money renders at. */
+  --gain: #22794e;
+  --loss: #b04f3b;
+  --warn: #94660f;
+  --info: #0f766e;
 
-  color-scheme: dark;
+  color-scheme: light;
 }
 
 @theme inline {
@@ -179,9 +172,6 @@
   --color-section-head: var(--raise);
 
   --color-accent: var(--accent);
-  --color-tabbar: var(--tabbar);
-  --color-tabbar-ink: var(--tabbar-ink);
-  --color-tabbar-dim: var(--tabbar-dim);
   --color-gain: var(--gain);
   --color-loss: var(--loss);
   --color-warn: var(--warn);
@@ -219,6 +209,60 @@
     outline: 2px solid var(--accent);
     outline-offset: 2px;
     border-radius: 4px;
+  }
+}
+
+/* ---------------------------------------------------------------------------
+   Navigation position (Settings → Navigation, lib/navPosition.ts).
+   `data-nav` is stamped on <html> before paint; these rules move the tab bar,
+   the floating + button and the scroll padding TOGETHER, so no combination of
+   attribute and component state can leave content hidden under a bar.
+   ------------------------------------------------------------------------- */
+
+.tab-nav {
+  position: fixed;
+  inset-inline: 0;
+  bottom: 0;
+  border-top: 1px solid var(--line);
+  /* Clears the iPhone home indicator when installed as a PWA. */
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+}
+
+[data-nav="top"] .tab-nav {
+  bottom: auto;
+  /* Directly beneath the mobile header: its pt-safe + h-12 (3rem). */
+  top: calc(3rem + env(safe-area-inset-top, 0px));
+  border-top: 0;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0;
+}
+
+/* With the bar at the top, the scroll container needs headroom for it —
+   and only FAB clearance at the foot (the + button stays bottom-right in
+   both modes: 1.25rem margin + 3.5rem button + 1rem breathing). */
+[data-nav="top"] .app-main {
+  padding-top: 4.75rem;
+  padding-bottom: calc(5.75rem + env(safe-area-inset-bottom, 0px));
+}
+
+[data-nav="top"] .log-fab {
+  bottom: calc(1.25rem + env(safe-area-inset-bottom, 0px));
+}
+
+/* ≥ md the bar and FAB are hidden and the sidebar takes over — restore the
+   desktop paddings (md:px-8 md:py-8) these rules would otherwise outrank. */
+@media (min-width: 768px) {
+  [data-nav="top"] .app-main {
+    padding-top: 2rem;
+    padding-bottom: 2rem;
+  }
+}
+
+/* Chip rows scroll sideways; a visible scrollbar under 11px chips is noise. */
+@utility no-scrollbar {
+  scrollbar-width: none;
+  &::-webkit-scrollbar {
+    display: none;
   }
 }
 
