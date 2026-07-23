@@ -33,6 +33,11 @@ export function AmountInput({
   placeholder?: string;
   className?: string;
   ariaLabel?: string;
+  /**
+   * React applies autoFocus imperatively without rendering the attribute, so
+   * SlideOver's focus pass can't see it. The data attribute makes the intent
+   * visible in the DOM — SlideOver focuses [data-autofocus] first.
+   */
   autoFocus?: boolean;
 }) {
   return (
@@ -51,6 +56,7 @@ export function AmountInput({
       placeholder={placeholder}
       aria-label={ariaLabel}
       autoFocus={autoFocus}
+      data-autofocus={autoFocus ? "true" : undefined}
       className={className ?? inputClass}
     />
   );

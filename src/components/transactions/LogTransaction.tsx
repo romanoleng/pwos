@@ -1,7 +1,7 @@
 "use client";
 
 import { AlertTriangle, Repeat as RepeatIcon } from "lucide-react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 
 import {
   createTransaction,
@@ -12,12 +12,15 @@ import {
 } from "@/app/actions/transactions";
 import { MAX_MONTHS, MIN_MONTHS, type ScheduleMode } from "@/lib/schedule";
 import { AmountInput } from "@/components/ui/AmountInput";
+import { Chip, ChipRow } from "@/components/ui/ChipRow";
 import { Field, SlideOver, inputClass } from "@/components/ui/SlideOver";
 import { useToast } from "@/components/ui/Toast";
 import { toLocalISODate } from "@/lib/crypto/history";
 import { formatMoneyWhole } from "@/lib/format";
 import { parseAmount } from "@/lib/amount";
 import { destinationFrom, isMoveCategory } from "@/lib/transactions";
+// Type-only: erased at compile time, so the server-only guard never fires.
+import type { LogFrequencies, QuickLink } from "@/lib/server/logmeta";
 
 /**
  * Transaction entry (CLAUDE.md §5).
@@ -35,9 +38,16 @@ export type EditingTransaction = {
   description: string;
   amountZar: number;
   category: string | null;
+  subcategory?: string | null;
   accountLabel: string | null;
   date: string | null;
   notes: string | null;
+};
+
+const NO_FREQUENCIES: LogFrequencies = {
+  accounts: [],
+  subcategoriesByCategory: {},
+  descriptionsByCategory: {},
 };
 
 export function LogTransaction({
@@ -51,6 +61,8 @@ export function LogTransaction({
   allCategories = [],
   kidAccounts = [],
   suggestsNewCycle = false,
+  quickLinks = [],
+  frequent = NO_FREQUENCIES,
   editing,
 }: {
   open: boolean;
@@ -71,6 +83,10 @@ export function LogTransaction({
    * new one. Decided on the server, which knows both dates.
    */
   suggestsNewCycle?: boolean;
+  /** Configurable chips: category, or category + subcategory (2026-07-23). */
+  quickLinks?: QuickLink[];
+  /** Week-stable frequency rankings for the chip rows and autocomplete. */
+  frequent?: LogFrequencies;
   /** When present the sheet edits this entry instead of creating one. */
   editing?: EditingTransaction;
 }) {
@@ -81,6 +97,7 @@ export function LogTransaction({
       : "out",
   );
   const [category, setCategory] = useState(editing?.category ?? "");
+  const [subcategory, setSubcategory] = useState(editing?.subcategory ?? "");
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [duplicate, setDuplicate] = useState<string | null>(null);
@@ -90,14 +107,62 @@ export function LogTransaction({
   const [scheduleMode, setScheduleMode] = useState<ScheduleMode>("once");
   const [scheduleMonths, setScheduleMonths] = useState(3);
   const [scheduleSheet, setScheduleSheet] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+
+  /** A quick link's whole point: category set, cursor already on the amount. */
+  function focusAmount() {
+    const amount = formRef.current?.querySelector<HTMLInputElement>('input[name="amount"]');
+    amount?.focus();
+    amount?.select();
+  }
+
+  /** Chips write straight into the uncontrolled field they sit under. */
+  function setFieldValue(name: string, value: string) {
+    const field = formRef.current?.elements.namedItem(name);
+    if (field instanceof HTMLInputElement || field instanceof HTMLSelectElement) {
+      field.value = value;
+    }
+  }
 
   const wantKind =
     direction === "move" ? ["transfer", "contribution"] : direction === "out" ? ["expense"] : ["income"];
   const fromDb = allCategories.filter((c) => wantKind.includes(c.kind)).map((c) => c.name);
   const categories = fromDb.length > 0 ? fromDb : MOVE_CATEGORY_OPTIONS;
 
-  // Pinned categories, in the order set in the database.
-  const chips = suggestedCategories.filter((c) => categories.includes(c)).slice(0, 8);
+  // The configurable quick links (Settings → Categories), scoped to whatever
+  // the current direction's picker actually offers. Until the table has rows
+  // the old pinned chips stand in, as plain category links.
+  const links: QuickLink[] =
+    quickLinks.length > 0
+      ? quickLinks.filter((l) => l.category !== null && categories.includes(l.category))
+      : suggestedCategories
+          .filter((c) => categories.includes(c))
+          .slice(0, 8)
+          .map((c) => ({ id: `pinned:${c}`, label: c, category: c, subcategory: null }));
+
+  // Subcategory chips scope to the selected category; the field only appears
+  // once there is something to scope to, so entry stays a two-field affair
+  // for categories that never grew a second level.
+  const subcategoryOptions =
+    category ? (frequent.subcategoriesByCategory[category] ?? []) : [];
+  const showSubcategory =
+    direction !== "move" &&
+    category !== "" &&
+    (subcategoryOptions.length > 0 || subcategory !== "");
+
+  // Description suggestions scope to the category too — "Braai packs" belongs
+  // under Groceries, not under Petrol. Global recents stay as the fallback.
+  const scopedDescriptions = category
+    ? (frequent.descriptionsByCategory[category] ?? [])
+    : [];
+  const descriptionOptions = [
+    ...scopedDescriptions,
+    ...recentDescriptions.filter((d) => !scopedDescriptions.includes(d)),
+  ].slice(0, 40);
+
+  const frequentAccounts = frequent.accounts
+    .filter((a) => accounts.some((option) => option.label === a))
+    .slice(0, 5);
 
   // A transfer needs somewhere to land — §5 requires both legs to move.
   const needsDestination = direction === "move";
@@ -105,6 +170,7 @@ export function LogTransaction({
 
   function reset() {
     setCategory("");
+    setSubcategory("");
     setDuplicate(null);
     setPending(null);
     setError(null);
@@ -123,6 +189,8 @@ export function LogTransaction({
       amountZar: parseAmount(String(formData.get("amount") ?? "")) ?? Number.NaN,
       direction: direction === "move" ? "out" : direction,
       category: chosenCategory || "Transfer",
+      // Always sent: on edit, an emptied field genuinely clears the tag.
+      subcategory: direction === "move" ? "" : subcategory,
       account: String(formData.get("account") ?? ""),
       ...destinationFrom(String(formData.get("toAccount") ?? "")),
       startsCycle: formData.get("startsCycle") === "on",
@@ -270,18 +338,19 @@ export function LogTransaction({
           screen, so the layout reads as designed-for-the-space rather than a
           short form floating in a tall sheet. */}
       <form
+        ref={formRef}
         action={(formData) => submit(formData, false)}
         className="flex min-h-full flex-col"
       >
         <div className="mb-4 grid grid-cols-3 gap-2">
           <DirectionButton
             active={direction === "out"}
-            onClick={() => { setDirection("out"); setCategory(""); }}
+            onClick={() => { setDirection("out"); setCategory(""); setSubcategory(""); }}
             label="Spent"
           />
           <DirectionButton
             active={direction === "in"}
-            onClick={() => { setDirection("in"); setCategory(""); }}
+            onClick={() => { setDirection("in"); setCategory(""); setSubcategory(""); }}
             label="Received"
           />
           <DirectionButton
@@ -289,6 +358,7 @@ export function LogTransaction({
             onClick={() => {
               setDirection("move");
               setCategory("Transfer");
+              setSubcategory("");
               // A repeating transfer needs both legs scheduled — not built yet.
               setScheduleMode("once");
             }}
@@ -319,40 +389,37 @@ export function LogTransaction({
             className={inputClass}
             placeholder={direction === "move" ? "Moving to savings" : "Checkers Sixty60"}
           />
-          {/* Past descriptions as suggestions — the same shop gets typed a lot. */}
+          {/* Type-ahead from past entries — scoped to the chosen category
+              first, so "Braai packs" surfaces under Groceries, not Petrol. */}
           <datalist id="pwos-descriptions">
-            {recentDescriptions.map((description) => (
+            {descriptionOptions.map((description) => (
               <option key={description} value={description} />
             ))}
           </datalist>
+          {scopedDescriptions.length > 0 ? (
+            <ChipRow>
+              {scopedDescriptions.map((description) => (
+                <Chip
+                  key={description}
+                  onClick={() => setFieldValue("description", description)}
+                >
+                  {description}
+                </Chip>
+              ))}
+            </ChipRow>
+          ) : null}
         </Field>
 
         <Field label="Category">
-          {chips.length > 0 ? (
-            <div className="mb-2 mt-1.5 flex flex-wrap gap-1.5">
-              {chips.map((chip) => (
-                <button
-                  key={chip}
-                  type="button"
-                  aria-pressed={category === chip}
-                  onClick={() => setCategory(category === chip ? "" : chip)}
-                  className={`rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
-                    category === chip
-                      ? "border-accent/50 bg-accent/15 text-ink"
-                      : "border-line text-muted hover:border-line-2 hover:text-ink"
-                  }`}
-                >
-                  {chip}
-                </button>
-              ))}
-            </div>
-          ) : null}
           <select
             name="category"
             required={!category}
             className={inputClass}
             value={category}
-            onChange={(event) => setCategory(event.target.value)}
+            onChange={(event) => {
+              setCategory(event.target.value);
+              setSubcategory("");
+            }}
           >
             <option value="" disabled>
               Pick one…
@@ -363,7 +430,68 @@ export function LogTransaction({
               </option>
             ))}
           </select>
+          {/* Quick links (Settings → Categories): category, or category +
+              subcategory, pre-filled in one tap with the cursor back on the
+              amount. They never log by themselves — the amount always varies. */}
+          {links.length > 0 ? (
+            <ChipRow>
+              {links.map((link) => {
+                const active =
+                  category === link.category && subcategory === (link.subcategory ?? "");
+                return (
+                  <Chip
+                    key={link.id}
+                    active={active}
+                    onClick={() => {
+                      if (active) {
+                        setCategory("");
+                        setSubcategory("");
+                        return;
+                      }
+                      setCategory(link.category ?? "");
+                      setSubcategory(link.subcategory ?? "");
+                      focusAmount();
+                    }}
+                  >
+                    {link.label}
+                  </Chip>
+                );
+              })}
+            </ChipRow>
+          ) : null}
         </Field>
+
+        {showSubcategory ? (
+          <Field label="Subcategory" hint="Optional — a finer tag inside the category.">
+            <input
+              name="subcategory"
+              autoComplete="off"
+              list="pwos-subcategories"
+              value={subcategory}
+              onChange={(event) => setSubcategory(event.target.value)}
+              className={inputClass}
+              placeholder="None"
+            />
+            <datalist id="pwos-subcategories">
+              {subcategoryOptions.map((option) => (
+                <option key={option} value={option} />
+              ))}
+            </datalist>
+            {subcategoryOptions.length > 0 ? (
+              <ChipRow>
+                {subcategoryOptions.map((option) => (
+                  <Chip
+                    key={option}
+                    active={subcategory === option}
+                    onClick={() => setSubcategory(subcategory === option ? "" : option)}
+                  >
+                    {option}
+                  </Chip>
+                ))}
+              </ChipRow>
+            ) : null}
+          </Field>
+        ) : null}
 
         {/* The pair that shares a row depends on the mode. A transfer's two
             sides belong next to each other (From | To — reference app,
@@ -389,6 +517,15 @@ export function LogTransaction({
                 </option>
               ))}
             </select>
+            {frequentAccounts.length > 0 ? (
+              <ChipRow>
+                {frequentAccounts.map((account) => (
+                  <Chip key={account} onClick={() => setFieldValue("account", account)}>
+                    {account}
+                  </Chip>
+                ))}
+              </ChipRow>
+            ) : null}
           </Field>
 
           {needsDestination && !editing ? (

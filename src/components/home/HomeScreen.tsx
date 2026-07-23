@@ -255,6 +255,8 @@ export function HomeScreen() {
         allCategories={defaults.allCategories}
         kidAccounts={defaults.kidAccounts}
         suggestsNewCycle={defaults.suggestsNewCycle}
+        quickLinks={defaults.quickLinks}
+        frequent={defaults.frequent}
       />
     </div>
   );

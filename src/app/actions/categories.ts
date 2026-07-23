@@ -13,9 +13,12 @@ import type { MutationResult } from "./holdings";
  * until now — the last real hole in the self-service goal, and the reason the
  * contribution mismatch couldn't be cleaned up.
  *
- * Deliberately no subcategories. Twenty expense categories don't need a second
- * level, and nesting would add a picker step to every entry, which is the one
- * thing that has to stay fast.
+ * Subcategories exist since 2026-07-23 as an OPTIONAL second level (see
+ * lib/server/logmeta.ts) — the original "no subcategories" rule protected
+ * entry speed, and that protection stands: a subcategory is never required
+ * and the logger only shows the field once a category has any. Merging and
+ * renaming here operate on categories; a renamed category keeps its
+ * subcategories via ON UPDATE CASCADE.
  */
 
 function invalidate(): void {

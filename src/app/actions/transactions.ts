@@ -6,6 +6,7 @@ import { toLocalISODate } from "@/lib/crypto/history";
 import { expandSchedule, type Schedule } from "@/lib/schedule";
 import { isMoveCategory } from "@/lib/transactions";
 import { atomic, money, sql } from "@/lib/server/db";
+import { ensureLogMeta } from "@/lib/server/logmeta";
 import {
   applyDueScheduledMoves,
   consumePendingMove,
@@ -29,6 +30,8 @@ export type NewTransaction = {
   amountZar: number;
   direction: "out" | "in";
   category: string;
+  /** Optional second level (2026-07-23). Free text; never required. */
+  subcategory?: string;
   account: string;
   toAccount?: string;
   /** A kids_accounts id. Mutually exclusive with toAccount. */
@@ -83,10 +86,14 @@ export async function createTransaction(
   const type = input.direction === "in" ? "income" : isMove ? "transfer" : "expense";
   const occurredOn = input.date || toLocalISODate(new Date());
 
+  const subcategory = input.subcategory?.trim() || null;
+
   try {
     // Any scheduled entry whose date has arrived lands before this log, so
     // the balance the toast reports is never missing an overdue instalment.
     await applyDueScheduledMoves();
+    // Guarantees transactions.subcategory exists before the insert names it.
+    await ensureLogMeta();
 
     const from = await accountId(input.account);
     if (!from) return { ok: false, error: `Unknown account: ${input.account}` };
@@ -119,12 +126,22 @@ export async function createTransaction(
 
     const created = await sql<{ id: string }>`
       insert into transactions
-        (occurred_on, description, amount_zar, type, category, account_id, to_account_id,
-         to_kid_account_id, notes, starts_cycle)
+        (occurred_on, description, amount_zar, type, category, subcategory, account_id,
+         to_account_id, to_kid_account_id, notes, starts_cycle)
       values (${occurredOn}::date, ${description}, ${signed}, ${type}::transaction_type,
-              ${input.category}, ${from}, ${to}, ${toKid}::bigint, ${input.notes || null},
-              ${startsCycle})
+              ${input.category}, ${subcategory}, ${from}, ${to}, ${toKid}::bigint,
+              ${input.notes || null}, ${startsCycle})
       returning id::text`;
+
+    // A new subcategory joins the vocabulary the moment it's first used, so
+    // its chip exists next time without a management step.
+    if (subcategory) {
+      await sql`
+        insert into subcategories (category, name)
+        select ${input.category}, ${subcategory}
+        where exists (select 1 from categories where name = ${input.category})
+        on conflict do nothing`;
+    }
 
     if (startsCycle) {
       // Idempotent: logging a second payment on the same day must not create a
@@ -234,7 +251,10 @@ export async function createTransactionSeries(
   }
   if (!input.account) return { ok: false, error: "Pick an account." };
 
+  const subcategory = input.subcategory?.trim() || null;
+
   try {
+    await ensureLogMeta();
     const from = await accountId(input.account);
     if (!from) return { ok: false, error: `Unknown account: ${input.account}` };
 
@@ -264,9 +284,9 @@ export async function createTransactionSeries(
           if (entry.date <= todayIso) {
             return lazy`
               insert into transactions
-                (occurred_on, description, amount_zar, type, category, account_id, notes, starts_cycle)
+                (occurred_on, description, amount_zar, type, category, subcategory, account_id, notes, starts_cycle)
               values (${entry.date}::date, ${entry.description}, ${signed},
-                      ${type}::transaction_type, ${input.category}, ${from},
+                      ${type}::transaction_type, ${input.category}, ${subcategory}, ${from},
                       ${input.notes || null}, false)
               returning id::text`;
           }
@@ -274,9 +294,9 @@ export async function createTransactionSeries(
           return lazy`
             with t as (
               insert into transactions
-                (occurred_on, description, amount_zar, type, category, account_id, notes, starts_cycle)
+                (occurred_on, description, amount_zar, type, category, subcategory, account_id, notes, starts_cycle)
               values (${entry.date}::date, ${entry.description}, ${signed},
-                      ${type}::transaction_type, ${input.category}, ${from},
+                      ${type}::transaction_type, ${input.category}, ${subcategory}, ${from},
                       ${input.notes || null}, false)
               returning id
             )
@@ -349,10 +369,11 @@ export async function deleteTransaction(
     // its existence is the proof either way.
     const neverApplied = await consumePendingMove(recordId);
 
+    await ensureLogMeta();
     const rows = await sql<Record<string, unknown>>`
       delete from transactions where id = ${recordId}::bigint
       returning occurred_on::text, description, amount_zar, type::text,
-                category, original_category, account_id, to_account_id,
+                category, subcategory, original_category, account_id, to_account_id,
                 to_kid_account_id::text, notes, starts_cycle`;
     if (rows.length === 0) return { ok: false, error: "That entry no longer exists." };
 
@@ -396,14 +417,16 @@ export async function restoreTransaction(
 ): Promise<MutationResult> {
   const f = deleted.fields;
   try {
+    await ensureLogMeta();
     const occurredOn = String(f.occurred_on).slice(0, 10);
     const created = await sql<{ id: string }>`
       insert into transactions
-        (occurred_on, description, amount_zar, type, category, original_category, account_id,
-         to_account_id, to_kid_account_id, notes, starts_cycle)
+        (occurred_on, description, amount_zar, type, category, subcategory, original_category,
+         account_id, to_account_id, to_kid_account_id, notes, starts_cycle)
       values (${occurredOn}::date, ${f.description as string},
               ${money(f.amount_zar)}, ${f.type as string}::transaction_type,
-              ${(f.category as string) ?? null}, ${(f.original_category as string) ?? null},
+              ${(f.category as string) ?? null}, ${(f.subcategory as string) ?? null},
+              ${(f.original_category as string) ?? null},
               ${(f.account_id as string) ?? null}, ${(f.to_account_id as string) ?? null},
               ${(f.to_kid_account_id as string) ?? null}::bigint,
               ${(f.notes as string) ?? null}, ${f.starts_cycle === true})
@@ -441,6 +464,8 @@ export async function restoreTransaction(
 export type TransactionEdit = {
   description?: string; amountZar?: number; direction?: "out" | "in";
   category?: string; account?: string; date?: string; notes?: string;
+  /** Optional second level. Absent = keep; empty string = clear. */
+  subcategory?: string;
 };
 
 export async function updateTransaction(
@@ -496,6 +521,21 @@ export async function updateTransaction(
         occurred_on = coalesce(${edit.date || null}::date, occurred_on),
         notes       = ${edit.notes ?? null}
       where id = ${recordId}::bigint`;
+
+    // Sent means decided: an empty value clears the tag, absence keeps it.
+    if (edit.subcategory !== undefined) {
+      await ensureLogMeta();
+      const nextSubcategory = edit.subcategory.trim() || null;
+      await sql`update transactions set subcategory = ${nextSubcategory}
+                where id = ${recordId}::bigint`;
+      if (nextSubcategory && edit.category) {
+        await sql`
+          insert into subcategories (category, name)
+          select ${edit.category}, ${nextSubcategory}
+          where exists (select 1 from categories where name = ${edit.category})
+          on conflict do nothing`;
+      }
+    }
 
     if (pending) {
       // Keep the queued move in step with the edit; the sweep applies it when

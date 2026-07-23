@@ -18,6 +18,13 @@ import "server-only";
 import { toLocalISODate } from "@/lib/crypto/history";
 
 import { getAccounts } from "./accounts";
+import {
+  ensureLogMeta,
+  getLogFrequencies,
+  getQuickLinks,
+  type LogFrequencies,
+  type QuickLink,
+} from "./logmeta";
 import { applyDueScheduledMoves } from "./scheduled";
 import { getBudgetSummary } from "./budget";
 import { resolvePeriod, type PeriodKind } from "@/lib/period";
@@ -83,7 +90,17 @@ export type HomeSummary = {
     cycleStart: string;
     /** The current cycle has run its course, so income likely opens a new one. */
     suggestsNewCycle: boolean;
+    /** Configurable one-tap chips: category, or category + subcategory. */
+    quickLinks: QuickLink[];
+    /** Week-stable frequency rankings for the chip rows and autocomplete. */
+    frequent: LogFrequencies;
   };
+};
+
+const NO_FREQUENCIES: LogFrequencies = {
+  accounts: [],
+  subcategoriesByCategory: {},
+  descriptionsByCategory: {},
 };
 
 export async function getHome(
@@ -92,6 +109,18 @@ export async function getHome(
   // Home is the most-opened screen, so it is where scheduled entries whose
   // date has arrived get their balances applied — before anything is read.
   await applyDueScheduledMoves();
+
+  // Same reasoning for the log-sheet metadata (subcategories, quick links):
+  // provisioned here, tolerated everywhere. Home must render even if the
+  // provisioning is refused, so failures degrade to empty chips.
+  let quickLinks: QuickLink[] = [];
+  let frequent = NO_FREQUENCIES;
+  try {
+    await ensureLogMeta();
+    [quickLinks, frequent] = await Promise.all([getQuickLinks(), getLogFrequencies()]);
+  } catch (error) {
+    console.error("[getHome] log metadata unavailable", error);
+  }
 
   const todayIso = toLocalISODate(new Date());
   const [accounts, budget, recentRows, todayRow, scheduledRow, catRows, descRows, accountRows, allCatRows, kidRows] =
@@ -209,6 +238,8 @@ export async function getHome(
       kidAccounts: kidRows,
       cycleStart: cycle.start,
       suggestsNewCycle: cycle.elapsedDays >= 20,
+      quickLinks,
+      frequent,
     },
   };
 }

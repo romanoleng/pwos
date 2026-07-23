@@ -33,9 +33,10 @@ const KIND_LABEL: Record<string, string> = {
 /**
  * Rename, merge, retire and reorder categories (build report item 06).
  *
- * No subcategories, deliberately. Twenty expense categories don't need a
- * second level, and nesting would add a picker step to logging — the one
- * action that has to stay fast.
+ * Subcategories are managed lightly, not here: the vocabulary builds itself
+ * from what gets logged, and the Quick links card above can mint one. This
+ * screen stays about the top level, where rename/merge/retire have real
+ * consequences for budgets and history.
  *
  * Income and spending are separate lists because they're different shapes, and
  * because a merge across kinds would silently reclassify money.

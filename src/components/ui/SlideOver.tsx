@@ -44,9 +44,11 @@ export function SlideOver({
     document.body.style.overflow = "hidden";
 
     // Move focus into the panel so keyboard and screen-reader users land here.
-    const firstField = panelRef.current?.querySelector<HTMLElement>(
-      "input, select, textarea, button",
-    );
+    // A field marked data-autofocus (the amount in the logger) wins over
+    // whatever happens to come first in the DOM.
+    const firstField =
+      panelRef.current?.querySelector<HTMLElement>("[data-autofocus]") ??
+      panelRef.current?.querySelector<HTMLElement>("input, select, textarea, button");
     firstField?.focus();
 
     return () => {

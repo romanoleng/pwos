@@ -11,6 +11,7 @@ import { useToast } from "@/components/ui/Toast";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money, Sensitive } from "@/components/ui/Money";
 import { formatDate } from "@/lib/format";
+import type { HomeSummary } from "@/lib/server/home";
 import type { TransactionRow } from "@/lib/server/transactions";
 import type { TransactionType } from "@/lib/transactions";
 
@@ -41,15 +42,9 @@ const VIEWS = [
 
 export function TransactionsScreen() {
   const { data, error, mutate } = useSWR("/api/transactions", fetcher);
-  const { data: home } = useSWR<{
-    defaults: {
-      accounts: { label: string; kind: string }[];
-      allCategories: { name: string; kind: string }[];
-      categories: string[];
-      kidAccounts: { id: string; child: string | null; account: string }[];
-      suggestsNewCycle: boolean;
-    };
-  }>(
+  // The full defaults payload — the same shape Home reads, so the logger here
+  // is identical to the logger there (chips, quick links, autocomplete).
+  const { data: home } = useSWR<Pick<HomeSummary, "defaults">>(
     "/api/home",
     (url: string) => fetch(url).then((r) => r.json()),
   );
@@ -402,6 +397,7 @@ export function TransactionsScreen() {
                           description: row.description,
                           amountZar: row.amountZar,
                           category: row.category,
+                          subcategory: row.subcategory,
                           accountLabel: row.accountLabel,
                           date: row.date,
                           notes: row.notes,
@@ -447,6 +443,9 @@ export function TransactionsScreen() {
         kidAccounts={home?.defaults.kidAccounts}
         suggestsNewCycle={home?.defaults.suggestsNewCycle}
         suggestedCategories={home?.defaults.categories}
+        recentDescriptions={home?.defaults.descriptions}
+        quickLinks={home?.defaults.quickLinks}
+        frequent={home?.defaults.frequent}
       />
 
       {editing ? (
@@ -457,8 +456,10 @@ export function TransactionsScreen() {
           onClose={() => setEditing(null)}
           accounts={home?.defaults.accounts}
           allCategories={home?.defaults.allCategories}
-        kidAccounts={home?.defaults.kidAccounts}
-        suggestsNewCycle={home?.defaults.suggestsNewCycle}
+          kidAccounts={home?.defaults.kidAccounts}
+          suggestsNewCycle={home?.defaults.suggestsNewCycle}
+          quickLinks={home?.defaults.quickLinks}
+          frequent={home?.defaults.frequent}
           onSaved={() => {
             setEditing(null);
             setExpanded(null);
