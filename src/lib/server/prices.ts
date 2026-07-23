@@ -29,6 +29,10 @@ export type CoinPrice = {
   usd: number;
   /** 24h change in percent, ZAR-denominated. */
   change24hPct: number | null;
+  /** 7d / 30d change in percent, ZAR-denominated (coins/markets endpoint).
+      Null when that call fails — the longer windows go quiet, prices don't. */
+  change7dPct: number | null;
+  change30dPct: number | null;
 };
 
 export type PriceSnapshot = {
@@ -120,11 +124,65 @@ async function fetchPrices(ids: string[]): Promise<Map<string, CoinPrice>> {
         usd: value.usd,
         change24hPct:
           typeof value.zar_24h_change === "number" ? value.zar_24h_change : null,
+        change7dPct: null,
+        change30dPct: null,
       });
     }
   }
 
+  await addWindowChanges(prices, ids);
+
   return prices;
+}
+
+type MarketsRow = {
+  id: string;
+  price_change_percentage_7d_in_currency?: number | null;
+  price_change_percentage_30d_in_currency?: number | null;
+};
+
+/**
+ * 7d / 30d moves come from /coins/markets — /simple/price only offers 24h.
+ * A separate, best-effort call: if it fails, the longer windows read "—" but
+ * live prices (the screen's whole point) are untouched. 60d/90d are NOT
+ * available from any batched CoinGecko endpoint; those windows are computed
+ * from the app's own snapshots instead (lib/server/crypto.ts).
+ */
+async function addWindowChanges(
+  prices: Map<string, CoinPrice>,
+  ids: string[],
+): Promise<void> {
+  try {
+    for (let index = 0; index < ids.length; index += 250) {
+      const chunk = ids.slice(index, index + 250);
+      const params = new URLSearchParams({
+        vs_currency: "zar",
+        ids: chunk.join(","),
+        price_change_percentage: "7d,30d",
+        per_page: "250",
+        sparkline: "false",
+      });
+      const { url, headers } = endpoint(`/coins/markets?${params}`);
+      const response = await fetchWithRetry(url, headers);
+      if (!response.ok) throw new Error(`CoinGecko markets responded ${response.status}`);
+
+      const rows = (await response.json()) as MarketsRow[];
+      for (const row of rows) {
+        const price = prices.get(row.id);
+        if (!price) continue;
+        price.change7dPct =
+          typeof row.price_change_percentage_7d_in_currency === "number"
+            ? row.price_change_percentage_7d_in_currency
+            : null;
+        price.change30dPct =
+          typeof row.price_change_percentage_30d_in_currency === "number"
+            ? row.price_change_percentage_30d_in_currency
+            : null;
+      }
+    }
+  } catch (error) {
+    console.error("[prices] window changes unavailable", error);
+  }
 }
 
 /**

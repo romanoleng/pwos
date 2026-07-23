@@ -9,8 +9,10 @@
 import "server-only";
 
 import { CORE_5, FREEDOM_TARGET_ZAR, WALLET_ORDER } from "@/lib/constants";
+import { toLocalISODate } from "@/lib/crypto/history";
 import { assessMilestones, parseMilestones } from "@/lib/crypto/milestones";
 import type {
+  ChangeWindow,
   Core5Position,
   Holding,
   Mover,
@@ -115,11 +117,15 @@ export async function getPortfolio(): Promise<Portfolio> {
     let priceUsd: number | null = null;
     let priceSource: PriceSource = "none";
     let change24hPct: number | null = null;
+    let change7dPct: number | null = null;
+    let change30dPct: number | null = null;
 
     if (live) {
       priceZar = live.zar;
       priceUsd = live.usd;
       change24hPct = live.change24hPct;
+      change7dPct = live.change7dPct;
+      change30dPct = live.change30dPct;
       priceSource = "live";
     } else {
       // §5: coins with no provider id (ECNMG, MISC) use the stored value.
@@ -154,6 +160,8 @@ export async function getPortfolio(): Promise<Portfolio> {
       priceUsd,
       priceSource,
       change24hPct,
+      change7dPct,
+      change30dPct,
       investedZar,
       valueZar,
       pnlZar,
@@ -179,23 +187,25 @@ export async function getPortfolio(): Promise<Portfolio> {
         : null;
   }
 
-  // 24h move is value-weighted across priced holdings only. Including unpriced
-  // positions at 0% would understate a real move.
-  let change24hZar: number | null = null;
-  const priced = holdings.filter(
-    (h) => h.change24hPct !== null && h.valueZar !== null && h.valueZar > 0,
-  );
-  if (priced.length > 0) {
-    change24hZar = priced.reduce((sum, h) => {
-      const previous = h.valueZar! / (1 + h.change24hPct! / 100);
+  // A window's move is value-weighted across priced holdings only. Including
+  // unpriced positions at 0% would understate a real move.
+  function liveWindow(pctOf: (h: Holding) => number | null): ChangeWindow {
+    const priced = holdings.filter(
+      (h) => pctOf(h) !== null && h.valueZar !== null && h.valueZar > 0,
+    );
+    if (priced.length === 0) return null;
+    const zar = priced.reduce((sum, h) => {
+      const previous = h.valueZar! / (1 + pctOf(h)! / 100);
       return sum + (h.valueZar! - previous);
     }, 0);
+    const pricedValue = priced.reduce((sum, h) => sum + (h.valueZar ?? 0), 0);
+    if (pricedValue - zar <= 0) return null;
+    return { zar, pct: (zar / (pricedValue - zar)) * 100, basis: "live" };
   }
-  const pricedValue = priced.reduce((sum, h) => sum + (h.valueZar ?? 0), 0);
-  const change24hPct =
-    change24hZar !== null && pricedValue - change24hZar > 0
-      ? (change24hZar / (pricedValue - change24hZar)) * 100
-      : null;
+
+  const window24h = liveWindow((h) => h.change24hPct);
+  const change24hZar = window24h?.zar ?? null;
+  const change24hPct = window24h?.pct ?? null;
 
   const byWallet = new Map<string, Holding[]>();
   for (const holding of holdings) {
@@ -249,6 +259,11 @@ export async function getPortfolio(): Promise<Portfolio> {
 
   const pnl = totalValue - totalInvested;
 
+  // 60d/90d: no batched CoinGecko endpoint reaches that far back, so these
+  // come from the app's own daily snapshots — as the change in unrealised
+  // P&L, not raw value, so the monthly DCA deposit can't read as profit.
+  const [d60, d90] = await snapshotWindows(pnl, [60, 90]);
+
   return {
     totals: {
       valueZar: totalValue,
@@ -257,6 +272,13 @@ export async function getPortfolio(): Promise<Portfolio> {
       pnlPct: totalInvested > 0 ? (pnl / totalInvested) * 100 : null,
       change24hPct,
       change24hZar,
+      windows: {
+        "24h": window24h,
+        "7d": liveWindow((h) => h.change7dPct),
+        "30d": liveWindow((h) => h.change30dPct),
+        "60d": d60,
+        "90d": d90,
+      },
       freedomProgressPct: (totalValue / FREEDOM_TARGET_ZAR) * 100,
       freedomRemainingZar: Math.max(0, FREEDOM_TARGET_ZAR - totalValue),
     },
@@ -286,4 +308,51 @@ export async function getPortfolio(): Promise<Portfolio> {
       archivedCount,
     },
   };
+}
+
+/**
+ * The change in unrealised P&L versus the stored snapshot nearest each target,
+ * accepted only within a ±15-day tolerance — a "60d" figure measured against
+ * a 100-day-old snapshot would be a quiet lie. Null (window reads "—") until
+ * daily snapshots reach far enough back; % is against the snapshot's value.
+ */
+async function snapshotWindows(
+  pnlNow: number,
+  daysList: number[],
+): Promise<ChangeWindow[]> {
+  const TOLERANCE_DAYS = 15;
+  try {
+    const maxDays = Math.max(...daysList) + TOLERANCE_DAYS;
+    const rows = await sql<{ snapshot_on: string; value_zar: string; pnl_zar: string }>`
+      select snapshot_on::text, value_zar, pnl_zar from portfolio_snapshots
+      where snapshot_on >= (now() at time zone 'Africa/Johannesburg')::date - ${maxDays}
+      order by snapshot_on`;
+    if (rows.length === 0) return daysList.map(() => null);
+
+    const todayMs = Date.parse(`${toLocalISODate(new Date())}T00:00:00Z`);
+    return daysList.map((days) => {
+      let best: { row: (typeof rows)[number]; offDays: number } | null = null;
+      for (const row of rows) {
+        const date = String(row.snapshot_on).slice(0, 10);
+        const ageDays = Math.round((todayMs - Date.parse(`${date}T00:00:00Z`)) / 86_400_000);
+        const offDays = Math.abs(ageDays - days);
+        if (offDays <= TOLERANCE_DAYS && (!best || offDays < best.offDays)) {
+          best = { row, offDays };
+        }
+      }
+      if (!best) return null;
+      const thenValue = money(best.row.value_zar);
+      if (thenValue <= 0) return null;
+      const zar = pnlNow - money(best.row.pnl_zar);
+      return {
+        zar,
+        pct: (zar / thenValue) * 100,
+        basis: "snapshot" as const,
+        since: String(best.row.snapshot_on).slice(0, 10),
+      };
+    });
+  } catch (error) {
+    console.error("[snapshotWindows]", error);
+    return daysList.map(() => null);
+  }
 }

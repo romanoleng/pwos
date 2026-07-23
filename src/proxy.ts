@@ -31,6 +31,17 @@ function isPublic(pathname: string): boolean {
 export async function proxy(request: NextRequest) {
   const { pathname, search } = request.nextUrl;
 
+  // Vercel Cron is not a browser: it authenticates with the CRON_SECRET
+  // bearer header, never a session cookie. Only the snapshot endpoint, only
+  // with the exact secret, and a missing secret closes the lane entirely.
+  if (pathname === "/api/cron/snapshot") {
+    const secret = process.env.CRON_SECRET?.trim();
+    if (secret && request.headers.get("authorization") === `Bearer ${secret}`) {
+      return NextResponse.next();
+    }
+    return NextResponse.json({ error: "unauthorised" }, { status: 401 });
+  }
+
   const token = request.cookies.get(SESSION_COOKIE)?.value;
   const session = await verifySessionToken(token);
 

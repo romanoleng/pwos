@@ -18,6 +18,8 @@ export type Holding = {
   priceUsd: number | null;
   priceSource: PriceSource;
   change24hPct: number | null;
+  change7dPct: number | null;
+  change30dPct: number | null;
 
   investedZar: number;
   valueZar: number | null;
@@ -68,6 +70,26 @@ export type Mover = {
   valueZar: number;
 };
 
+export type ChangeWindowKey = "24h" | "7d" | "30d" | "60d" | "90d";
+
+/**
+ * The portfolio's move over one window (Romano's ask, 2026-07-23).
+ *
+ * Two honest bases, never mixed silently:
+ * - "live": value-weighted CoinGecko change on current holdings (24h/7d/30d).
+ * - "snapshot": change in unrealised P&L versus a stored daily snapshot
+ *   (60d/90d — no batched provider endpoint reaches that far back). P&L, not
+ *   value, so the monthly DCA deposit can't masquerade as profit; `since`
+ *   names the snapshot date the figure is measured against.
+ */
+export type ChangeWindow = {
+  zar: number;
+  pct: number;
+  basis: "live" | "snapshot";
+  /** Snapshot date the window is measured from (snapshot basis only). */
+  since?: string;
+} | null;
+
 export type PortfolioTotals = {
   valueZar: number;
   investedZar: number;
@@ -76,6 +98,8 @@ export type PortfolioTotals = {
   /** Weighted 24h move across holdings that have live prices. */
   change24hPct: number | null;
   change24hZar: number | null;
+  /** Every selectable window for the portfolio header. */
+  windows: Record<ChangeWindowKey, ChangeWindow>;
   /** Progress toward the R2m freedom number, 0-100 (uncapped above 100). */
   freedomProgressPct: number;
   freedomRemainingZar: number;

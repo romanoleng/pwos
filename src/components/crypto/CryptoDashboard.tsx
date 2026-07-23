@@ -14,7 +14,7 @@ import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money, Percent, Sensitive } from "@/components/ui/Money";
 import { FREEDOM_TARGET_ZAR } from "@/lib/constants";
-import type { Holding, Portfolio } from "@/lib/crypto/types";
+import type { ChangeWindowKey, Holding, Portfolio } from "@/lib/crypto/types";
 import {
   EMPTY_FILTER,
   filterHoldings,
@@ -26,7 +26,7 @@ import {
   type SortKey,
 } from "@/lib/crypto/filter";
 import { toLocalISODate } from "@/lib/crypto/history";
-import { formatPercent, formatQuantity } from "@/lib/format";
+import { formatDate, formatPercent, formatQuantity } from "@/lib/format";
 
 type ApiError = { error: string; message: string; variable?: string };
 
@@ -280,6 +280,14 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
   );
 }
 
+const CHANGE_WINDOWS: { key: ChangeWindowKey; label: string }[] = [
+  { key: "24h", label: "24h" },
+  { key: "7d", label: "7d" },
+  { key: "30d", label: "30d" },
+  { key: "60d", label: "60d" },
+  { key: "90d", label: "90d" },
+];
+
 function PortfolioHeader({
   data,
   isValidating,
@@ -288,6 +296,11 @@ function PortfolioHeader({
   isValidating: boolean;
 }) {
   const { totals, meta } = data;
+  // 24h/7d/30d are live CoinGecko moves on current holdings; 60d/90d come
+  // from stored snapshots as the change in P&L (deposits excluded). The
+  // optional chaining tolerates a cached payload from before windows existed.
+  const [windowKey, setWindowKey] = useState<ChangeWindowKey>("24h");
+  const selected = totals.windows?.[windowKey] ?? null;
 
   return (
     <Card>
@@ -309,12 +322,36 @@ function PortfolioHeader({
             variant="whole"
             className="text-3xl font-semibold tracking-tight md:text-4xl"
           />
-          {totals.change24hPct !== null ? (
+          {selected ? (
             <span className="text-sm">
-              <Percent value={totals.change24hPct} signed /> <span className="text-faint">24h</span>
+              <Percent value={selected.pct} signed />{" "}
+              <span className="text-faint">{windowKey}</span>
             </span>
-          ) : null}
+          ) : (
+            <span className="text-sm text-faint">— {windowKey}</span>
+          )}
         </p>
+
+        <div
+          role="radiogroup"
+          aria-label="Change window"
+          className="mt-3 flex w-fit gap-0.5 rounded-lg border border-line p-0.5"
+        >
+          {CHANGE_WINDOWS.map((option) => (
+            <button
+              key={option.key}
+              type="button"
+              role="radio"
+              aria-checked={windowKey === option.key}
+              onClick={() => setWindowKey(option.key)}
+              className={`rounded-md px-2 py-1 text-[11px] transition-colors ${
+                windowKey === option.key ? "bg-raise text-ink" : "text-muted hover:text-ink"
+              }`}
+            >
+              {option.label}
+            </button>
+          ))}
+        </div>
 
         <dl className="mt-5 grid grid-cols-2 gap-x-4 gap-y-3 sm:grid-cols-4">
           <Stat label="Invested">
@@ -330,9 +367,23 @@ function PortfolioHeader({
               <span className="text-muted">—</span>
             )}
           </Stat>
-          <Stat label="24h">
-            {totals.change24hZar !== null ? (
-              <Money value={totals.change24hZar} variant="whole" signed />
+          <Stat label={windowKey}>
+            {selected ? (
+              <>
+                <Money value={selected.zar} variant="whole" signed />
+                {selected.basis === "snapshot" && selected.since ? (
+                  // Measured against a stored snapshot, dated so it's honest.
+                  <span className="block text-[10px] leading-snug text-faint">
+                    P&L vs {formatDate(selected.since)}
+                  </span>
+                ) : null}
+              </>
+            ) : windowKey === "60d" || windowKey === "90d" ? (
+              // These windows are built from daily snapshots; say what's
+              // missing instead of showing a silent dash.
+              <span className="block text-[11px] leading-snug text-faint">
+                Needs daily snapshots
+              </span>
             ) : (
               <span className="text-muted">—</span>
             )}
