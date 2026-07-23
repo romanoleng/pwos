@@ -1,6 +1,6 @@
 "use client";
 
-import { AlertTriangle, ChevronDown, Pencil, Receipt } from "lucide-react";
+import { AlertTriangle, ChevronDown, Pencil, Plus, Receipt } from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
@@ -10,6 +10,7 @@ import { Card, CardBody } from "@/components/ui/Card";
 import { EditableAmount } from "@/components/ui/EditableAmount";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money } from "@/components/ui/Money";
+import { RecordEditor } from "@/components/ui/RecordEditor";
 import type { AccountsView as AccountsData } from "@/lib/server/accounts";
 import { formatDate } from "@/lib/format";
 
@@ -39,6 +40,7 @@ export function AccountsScreen() {
   // Tap a row to reveal its actions. Every expandable surface in the app works
   // this way and offers an explicit Collapse, so nothing traps you open.
   const [expanded, setExpanded] = useState<string | null>(null);
+  const [adding, setAdding] = useState(false);
 
   if (error) {
     return (
@@ -72,7 +74,16 @@ export function AccountsScreen() {
             className="mt-1.5 block text-3xl font-semibold tracking-tight"
           />
           <p className="mt-1 text-xs text-muted">
-            Capitec Main + GOtyme only. Business and savings excluded.
+            {/* Named from the data — hardcoding "Capitec Main + GOtyme" went
+                stale the day a third spendable card arrived. */}
+            {(() => {
+              const spendable = accounts
+                .filter((entry) => entry.account.spendable)
+                .map((entry) => entry.account.label);
+              return spendable.length > 0
+                ? `${spendable.join(" + ")} only. Everything else excluded.`
+                : "No accounts marked spendable yet.";
+            })()}
           </p>
 
           <dl className="mt-5 grid grid-cols-3 gap-4">
@@ -118,6 +129,16 @@ export function AccountsScreen() {
         id="accounts:list"
         title="Accounts"
         description="Balance as recorded, with ledger activity as a cross-check."
+        action={
+          <button
+            type="button"
+            onClick={() => setAdding(true)}
+            className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium hover:bg-surface-2"
+          >
+            <Plus size={13} strokeWidth={2} />
+            Add
+          </button>
+        }
       >
         <ul className="divide-y divide-line">
           {accounts.map((entry) => {
@@ -231,6 +252,15 @@ export function AccountsScreen() {
         is the net of transactions logged in PWOS — a cross-check, not a balance,
         because the ledger doesn&apos;t reach back to when each account was opened.
       </p>
+
+      {adding ? (
+        <RecordEditor
+          open
+          kind="account"
+          onClose={() => setAdding(false)}
+          onSaved={() => void mutate()}
+        />
+      ) : null}
     </div>
   );
 }

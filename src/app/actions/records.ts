@@ -37,7 +37,7 @@ export async function createRecord(
 
   try {
     const columns = Object.keys(values);
-    const params: (string | number | null)[] = columns.map((c) => values[c]);
+    const params: (string | number | boolean | null)[] = columns.map((c) => values[c]);
 
     // accounts.id is a readable text key rather than a sequence, so it has to
     // be generated here — and made unique, since two "Savings" accounts at

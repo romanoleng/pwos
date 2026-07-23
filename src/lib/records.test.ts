@@ -42,10 +42,24 @@ describe("validateRecord", () => {
 
   it("keeps an optional blank as null rather than zero", () => {
     // NULL means "not known"; 0 would claim the balance is genuinely nothing.
+    // spendable is a checkbox: absent means false, never null — an account is
+    // either in the safe-to-spend set or it isn't.
     const result = validateRecord(RECORD_TYPES.account, {
       label: "Discovery", kind: "cash", balance_zar: "",
     });
-    assert.deepEqual(result, { values: { label: "Discovery", kind: "cash", balance_zar: null } });
+    assert.deepEqual(result, {
+      values: { label: "Discovery", kind: "cash", balance_zar: null, spendable: false },
+    });
+  });
+
+  it("reads a ticked checkbox as true", () => {
+    // FormData sends "on" for a checked box (the Tangem Visa case).
+    const result = validateRecord(RECORD_TYPES.account, {
+      label: "Tangem Visa", kind: "cash", balance_zar: "72", spendable: "on",
+    });
+    assert.deepEqual(result, {
+      values: { label: "Tangem Visa", kind: "cash", balance_zar: 72, spendable: true },
+    });
   });
 
   it("rejects a non-numeric amount", () => {

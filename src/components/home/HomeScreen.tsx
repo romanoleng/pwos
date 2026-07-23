@@ -69,6 +69,17 @@ export function HomeScreen() {
   const usedPct =
     budget.budgetedZar > 0 ? (budget.spentZar / budget.budgetedZar) * 100 : 0;
 
+  // The first block is about what's spendable — the payment cards only
+  // (Romano's ask, 2026-07-23). Savings and business stay one tap away under
+  // All. The label names them rather than hardcoding "Capitec Main + GOtyme",
+  // which went stale the day a third spendable card arrived.
+  const spendableCards = cards.filter((card) => card.spendable);
+  const tiles = spendableCards.length > 0 ? spendableCards : cards;
+  const spendableLabel =
+    spendableCards.length > 0
+      ? spendableCards.map((card) => card.label).join(" + ")
+      : "No accounts marked spendable";
+
   return (
     <div className="space-y-4">
       <PeriodBar
@@ -90,7 +101,7 @@ export function HomeScreen() {
                 className="mt-1.5 block text-4xl font-semibold tracking-tight"
               />
               <p className="mt-1 text-xs text-muted">
-                Capitec Main + GOtyme ·{" "}
+                {spendableLabel} ·{" "}
                 <Money value={available.totalCashZar} variant="whole" /> cash in total
               </p>
             </div>
@@ -105,12 +116,12 @@ export function HomeScreen() {
             </button>
           </div>
 
-          {/* Every account at a glance, right in the first block (Romano's
-              ask, 2026-07-23) — small tiles that scroll sideways, replacing
-              the "Your cards" list that sat a scroll away below Recent. A tap
-              lands on Accounts for the full detail. */}
+          {/* The payment cards at a glance, right in the first block (Romano's
+              ask, 2026-07-23; narrowed to spendable-only the same day) —
+              small tiles that scroll sideways. Savings, business and the rest
+              live behind the All tile on Accounts. */}
           <div className="no-scrollbar -mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-0.5">
-            {cards.map((card) => {
+            {tiles.map((card) => {
               const Icon = KIND_ICONS[card.kind] ?? Wallet;
               return (
                 <Link
@@ -121,12 +132,6 @@ export function HomeScreen() {
                   <p className="flex items-center gap-1.5 text-[10px] text-faint">
                     <Icon size={11} strokeWidth={1.75} className="shrink-0" />
                     <span className="truncate">{card.label}</span>
-                    {card.spendable ? (
-                      <span
-                        aria-label="Counts toward safe-to-spend"
-                        className="ml-auto size-1.5 shrink-0 rounded-full bg-accent"
-                      />
-                    ) : null}
                   </p>
                   {card.balanceZar === null ? (
                     <p className="mt-1 text-[11px] text-warn">Not recorded</p>

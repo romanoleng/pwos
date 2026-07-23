@@ -69,7 +69,29 @@ export function RecordEditor({
       }
     >
       <form action={onSubmit} id="record-form">
-        {type.fields.map((field) => (
+        {type.fields.map((field) =>
+          field.kind === "boolean" ? (
+            // A checkbox is its own label — the generic Field wrapper would
+            // stack the caption above an orphaned box.
+            <label
+              key={field.name}
+              className="mb-4 flex items-start gap-2.5 rounded-lg border border-line bg-surface-2 px-3 py-2.5"
+            >
+              <input
+                type="checkbox"
+                name={field.name}
+                className="mt-0.5 size-4 shrink-0 accent-[var(--accent)]"
+              />
+              <span className="min-w-0">
+                <span className="block text-xs font-medium">{field.label}</span>
+                {field.hint ? (
+                  <span className="mt-0.5 block text-[11px] leading-relaxed text-faint">
+                    {field.hint}
+                  </span>
+                ) : null}
+              </span>
+            </label>
+          ) : (
           <Field key={field.name} label={field.label} hint={field.hint}>
             {field.kind === "select" ? (
               <select
@@ -102,7 +124,8 @@ export function RecordEditor({
               />
             )}
           </Field>
-        ))}
+          ),
+        )}
 
         {error ? <p className="mt-1 text-xs text-loss">{error}</p> : null}
       </form>

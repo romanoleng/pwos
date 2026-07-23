@@ -27,7 +27,7 @@ export type RecordKind =
 export type RecordField = {
   name: string;
   label: string;
-  kind: "text" | "currency" | "select";
+  kind: "text" | "currency" | "select" | "boolean";
   required?: boolean;
   options?: string[];
   hint?: string;
@@ -69,6 +69,13 @@ export const RECORD_TYPES: Record<RecordKind, RecordType> = {
       {
         name: "balance_zar", label: "Balance", kind: "currency",
         hint: MONEY_HINT, allowNegative: true,
+      },
+      {
+        // Until 2026-07-23 this flag only existed in the database, so a new
+        // payment card (the Tangem Visa) couldn't count toward safe-to-spend
+        // without a manual SQL update.
+        name: "spendable", label: "Counts toward safe-to-spend", kind: "boolean",
+        hint: "Home's Available number — and its card tiles — include only these.",
       },
     ],
   },
@@ -151,12 +158,19 @@ export function recordType(kind: string): RecordType | null {
 export function validateRecord(
   type: RecordType,
   input: Record<string, unknown>,
-): { values: Record<string, string | number | null> } | { error: string } {
-  const values: Record<string, string | number | null> = {};
+): { values: Record<string, string | number | boolean | null> } | { error: string } {
+  const values: Record<string, string | number | boolean | null> = {};
 
   for (const field of type.fields) {
     const raw = input[field.name];
     const text = typeof raw === "string" ? raw.trim() : raw;
+
+    // Before the empty-check: an unticked checkbox arrives as null and means
+    // false, not "not provided".
+    if (field.kind === "boolean") {
+      values[field.name] = raw === "on" || raw === "true" || raw === true;
+      continue;
+    }
 
     if (text === undefined || text === null || text === "") {
       if (field.required) return { error: `${field.label} is required.` };
