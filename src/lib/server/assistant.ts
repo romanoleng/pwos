@@ -31,6 +31,14 @@ import { getGoals } from "./goals";
 import { getHome } from "./home";
 import { getNetWorth } from "./networth";
 
+/**
+ * The model behind Ask. Haiku is the cheapest tier (~5× cheaper than Opus) and
+ * more than sharp enough for personal-finance Q&A over a small snapshot — so a
+ * few dollars of API credit stretch to months of use. Bump this to a Sonnet or
+ * Opus id if answers ever need more depth.
+ */
+const ASSISTANT_MODEL = "claude-haiku-4-5";
+
 /** A single turn in the conversation. Only these two roles are ever accepted. */
 export type AssistantTurn = { role: "user" | "assistant"; content: string };
 
@@ -231,7 +239,7 @@ export async function askAssistant(history: AssistantTurn[]): Promise<string> {
   let message: Anthropic.Message;
   try {
     message = await client.messages.create({
-      model: "claude-opus-4-8",
+      model: ASSISTANT_MODEL,
       max_tokens: 1024,
       system: SYSTEM_PREAMBLE + context,
       messages: history.map((turn) => ({ role: turn.role, content: turn.content })),
