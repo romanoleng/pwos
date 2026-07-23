@@ -25,6 +25,7 @@ import Anthropic from "@anthropic-ai/sdk";
 import { FREEDOM_TARGET_LABEL, FREEDOM_TARGET_ZAR } from "@/lib/constants";
 
 import { getBudgetSummary } from "./budget";
+import { getPortfolio } from "./crypto";
 import { getDebtSummary } from "./debt";
 import { env } from "./env";
 import { getGoals } from "./goals";
@@ -102,6 +103,13 @@ function pct(value: number | null | undefined): string {
   return `${value.toFixed(1)}%`;
 }
 
+/** Coin quantities: enough precision for dust, trimmed of trailing zeros. */
+function qty(value: number): string {
+  if (!Number.isFinite(value)) return "0";
+  const decimals = value >= 1 ? 4 : 8;
+  return Number(value.toFixed(decimals)).toString();
+}
+
 /**
  * The financial snapshot the model reasons over. Deliberately built from the
  * same summary functions the screens use, so the assistant can never be more
@@ -109,12 +117,13 @@ function pct(value: number | null | undefined): string {
  * describes the backend.
  */
 async function buildContext(): Promise<string> {
-  const [home, budget, netWorth, debt, goals] = await Promise.all([
+  const [home, budget, netWorth, debt, goals, portfolio] = await Promise.all([
     getHome("cycle"),
     getBudgetSummary(),
     getNetWorth(),
     getDebtSummary(),
     getGoals(),
+    getPortfolio(),
   ]);
 
   const lines: string[] = [];
@@ -154,6 +163,29 @@ async function buildContext(): Promise<string> {
   lines.push("- Assets by class:");
   for (const cls of netWorth.classes) {
     lines.push(`  - ${cls.category}: ${rand(cls.valueZar)}${cls.live ? " (live)" : ""}`);
+  }
+
+  // Crypto per coin, aggregated across every wallet a coin sits in (a coin can
+  // appear in several). Live prices; this is what answers "what's my TIA worth".
+  const byCoin = new Map<string, { qty: number; valueZar: number; priceZar: number | null }>();
+  for (const h of portfolio.holdings) {
+    const entry = byCoin.get(h.symbol) ?? { qty: 0, valueZar: 0, priceZar: h.priceZar };
+    entry.qty += h.quantity;
+    entry.valueZar += h.valueZar ?? 0;
+    if (h.priceZar !== null) entry.priceZar = h.priceZar;
+    byCoin.set(h.symbol, entry);
+  }
+  const coins = [...byCoin.entries()].sort((a, b) => b[1].valueZar - a[1].valueZar);
+  lines.push("");
+  lines.push("## Crypto portfolio");
+  lines.push(
+    `- Total value: ${rand(portfolio.totals.valueZar)}, invested: ${rand(portfolio.totals.investedZar)}, unrealised P&L: ${rand(portfolio.totals.pnlZar)} (${pct(portfolio.totals.pnlPct)})`,
+  );
+  if (coins.length > 0) {
+    lines.push("- Holdings by coin (quantity · value · unit price):");
+    for (const [symbol, e] of coins) {
+      lines.push(`  - ${symbol}: ${qty(e.qty)} · ${rand(e.valueZar)} · ${rand(e.priceZar)} each`);
+    }
   }
 
   lines.push("");

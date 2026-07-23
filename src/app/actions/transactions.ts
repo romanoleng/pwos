@@ -62,11 +62,24 @@ function invalidate(): void {
   }
 }
 
-/** Resolves a display label or alias to a canonical account id. */
+/**
+ * Resolves a display label or alias to a canonical account id.
+ *
+ * The alias table is only seeded for the original accounts (the migration
+ * script). An account CREATED in the app — CreativeDigital, a new card — has no
+ * alias row, so alias-only lookup returned null and, as a transfer destination,
+ * failed silently: the source was debited and nothing was credited, so the
+ * money appeared to vanish. Falling back to the account's own label resolves
+ * anything visible in the UI, alias table or not.
+ */
 async function accountId(name: string): Promise<string | null> {
-  const rows = await sql<{ account_id: string }>`
-    select account_id from account_aliases where alias = ${name.trim().toLowerCase()}`;
-  return rows[0]?.account_id ?? null;
+  const clean = name.trim().toLowerCase();
+  const alias = await sql<{ account_id: string }>`
+    select account_id from account_aliases where alias = ${clean}`;
+  if (alias[0]?.account_id) return alias[0].account_id;
+  const byLabel = await sql<{ id: string }>`
+    select id from accounts where lower(label) = ${clean} and not archived limit 1`;
+  return byLabel[0]?.id ?? null;
 }
 
 export async function createTransaction(
@@ -171,9 +184,16 @@ export async function createTransaction(
         };
       }
     } else if (to && to !== from) {
+      // No `balance_zar is not null` guard here, unlike the source: money
+      // arriving is always a known amount, so a destination with no recorded
+      // balance is initialised from zero rather than left untouched. Without
+      // this a transfer into an unreconciled account (a new business account
+      // never given an opening balance) credited nothing and the transfer
+      // looked like a loss. The toast reports the new balance so the
+      // assumption is visible and easy to correct.
       const received = await sql<{ label: string; balance_zar: string | null }>`
         update accounts set balance_zar = coalesce(balance_zar, 0) + ${Math.abs(input.amountZar)}
-        where id = ${to} and balance_zar is not null
+        where id = ${to}
         returning label, balance_zar`;
       if (received[0]) {
         destinationMoved = {
