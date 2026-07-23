@@ -167,11 +167,16 @@ async function buildContext(): Promise<string> {
 
   // Crypto per coin, aggregated across every wallet a coin sits in (a coin can
   // appear in several). Live prices; this is what answers "what's my TIA worth".
-  const byCoin = new Map<string, { qty: number; valueZar: number; priceZar: number | null }>();
+  const byCoin = new Map<
+    string,
+    { qty: number; valueZar: number; investedZar: number; priceZar: number | null }
+  >();
   for (const h of portfolio.holdings) {
-    const entry = byCoin.get(h.symbol) ?? { qty: 0, valueZar: 0, priceZar: h.priceZar };
+    const entry =
+      byCoin.get(h.symbol) ?? { qty: 0, valueZar: 0, investedZar: 0, priceZar: h.priceZar };
     entry.qty += h.quantity;
     entry.valueZar += h.valueZar ?? 0;
+    entry.investedZar += h.investedZar ?? 0;
     if (h.priceZar !== null) entry.priceZar = h.priceZar;
     byCoin.set(h.symbol, entry);
   }
@@ -182,10 +187,16 @@ async function buildContext(): Promise<string> {
     `- Total value: ${rand(portfolio.totals.valueZar)}, invested: ${rand(portfolio.totals.investedZar)}, unrealised P&L: ${rand(portfolio.totals.pnlZar)} (${pct(portfolio.totals.pnlPct)})`,
   );
   if (coins.length > 0) {
-    lines.push("- Holdings by coin (quantity · value · unit price):");
+    lines.push("- Holdings by coin (quantity · current value · invested/cost · P&L · unit price):");
     for (const [symbol, e] of coins) {
-      lines.push(`  - ${symbol}: ${qty(e.qty)} · ${rand(e.valueZar)} · ${rand(e.priceZar)} each`);
+      const pnl = e.valueZar - e.investedZar;
+      lines.push(
+        `  - ${symbol}: ${qty(e.qty)} · value ${rand(e.valueZar)} · invested ${rand(e.investedZar)} · P&L ${rand(pnl)} · ${rand(e.priceZar)} each`,
+      );
     }
+    lines.push(
+      "- Note: some coins may show R0 invested where the cost basis hasn't been entered yet — say so rather than treating it as a real zero.",
+    );
   }
 
   lines.push("");
