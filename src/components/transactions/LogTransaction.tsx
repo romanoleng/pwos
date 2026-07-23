@@ -3,6 +3,7 @@
 import { AlertTriangle, Repeat as RepeatIcon } from "lucide-react";
 import { useRef, useState } from "react";
 
+import { createCategory } from "@/app/actions/budgets";
 import {
   createTransaction,
   createTransactionSeries,
@@ -98,6 +99,15 @@ export function LogTransaction({
   );
   const [category, setCategory] = useState(editing?.category ?? "");
   const [subcategory, setSubcategory] = useState(editing?.subcategory ?? "");
+  // Categories created right here, so a budget line for something the app has
+  // never seen (e.g. "CreativeDigital Expenses") doesn't mean leaving the sheet.
+  // Held locally too so the new name is usable this instant; it's already in the
+  // database, so the next open loads it from there like any other.
+  const [extraCategories, setExtraCategories] = useState<string[]>([]);
+  const [addingCategory, setAddingCategory] = useState(false);
+  const [newCategory, setNewCategory] = useState("");
+  const [categoryBusy, setCategoryBusy] = useState(false);
+  const [categoryError, setCategoryError] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [duplicate, setDuplicate] = useState<string | null>(null);
@@ -127,7 +137,37 @@ export function LogTransaction({
   const wantKind =
     direction === "move" ? ["transfer", "contribution"] : direction === "out" ? ["expense"] : ["income"];
   const fromDb = allCategories.filter((c) => wantKind.includes(c.kind)).map((c) => c.name);
-  const categories = fromDb.length > 0 ? fromDb : MOVE_CATEGORY_OPTIONS;
+  const baseCategories = fromDb.length > 0 ? fromDb : MOVE_CATEGORY_OPTIONS;
+  const categories = [
+    ...baseCategories,
+    ...extraCategories.filter((c) => !baseCategories.includes(c)),
+  ];
+
+  // The kind a new category takes on follows the direction you're logging in:
+  // a "Spent" category is an expense, "Received" is income. (Move maps to more
+  // than one kind, so new categories aren't offered there — those are rare and
+  // structural.) This is why the "+ New" control only shows for out/in.
+  const newCategoryKind =
+    direction === "out" ? "expense" : direction === "in" ? "income" : null;
+
+  async function addCategory() {
+    const name = newCategory.trim();
+    if (!name || newCategoryKind === null) return;
+    setCategoryBusy(true);
+    setCategoryError(null);
+    const result = await createCategory({ name, kind: newCategoryKind });
+    setCategoryBusy(false);
+    if (!result.ok) {
+      setCategoryError(result.error);
+      return;
+    }
+    setExtraCategories((prev) => [...prev, result.data.name]);
+    setCategory(result.data.name);
+    setSubcategory("");
+    setNewCategory("");
+    setAddingCategory(false);
+    focusAmount();
+  }
 
   // The configurable quick links (Settings → Categories), scoped to whatever
   // the current direction's picker actually offers. Until the table has rows
@@ -171,6 +211,9 @@ export function LogTransaction({
   function reset() {
     setCategory("");
     setSubcategory("");
+    setAddingCategory(false);
+    setNewCategory("");
+    setCategoryError(null);
     setDuplicate(null);
     setPending(null);
     setError(null);
@@ -458,6 +501,63 @@ export function LogTransaction({
                 );
               })}
             </ChipRow>
+          ) : null}
+
+          {/* Add a category without leaving the sheet — the missing piece that
+              sent Romano to Settings mid-log. Only for Spent/Received, where the
+              kind is unambiguous. */}
+          {newCategoryKind !== null ? (
+            addingCategory ? (
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  autoFocus
+                  value={newCategory}
+                  onChange={(event) => {
+                    setNewCategory(event.target.value);
+                    setCategoryError(null);
+                  }}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      void addCategory();
+                    }
+                  }}
+                  className={inputClass}
+                  placeholder="CreativeDigital Expenses"
+                  maxLength={60}
+                />
+                <button
+                  type="button"
+                  disabled={categoryBusy || newCategory.trim() === ""}
+                  onClick={() => void addCategory()}
+                  className="h-10 shrink-0 rounded-lg bg-accent px-3 text-[11px] font-medium text-white transition-opacity disabled:opacity-50"
+                >
+                  {categoryBusy ? "Adding…" : "Add"}
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAddingCategory(false);
+                    setNewCategory("");
+                    setCategoryError(null);
+                  }}
+                  className="h-10 shrink-0 rounded-lg border border-line px-3 text-[11px] text-muted transition-colors hover:text-ink"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAddingCategory(true)}
+                className="mt-2 text-[11px] font-medium text-accent hover:underline"
+              >
+                + New category
+              </button>
+            )
+          ) : null}
+          {categoryError ? (
+            <p className="mt-1.5 text-[11px] text-loss">{categoryError}</p>
           ) : null}
         </Field>
 
