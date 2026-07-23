@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
 import { THEME_INIT_SCRIPT } from "@/components/theme";
+import { NAV_INIT_SCRIPT } from "@/lib/navPosition";
 
 import "./globals.css";
 
@@ -24,6 +25,12 @@ export const metadata: Metadata = {
     title: "PWOS",
     statusBarStyle: "black-translucent",
   },
+  other: {
+    // Next only emits the modern `mobile-web-app-capable`; older iOS Safari
+    // still reads the apple- prefixed one, and standalone display is the
+    // whole point (Romano's ask, 2026-07-23).
+    "apple-mobile-web-app-capable": "yes",
+  },
   // Private tool — keep it out of every index, not that it's reachable anyway.
   robots: { index: false, follow: false, nocache: true },
   icons: {
@@ -34,9 +41,9 @@ export const metadata: Metadata = {
 
 export const viewport: Viewport = {
   themeColor: [
-    // Matches the default themes' --bg: Midnight navy and Paper ivory.
+    // Matches the default themes' --bg: Midnight navy and Ledger neutral.
     { media: "(prefers-color-scheme: dark)", color: "#070b14" },
-    { media: "(prefers-color-scheme: light)", color: "#f6f2ea" },
+    { media: "(prefers-color-scheme: light)", color: "#fafafa" },
   ],
   width: "device-width",
   initialScale: 1,
@@ -50,8 +57,9 @@ export default function RootLayout({
   return (
     <html lang="en-ZA" suppressHydrationWarning className={`${inter.variable} h-full`}>
       <head>
-        {/* Must run before paint — see THEME_INIT_SCRIPT. */}
+        {/* Must run before paint — see THEME_INIT_SCRIPT / NAV_INIT_SCRIPT. */}
         <script dangerouslySetInnerHTML={{ __html: THEME_INIT_SCRIPT }} />
+        <script dangerouslySetInnerHTML={{ __html: NAV_INIT_SCRIPT }} />
       </head>
       <body className="min-h-full font-sans antialiased">{children}</body>
     </html>
