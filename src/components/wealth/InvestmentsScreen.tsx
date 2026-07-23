@@ -4,8 +4,11 @@ import Link from "next/link";
 import useSWR from "swr";
 
 import { LoadingCard } from "@/components/ui/LoadingCard";
-import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui/Card";
+import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
+import { DeleteRecordButton } from "@/components/ui/DeleteRecordButton";
 import { EditableAmount } from "@/components/ui/EditableAmount";
+import { EditableName } from "@/components/ui/EditableName";
 import { Money, Sensitive } from "@/components/ui/Money";
 import { groupByChild, isKidInvestment } from "@/lib/kids";
 import type { GoalsSummary } from "@/lib/server/goals";
@@ -54,8 +57,13 @@ export function InvestmentsScreen() {
       </Card>
 
       {classes.map((entry) => (
-        <Card key={entry.category}>
-          <CardHeader title={entry.category} action={<Money value={entry.valueZar} variant="whole" className="text-sm" />} />
+        <CollapsibleSection
+          key={entry.category}
+          id={`investments:${entry.category}`}
+          title={entry.category}
+          tone="info"
+          action={<Money value={entry.valueZar} variant="whole" className="text-sm" />}
+        >
           <ul className="divide-y divide-line">
             {entry.rows.map((row) => (
               <li key={row.recordId} className="flex items-center justify-between gap-3 px-4 py-2.5">
@@ -64,31 +72,35 @@ export function InvestmentsScreen() {
               </li>
             ))}
           </ul>
-        </Card>
+        </CollapsibleSection>
       ))}
 
       {kidGroups.map((group) => (
-        <Card key={group.child}>
-          <CardHeader
-            title={`${group.child}'s investments`}
-            description="Retirement annuity, tax-free savings and the share account, each tracked on its own."
-            action={
-              <span className="text-sm">
-                <Money value={group.balanceZar} variant="whole" />
-                {group.monthlyZar > 0 ? (
-                  <span className="ml-2 text-[11px] text-faint">
-                    +<Money value={group.monthlyZar} variant="whole" />
-                    /mo
-                  </span>
-                ) : null}
-              </span>
-            }
-          />
+        <CollapsibleSection
+          key={group.child}
+          id={`investments:kids:${group.child}`}
+          title={`${group.child}'s investments`}
+          description="Retirement annuity, tax-free savings and the share account, each tracked on its own."
+          tone="info"
+          action={
+            <span className="text-sm">
+              <Money value={group.balanceZar} variant="whole" />
+              {group.monthlyZar > 0 ? (
+                <span className="ml-2 text-[11px] text-faint">
+                  +<Money value={group.monthlyZar} variant="whole" />
+                  /mo
+                </span>
+              ) : null}
+            </span>
+          }
+        >
           <ul className="divide-y divide-line">
             {group.accounts.map((kid) => (
               <li key={kid.recordId} className="flex items-center justify-between gap-3 px-4 py-2.5">
                 <div className="min-w-0">
-                  <p className="truncate text-sm"><Sensitive>{kid.account}</Sensitive></p>
+                  <p className="flex min-w-0 items-center text-sm">
+                    <EditableName kind="kidAccount" recordId={kid.recordId} value={kid.account} onSaved={refresh} />
+                  </p>
                   <p className="mt-0.5 text-[11px] text-faint">
                     {kid.institution ?? "—"} · contributing{" "}
                     <EditableAmount
@@ -101,20 +113,23 @@ export function InvestmentsScreen() {
                     /mo
                   </p>
                 </div>
-                <EditableAmount
-                  editKey="kids.balance"
-                  recordId={kid.recordId}
-                  value={kid.balanceZar}
-                  onSaved={refresh}
-                  className="text-sm"
-                />
+                <span className="flex shrink-0 items-center gap-1">
+                  <EditableAmount
+                    editKey="kids.balance"
+                    recordId={kid.recordId}
+                    value={kid.balanceZar}
+                    onSaved={refresh}
+                    className="text-sm"
+                  />
+                  <DeleteRecordButton kind="kidAccount" recordId={kid.recordId} label={kid.account} onDone={refresh} />
+                </span>
               </li>
             ))}
           </ul>
-        </Card>
+        </CollapsibleSection>
       ))}
 
-      <p className="text-[11px] text-faint">Tap any balance or contribution to update it.</p>
+      <p className="text-[11px] text-faint">Tap a balance to update it, or a name to rename it.</p>
     </div>
   );
 }

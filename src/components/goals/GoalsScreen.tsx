@@ -98,7 +98,7 @@ export function GoalsScreen() {
         <CollapsibleSection
           id="savings:accounts"
           title="Savings accounts"
-          description="The pots themselves. Goals above are labels on this money."
+          description="Your savings pots and their balances."
           action={
             <Money
               value={savingsBanks.reduce((t, c) => t + (c.balanceZar ?? 0), 0)}

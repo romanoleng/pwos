@@ -49,6 +49,22 @@ export function toggleSection(id: string): void {
   emit();
 }
 
+/**
+ * Header tints. Default is the neutral section-head; a tone gives a whole
+ * screen its own colour (Investments is "info" — Romano's ask, 2026-07-24)
+ * without touching the neutral grouping used everywhere else.
+ */
+const TONE_HEAD: Record<string, string> = {
+  default: "bg-section-head",
+  info: "bg-info/10",
+  gain: "bg-gain/10",
+};
+const TONE_TITLE: Record<string, string> = {
+  default: "",
+  info: "text-info",
+  gain: "text-gain",
+};
+
 export function CollapsibleSection({
   id,
   title,
@@ -56,6 +72,7 @@ export function CollapsibleSection({
   action,
   children,
   defaultCollapsed = false,
+  tone = "default",
 }: {
   /** Stable across renders — it keys the open/closed state. */
   id: string;
@@ -65,6 +82,8 @@ export function CollapsibleSection({
   action?: ReactNode;
   children: ReactNode;
   defaultCollapsed?: boolean;
+  /** Header colour — gives a screen its own identity. Default is neutral. */
+  tone?: "default" | "info" | "gain";
 }) {
   // First sight of this id applies its default; after that the user's taps
   // own the state for the session.
@@ -88,7 +107,7 @@ export function CollapsibleSection({
           header IS the card, so it rounds all four corners and drops the
           divider that would otherwise underline nothing. */}
       <div
-        className={`flex items-center gap-1 bg-section-head px-2 py-2.5 pr-4 ${
+        className={`flex items-center gap-1 px-2 py-2.5 pr-4 ${TONE_HEAD[tone]} ${
           open ? "rounded-t-[11px] border-b border-line" : "rounded-[11px]"
         }`}
       >
@@ -106,7 +125,7 @@ export function CollapsibleSection({
             }`}
           />
           <span className="min-w-0">
-            <span className="block truncate text-sm font-semibold tracking-tight">
+            <span className={`block truncate text-sm font-semibold tracking-tight ${TONE_TITLE[tone]}`}>
               {title}
             </span>
             {description ? (
