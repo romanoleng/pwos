@@ -38,6 +38,8 @@ export type HomeCard = {
   label: string;
   kind: string;
   spendable: boolean;
+  /** Which bank the account lives at — shown as a tag on savings pots. */
+  institution: string | null;
   balanceZar: number | null;
   lastActivity: string | null;
 };
@@ -203,6 +205,7 @@ export async function getHome(
         label: a.account.label,
         kind: a.account.kind,
         spendable: a.account.spendable,
+        institution: a.institution,
         balanceZar: a.storedZar,
         lastActivity: a.lastActivity,
       })),

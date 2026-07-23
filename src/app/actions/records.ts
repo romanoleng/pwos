@@ -4,6 +4,7 @@ import { revalidateTag } from "next/cache";
 
 import { parseAmount } from "@/lib/amount";
 import { recordType, slugify, validateRecord } from "@/lib/records";
+import { ensureInstitutionColumn } from "@/lib/server/accounts";
 import { query, sql } from "@/lib/server/db";
 import { getZarPerUsd } from "@/lib/server/prices";
 
@@ -65,6 +66,9 @@ export async function createRecord(
     // accounts.id is a readable text key rather than a sequence, so it has to
     // be generated here.
     if (type.idIsText) {
+      // The account fields include `institution`, a column added after the
+      // first schema — make sure it exists before the insert names it.
+      await ensureInstitutionColumn();
       // A transfer resolves its destination by account NAME, so two accounts
       // sharing a name (case-insensitively) would let money land in whichever
       // one happens to sort first — silently. Require distinct names; "Savings

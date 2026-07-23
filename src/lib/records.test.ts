@@ -48,7 +48,7 @@ describe("validateRecord", () => {
       label: "Discovery", kind: "cash", balance_zar: "",
     });
     assert.deepEqual(result, {
-      values: { label: "Discovery", kind: "cash", balance_zar: null, spendable: false },
+      values: { label: "Discovery", kind: "cash", institution: null, balance_zar: null, spendable: false },
     });
   });
 
@@ -58,7 +58,7 @@ describe("validateRecord", () => {
       label: "Tangem Visa", kind: "cash", balance_zar: "72", spendable: "on",
     });
     assert.deepEqual(result, {
-      values: { label: "Tangem Visa", kind: "cash", balance_zar: 72, spendable: true },
+      values: { label: "Tangem Visa", kind: "cash", institution: null, balance_zar: 72, spendable: true },
     });
   });
 

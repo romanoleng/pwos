@@ -73,6 +73,13 @@ export const RECORD_TYPES: Record<RecordKind, RecordType> = {
         options: ["cash", "savings", "business", "crypto", "other"],
       },
       {
+        // A tag so each savings pot shows where it lives (Romano's ask,
+        // 2026-07-24). Free text, not a fixed list — new banks shouldn't need
+        // a code change.
+        name: "institution", label: "Bank", kind: "text",
+        placeholder: "Capitec / GOtyme", hint: "Optional — shown as a tag.",
+      },
+      {
         name: "balance_zar", label: "Balance", kind: "currency",
         hint: `${MONEY_HINT} Dollars convert to rands at today's rate when you save.`,
         allowNegative: true, currencyToggle: true,

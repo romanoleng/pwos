@@ -15,6 +15,8 @@ export type AccountBalance = {
   account: CanonicalAccount;
   /** NULL means genuinely unrecorded, which is not the same as zero. */
   storedZar: number | null;
+  /** Where the account lives — "Capitec", "GOtyme" — shown as a tag. */
+  institution: string | null;
   netWorthRecordId: string | null;
   transactionNetZar: number;
   transactionCount: number;
@@ -35,14 +37,29 @@ type Row = {
   entity: "personal" | "business" | "family";
   spendable: boolean;
   balance_zar: string | null;
+  institution: string | null;
   txn_count: string;
   txn_net: string | null;
   last_activity: string | null;
 };
 
+/**
+ * `institution` was added after the first schema (Romano's ask, 2026-07-24 — a
+ * tag so each savings pot shows whether it lives at Capitec or GOtyme). Added
+ * lazily, once per server instance, so a read never precedes the column
+ * existing regardless of whether the migration has been run yet.
+ */
+let institutionEnsured = false;
+export async function ensureInstitutionColumn(): Promise<void> {
+  if (institutionEnsured) return;
+  await sql`alter table accounts add column if not exists institution text`;
+  institutionEnsured = true;
+}
+
 export async function getAccounts(): Promise<AccountsView> {
+  await ensureInstitutionColumn();
   const rows = await sql<Row>`
-    select a.id, a.label, a.kind, a.entity, a.spendable, a.balance_zar,
+    select a.id, a.label, a.kind, a.entity, a.spendable, a.balance_zar, a.institution,
            count(t.id)              as txn_count,
            sum(t.amount_zar)        as txn_net,
            max(t.occurred_on)::text as last_activity
@@ -64,6 +81,7 @@ export async function getAccounts(): Promise<AccountsView> {
         aliases: [],
       },
       storedZar: moneyOrNull(r.balance_zar),
+      institution: r.institution?.trim() || null,
       netWorthRecordId: r.id,
       transactionNetZar: money(r.txn_net),
       transactionCount: Number(r.txn_count),

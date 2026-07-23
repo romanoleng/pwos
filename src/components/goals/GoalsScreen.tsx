@@ -87,8 +87,13 @@ export function GoalsScreen() {
                 key={card.id}
                 className="flex items-center justify-between gap-3 px-4 py-3"
               >
-                <p className="flex min-w-0 items-center gap-1 text-sm font-medium">
+                <p className="flex min-w-0 flex-wrap items-center gap-1.5 text-sm font-medium">
                   <EditableName kind="account" recordId={card.id} value={card.label} onSaved={refresh} />
+                  {card.institution ? (
+                    <span className="shrink-0 rounded bg-raise px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-muted">
+                      {card.institution}
+                    </span>
+                  ) : null}
                 </p>
                 <span className="flex shrink-0 items-center gap-1">
                   {card.balanceZar === null ? (
