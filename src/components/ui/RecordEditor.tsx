@@ -89,6 +89,7 @@ export function RecordEditor({
                 name={field.name}
                 required={field.required}
                 placeholder={field.placeholder ?? "0,00"}
+                allowNegative={field.allowNegative}
               />
             ) : (
               <input

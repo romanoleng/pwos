@@ -13,6 +13,7 @@ import { Money } from "@/components/ui/Money";
 import { RecordEditor } from "@/components/ui/RecordEditor";
 import { useToast } from "@/components/ui/Toast";
 import { parseAmount } from "@/lib/amount";
+import { editableField } from "@/lib/editable";
 import { formatDate } from "@/lib/format";
 import type { RecordKind } from "@/lib/records";
 import type { ResetState } from "@/lib/server/reset";
@@ -255,6 +256,11 @@ export function ResetScreen() {
                       setDraft((current) => ({ ...current, [key]: next }))
                     }
                     placeholder="—"
+                    // A field with no floor may go into arrears (the ABSA
+                    // card); the phone's decimal keypad has no minus key, so
+                    // the sign gets a button. Floored fields (debts, goals)
+                    // stay bare and can't grow a stray sign.
+                    allowNegative={editableField(row.editKey)?.min === undefined}
                     aria-label={`New value for ${row.label}`}
                     className={`tnum h-10 w-32 shrink-0 rounded-lg border bg-surface-2 px-2 text-right text-base outline-none transition-colors sm:h-9 sm:text-sm ${
                       invalid

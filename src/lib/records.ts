@@ -32,6 +32,8 @@ export type RecordField = {
   options?: string[];
   hint?: string;
   placeholder?: string;
+  /** Currency fields only: may start below zero (an account in arrears). */
+  allowNegative?: boolean;
 };
 
 export type RecordType = {
@@ -66,7 +68,7 @@ export const RECORD_TYPES: Record<RecordKind, RecordType> = {
       },
       {
         name: "balance_zar", label: "Balance", kind: "currency",
-        hint: MONEY_HINT,
+        hint: MONEY_HINT, allowNegative: true,
       },
     ],
   },
