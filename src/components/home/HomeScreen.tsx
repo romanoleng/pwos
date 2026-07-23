@@ -1,6 +1,14 @@
 "use client";
 
-import { ArrowRight, Plus } from "lucide-react";
+import {
+  ArrowRight,
+  Briefcase,
+  CreditCard,
+  PiggyBank,
+  Plus,
+  Wallet,
+  type LucideIcon,
+} from "lucide-react";
 import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
@@ -18,6 +26,14 @@ async function fetcher(url: string): Promise<HomeSummary> {
   if (!response.ok) throw new Error("Could not load your dashboard.");
   return response.json();
 }
+
+/** Tile icon per account kind — crypto never reaches Home's cards. */
+const KIND_ICONS: Record<string, LucideIcon> = {
+  cash: CreditCard,
+  savings: PiggyBank,
+  business: Briefcase,
+  other: Wallet,
+};
 
 /**
  * Home is the daily driver: what's available, the cards, the budget, and one
@@ -87,6 +103,50 @@ export function HomeScreen() {
               <Plus size={16} strokeWidth={2.25} />
               Log
             </button>
+          </div>
+
+          {/* Every account at a glance, right in the first block (Romano's
+              ask, 2026-07-23) — small tiles that scroll sideways, replacing
+              the "Your cards" list that sat a scroll away below Recent. A tap
+              lands on Accounts for the full detail. */}
+          <div className="no-scrollbar -mx-4 mt-4 flex gap-2 overflow-x-auto px-4 pb-0.5">
+            {cards.map((card) => {
+              const Icon = KIND_ICONS[card.kind] ?? Wallet;
+              return (
+                <Link
+                  key={card.id}
+                  href="/accounts"
+                  className="w-[7.5rem] shrink-0 rounded-lg border border-line bg-surface-2 px-2.5 py-2 transition-colors hover:border-line-2"
+                >
+                  <p className="flex items-center gap-1.5 text-[10px] text-faint">
+                    <Icon size={11} strokeWidth={1.75} className="shrink-0" />
+                    <span className="truncate">{card.label}</span>
+                    {card.spendable ? (
+                      <span
+                        aria-label="Counts toward safe-to-spend"
+                        className="ml-auto size-1.5 shrink-0 rounded-full bg-accent"
+                      />
+                    ) : null}
+                  </p>
+                  {card.balanceZar === null ? (
+                    <p className="mt-1 text-[11px] text-warn">Not recorded</p>
+                  ) : (
+                    <Money
+                      value={card.balanceZar}
+                      variant="whole"
+                      className="mt-1 block truncate text-[13px] font-medium"
+                    />
+                  )}
+                </Link>
+              );
+            })}
+            <Link
+              href="/accounts"
+              className="flex w-16 shrink-0 flex-col items-center justify-center gap-1 rounded-lg border border-line text-[10px] text-muted transition-colors hover:border-line-2 hover:text-ink"
+            >
+              <ArrowRight size={13} strokeWidth={1.75} />
+              All
+            </Link>
           </div>
 
           {/* The old three-card stack, compressed to rows: spent and came-in
@@ -190,50 +250,6 @@ export function HomeScreen() {
             ))}
           </ul>
         )}
-      </Card>
-
-      <Card>
-        <CardHeader
-          title="Your cards"
-          action={
-            <Link href="/accounts" className="text-[11px] text-accent hover:underline">
-              All accounts
-            </Link>
-          }
-        />
-        <ul className="divide-y divide-line">
-          {cards.map((card) => (
-            <li
-              key={card.id}
-              className="flex items-center justify-between gap-3 px-4 py-2.5"
-            >
-              <div className="min-w-0">
-                <p className="flex items-center gap-1.5 truncate text-sm">
-                  {card.label}
-                  {card.spendable ? (
-                    <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[9px] font-medium uppercase tracking-wide text-accent">
-                      Spendable
-                    </span>
-                  ) : null}
-                </p>
-                {card.lastActivity ? (
-                  <p className="mt-0.5 text-[11px] text-faint">
-                    last used {formatDate(card.lastActivity)}
-                  </p>
-                ) : null}
-              </div>
-              {card.balanceZar === null ? (
-                <span className="shrink-0 text-xs text-warn">Not recorded</span>
-              ) : (
-                <Money
-                  value={card.balanceZar}
-                  variant="whole"
-                  className="shrink-0 text-sm"
-                />
-              )}
-            </li>
-          ))}
-        </ul>
       </Card>
 
       <Link
