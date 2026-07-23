@@ -55,9 +55,13 @@ export async function createBudgetLine(input: {
       return { ok: false, error: `${category} isn't a category yet.` };
     }
     if (known[0].kind !== "expense") {
-      // The budget tracks what he spends to live. Money put away is planned on
-      // Goals against the thing it funds.
-      return { ok: false, error: `${category} is money put away — plan it on Goals.` };
+      // The budget tracks what he spends to live. Money put away (savings,
+      // crypto investment) is planned on the Savings screen, not budgeted as a
+      // spend.
+      return {
+        ok: false,
+        error: `${category} is money you put away, not a spend — track it on the Savings screen instead.`,
+      };
     }
 
     const existing = await sql<{ id: string }>`

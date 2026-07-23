@@ -11,7 +11,7 @@ export default function BudgetsPage() {
     <>
       <PageHeader
         title="Budgets"
-        description="Runs payday to payday. Spending only — money you put away is planned on Goals."
+        description="Runs payday to payday. Spending only — money you put away is planned on Savings."
       />
       <BudgetScreen />
     </>

@@ -293,7 +293,7 @@ export function BudgetScreen() {
           title="Categories"
           description={
             throughPct === null
-              ? "What you spend to live. Money you put away is planned on Goals."
+              ? "What you spend to live. Money you put away is planned on Savings."
               : `The mark on each bar is where you are in the cycle — ${Math.round(
                   throughPct,
                 )}% through, ${cycle.remainingDays} ${
