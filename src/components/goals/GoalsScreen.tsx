@@ -3,13 +3,13 @@
 import useSWR from "swr";
 
 import { LoadingCard } from "@/components/ui/LoadingCard";
-import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { Card, CardBody } from "@/components/ui/Card";
 import { DeleteRecordButton } from "@/components/ui/DeleteRecordButton";
 import { EditableAmount } from "@/components/ui/EditableAmount";
 import { EditableName } from "@/components/ui/EditableName";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money } from "@/components/ui/Money";
-import { formatDate, formatPercent } from "@/lib/format";
+import { formatDate } from "@/lib/format";
 import { isKidInvestment } from "@/lib/kids";
 import type { GoalsSummary } from "@/lib/server/goals";
 import type { HomeSummary } from "@/lib/server/home";
@@ -44,17 +44,62 @@ export function GoalsScreen() {
     <div className="space-y-4">
       {/* The crypto freedom card lived here; removed 2026-07-24 (Romano's ask)
           — it's the crypto module's long-term target, not savings, and this
-          screen is about the pots. It still leads the Crypto tab. */}
-      <Card>
-        <CardHeader
-          title="Savings goals"
-          description={`${data.goals.length} goals · ${formatPercent(data.totals.targetZar > 0 ? (data.totals.savedZar / data.totals.targetZar) * 100 : 0)} of targets`}
-          action={<div className="text-right text-sm"><Money value={data.totals.savedZar} variant="whole" /><p className="text-[11px] text-faint"><Money value={data.totals.monthlyZar} variant="whole" />/mo</p></div>}
-        />
-        {data.goals.length === 0 ? (
-          <CardBody className="py-8 text-center text-xs text-muted">No savings goals yet.</CardBody>
+          screen is about the pots. It still leads the Crypto tab.
+
+          Accounts and goals were two separate cards; merged 2026-07-24 into
+          one Savings section — the split read as redundant. The real bank
+          pots come first, then the goals (each keeping its target). */}
+      <CollapsibleSection
+        id="savings:all"
+        title="Savings"
+        description="Your pots and the targets on them."
+        action={
+          <div className="text-right text-sm">
+            <Money
+              value={
+                data.totals.savedZar +
+                savingsBanks.reduce((t, c) => t + (c.balanceZar ?? 0), 0)
+              }
+              variant="whole"
+            />
+            {data.totals.monthlyZar > 0 ? (
+              <p className="text-[11px] text-faint">
+                <Money value={data.totals.monthlyZar} variant="whole" />/mo
+              </p>
+            ) : null}
+          </div>
+        }
+      >
+        {savingsBanks.length === 0 && data.goals.length === 0 ? (
+          <CardBody className="py-8 text-center text-xs text-muted">
+            No savings pots or goals yet.
+          </CardBody>
         ) : (
           <ul className="divide-y divide-line">
+            {savingsBanks.map((card) => (
+              <li
+                key={card.id}
+                className="flex items-center justify-between gap-3 px-4 py-3"
+              >
+                <p className="flex min-w-0 items-center gap-1 text-sm font-medium">
+                  <EditableName kind="account" recordId={card.id} value={card.label} onSaved={refresh} />
+                </p>
+                <span className="flex shrink-0 items-center gap-1">
+                  {card.balanceZar === null ? (
+                    <span className="text-[11px] text-warn">Not recorded</span>
+                  ) : (
+                    <EditableAmount
+                      editKey="netWorth.value"
+                      recordId={card.id}
+                      value={card.balanceZar}
+                      onSaved={refresh}
+                      className="text-sm"
+                    />
+                  )}
+                  <DeleteRecordButton kind="account" recordId={card.id} label={card.label} onDone={refresh} />
+                </span>
+              </li>
+            ))}
             {data.goals.map((goal) => (
               <li key={goal.recordId} className="px-4 py-3">
                 <div className="flex items-baseline justify-between gap-3">
@@ -92,49 +137,7 @@ export function GoalsScreen() {
             ))}
           </ul>
         )}
-      </Card>
-
-      {savingsBanks.length > 0 ? (
-        <CollapsibleSection
-          id="savings:accounts"
-          title="Savings accounts"
-          description="Your savings pots and their balances."
-          action={
-            <Money
-              value={savingsBanks.reduce((t, c) => t + (c.balanceZar ?? 0), 0)}
-              variant="whole"
-              className="text-sm"
-            />
-          }
-        >
-          <ul className="divide-y divide-line">
-            {savingsBanks.map((card) => (
-              <li
-                key={card.id}
-                className="flex items-center justify-between gap-3 px-4 py-3"
-              >
-                <p className="flex min-w-0 items-center gap-1 text-sm font-medium">
-                  <EditableName kind="account" recordId={card.id} value={card.label} onSaved={refresh} />
-                </p>
-                <span className="flex shrink-0 items-center gap-1">
-                  {card.balanceZar === null ? (
-                    <span className="text-[11px] text-warn">Not recorded</span>
-                  ) : (
-                    <EditableAmount
-                      editKey="netWorth.value"
-                      recordId={card.id}
-                      value={card.balanceZar}
-                      onSaved={refresh}
-                      className="text-sm"
-                    />
-                  )}
-                  <DeleteRecordButton kind="account" recordId={card.id} label={card.label} onDone={refresh} />
-                </span>
-              </li>
-            ))}
-          </ul>
-        </CollapsibleSection>
-      ) : null}
+      </CollapsibleSection>
 
       <CollapsibleSection
         id="goals:kids"
