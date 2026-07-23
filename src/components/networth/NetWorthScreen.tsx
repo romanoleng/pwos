@@ -106,6 +106,27 @@ export function NetWorthScreen() {
         </ul>
       </Card>
 
+      {data.liabilities.length > 0 ? (
+        <Card>
+          <CardHeader
+            title="Liabilities"
+            description="What you owe — the home loan and every tracked debt, on one page."
+          />
+          <ul className="divide-y divide-line">
+            {data.liabilities.map((row) => (
+              <li key={row.recordId} className="flex items-baseline justify-between gap-3 px-4 py-3">
+                <span className="truncate text-sm">{row.name}</span>
+                <Money value={-row.balanceZar} variant="whole" className="text-sm text-loss" />
+              </li>
+            ))}
+            <li className="flex items-baseline justify-between gap-3 border-t border-line px-4 py-3">
+              <span className="text-sm font-medium">Total owed</span>
+              <Money value={-data.liabilitiesZar} variant="whole" className="text-sm font-medium text-loss" />
+            </li>
+          </ul>
+        </Card>
+      ) : null}
+
       {Math.abs(cryptoDrift) > 100 ? (
         <p className="text-[11px] leading-relaxed text-faint">
           Your Net Worth table records crypto at{" "}

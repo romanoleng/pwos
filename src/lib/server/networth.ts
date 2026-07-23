@@ -18,6 +18,8 @@ export type NetWorthClass = {
 export type NetWorthSummary = {
   assetsZar: number; liabilitiesZar: number; netZar: number;
   classes: NetWorthClass[];
+  /** Each debt as a line, so the whole net-worth story fits on one page. */
+  liabilities: { recordId: string; name: string; balanceZar: number }[];
   dedupedLiabilitiesZar: number; dedupedNetZar: number; duplicateOvercountZar: number;
   storedCryptoZar: number; liveCryptoZar: number;
 };
@@ -61,6 +63,11 @@ export async function getNetWorth(): Promise<NetWorthSummary> {
     liabilitiesZar: debt.totalZar,
     netZar: assetsZar - debt.totalZar,
     classes,
+    liabilities: debt.rows.map((r) => ({
+      recordId: r.recordId,
+      name: r.name,
+      balanceZar: r.balanceZar,
+    })),
     dedupedLiabilitiesZar: debt.dedupedTotalZar,
     dedupedNetZar: assetsZar - debt.dedupedTotalZar,
     duplicateOvercountZar: debt.totalZar - debt.dedupedTotalZar,
