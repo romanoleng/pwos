@@ -84,6 +84,8 @@ describe("spendPace", () => {
   const base = {
     cycle: getBudgetCycle(new Date("2026-07-21T10:00:00Z")), // 27 of 30 days
     lines: [],
+    contributions: [],
+    availableContributions: [],
     unbudgetedZar: 0,
     unbudgetedCategories: [],
     dailyAllowanceZar: null,

@@ -36,6 +36,7 @@ export function BudgetScreen() {
   const { mutate: mutateAll } = useSWRConfig();
   const toast = useToast();
   const [adding, setAdding] = useState(false);
+  const [addingAway, setAddingAway] = useState(false);
   const [incomeDraft, setIncomeDraft] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   // A budget edit changes figures Home also shows (budget left, per-day).
@@ -119,8 +120,9 @@ export function BudgetScreen() {
     );
   }
 
-  const { cycle, lines, totals, unbudgetedZar, unbudgetedCategories, dailyAllowanceZar, plan } =
+  const { cycle, lines, contributions, availableContributions, totals, unbudgetedZar, unbudgetedCategories, dailyAllowanceZar, plan } =
     data;
+  const puttingAwayZar = contributions.reduce((t, c) => t + c.budgetedZar, 0);
   const pace = spendPace(data);
   const overspent = totals.remainingZar < 0;
 
@@ -476,12 +478,79 @@ export function BudgetScreen() {
         )}
       </Card>
 
+      <Card>
+        <CardHeader
+          title="Putting away"
+          description="Set monthly amounts you invest or save — crypto, savings. They come off your income to allocate, but never count as spending."
+          action={
+            <button
+              type="button"
+              onClick={() => setAddingAway(true)}
+              className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium hover:bg-surface-2"
+            >
+              <Plus size={13} strokeWidth={2} />
+              Add
+            </button>
+          }
+        />
+        {contributions.length === 0 ? (
+          <CardBody className="py-6 text-center text-xs text-muted">
+            Nothing set aside yet. Add a line — e.g. &ldquo;Crypto&rdquo; at R3 000/mo —
+            to build it into your monthly plan.
+          </CardBody>
+        ) : (
+          <ul className="divide-y divide-line">
+            {contributions.map((line) => (
+              <li key={line.recordId} className="flex items-baseline justify-between gap-3 px-4 py-3">
+                <p className="flex items-center gap-2 text-sm font-medium">
+                  {line.category}
+                  <span className="text-[11px] font-normal text-faint">
+                    <Money value={line.actualZar} variant="whole" /> put away so far
+                  </span>
+                </p>
+                <span className="flex shrink-0 items-center gap-2 text-sm">
+                  <EditableAmount
+                    editKey="budget.budgeted"
+                    recordId={line.recordId}
+                    value={line.budgetedZar}
+                    onSaved={refresh}
+                  />
+                  <span className="text-faint">/mo</span>
+                  <button
+                    type="button"
+                    onClick={() => void onRemove(line.recordId, line.category)}
+                    disabled={busy}
+                    aria-label={`Remove the ${line.category} put-away line`}
+                    className="text-faint transition-colors hover:text-loss disabled:opacity-40"
+                  >
+                    <Trash2 size={12} strokeWidth={1.75} />
+                  </button>
+                </span>
+              </li>
+            ))}
+            <li className="flex items-baseline justify-between gap-3 border-t border-line px-4 py-3">
+              <span className="text-sm font-medium">Total put away / month</span>
+              <Money value={puttingAwayZar} variant="whole" className="text-sm font-medium" />
+            </li>
+          </ul>
+        )}
+      </Card>
+
       <BudgetLineEditor
         open={adding}
         onClose={() => setAdding(false)}
         onSaved={refresh}
         available={data.availableCategories}
         cycleLabel={`${formatDate(cycle.start)} → ${formatDate(cycle.end)}`}
+      />
+
+      <BudgetLineEditor
+        open={addingAway}
+        onClose={() => setAddingAway(false)}
+        onSaved={refresh}
+        available={availableContributions}
+        cycleLabel={`${formatDate(cycle.start)} → ${formatDate(cycle.end)}`}
+        moneyKind="contribution"
       />
     </div>
   );

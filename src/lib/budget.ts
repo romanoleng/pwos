@@ -135,6 +135,10 @@ export type BudgetLine = {
 export type BudgetSummary = {
   cycle: BudgetCycle;
   lines: BudgetLine[];
+  /** "Putting away" lines — planned monthly contributions (crypto, savings). */
+  contributions: BudgetLine[];
+  /** Contribution categories with no put-away line yet, for the add picker. */
+  availableContributions: { name: string; kind: string }[];
   totals: {
     budgetedZar: number;
     actualZar: number;

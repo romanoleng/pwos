@@ -85,7 +85,7 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
   const cycle = await getCurrentCycle(now);
   const floor = await cutoverFloor();
 
-  const [lines, unbudgeted, income, spare, plan, puttingAway] = await Promise.all([
+  const [lines, contributionLines, spareContributions, unbudgeted, income, spare, plan, puttingAway] = await Promise.all([
     sql<{ id: string; category: string; kind: string | null; budgeted_zar: string; actual_zar: string; txn_count: string }>`
       select b.id::text, b.category, b.kind, b.budgeted_zar,
              coalesce(sum(-t.amount_zar), 0) as actual_zar,
@@ -102,6 +102,35 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
         and (${floor}::date is null or b.cycle_start >= ${floor}::date)
       group by b.id, b.category, b.kind, b.budgeted_zar
       order by actual_zar desc`,
+
+    // "Putting away" lines — the planned monthly contributions (crypto,
+    // savings). Same shape as expense lines but their actuals come from
+    // contribution transactions, so a set-aside can be planned like a bill.
+    sql<{ id: string; category: string; kind: string | null; budgeted_zar: string; actual_zar: string; txn_count: string }>`
+      select b.id::text, b.category, b.kind, b.budgeted_zar,
+             coalesce(sum(-t.amount_zar), 0) as actual_zar,
+             count(t.id)                     as txn_count
+      from budgets b
+      join categories c on c.name = b.category
+      left join transactions t
+        on t.category = b.category
+       and t.type = 'contribution'
+       and t.occurred_on >= ${cycle.start}::date
+       and t.occurred_on <  ${cycle.end}::date
+       and (${floor}::date is null or t.occurred_on >= ${floor}::date)
+      where b.cycle_start = ${cycle.start}::date and c.kind = 'contribution'
+        and (${floor}::date is null or b.cycle_start >= ${floor}::date)
+      group by b.id, b.category, b.kind, b.budgeted_zar
+      order by actual_zar desc`,
+
+    // Contribution categories with no put-away line yet — the add picker.
+    sql<{ name: string; kind: string }>`
+      select c.name, c.kind::text from categories c
+      where c.kind = 'contribution' and not c.archived
+        and not exists (
+        select 1 from budgets b
+        where b.cycle_start = ${cycle.start}::date and b.category = c.name)
+      order by c.sort_order, c.name`,
 
     // Expenses in this cycle whose category has no budget line — real money
     // that must not disappear from the totals.
@@ -161,6 +190,21 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
     };
   });
 
+  const contributions: BudgetLine[] = contributionLines.map((r) => {
+    const budgetedZar = money(r.budgeted_zar);
+    const actualZar = money(r.actual_zar);
+    return {
+      recordId: r.id,
+      category: r.category,
+      type: r.kind,
+      budgetedZar,
+      actualZar,
+      remainingZar: budgetedZar - actualZar,
+      usedPct: budgetedZar > 0 ? (actualZar / budgetedZar) * 100 : 0,
+      transactionCount: Number(r.txn_count),
+    };
+  });
+
   const budgetedZar = budgetLines.reduce((t, l) => t + l.budgetedZar, 0);
   const actualZar = budgetLines.reduce((t, l) => t + l.actualZar, 0);
   const remainingZar = budgetedZar - actualZar;
@@ -168,6 +212,8 @@ export async function getBudgetSummary(now: Date = new Date()): Promise<BudgetSu
   return {
     cycle,
     lines: budgetLines,
+    contributions,
+    availableContributions: spareContributions,
     totals: { budgetedZar, actualZar, remainingZar, incomeZar: money(income[0]?.total) },
     unbudgetedZar: unbudgeted.reduce((t, r) => t + money(r.amount_zar), 0),
     unbudgetedCategories: unbudgeted.map((r) => ({

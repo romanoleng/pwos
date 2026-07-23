@@ -5,7 +5,6 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 
-import { loadInvestmentsAndAssets } from "@/app/actions/loadInvestments";
 import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody } from "@/components/ui/Card";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -14,7 +13,6 @@ import { EditableAmount } from "@/components/ui/EditableAmount";
 import { EditableName } from "@/components/ui/EditableName";
 import { Money, Sensitive } from "@/components/ui/Money";
 import { RecordEditor } from "@/components/ui/RecordEditor";
-import { useToast } from "@/components/ui/Toast";
 import { groupByChild, isKidInvestment } from "@/lib/kids";
 import type { GoalsSummary } from "@/lib/server/goals";
 import type { NetWorthSummary } from "@/lib/server/networth";
@@ -35,8 +33,6 @@ export function InvestmentsScreen() {
   // Kids' accounts come from the goals payload, which already reads them.
   const { data: goals, mutate: mutateGoals } = useSWR<GoalsSummary>("/api/goals", fetcher);
   const [adding, setAdding] = useState(false);
-  const [importing, setImporting] = useState(false);
-  const toast = useToast();
   if (error) return <Card><CardBody className="text-sm text-loss">Couldn&apos;t load investments.</CardBody></Card>;
   if (!data) return <LoadingCard rows={3} />;
 
@@ -44,25 +40,6 @@ export function InvestmentsScreen() {
     void mutate();
     void mutateGoals();
   };
-
-  // Offered until the seeded names exist, so it can't overwrite values kept
-  // up to date since.
-  const SEEDED = ["retirement annuity", "tfsa", "equities", "easyproperties", "car"];
-  const needsImport = !data.classes.some((c) =>
-    c.rows.some((r) => SEEDED.includes(r.name.toLowerCase())),
-  );
-
-  async function importAssets() {
-    setImporting(true);
-    const result = await loadInvestmentsAndAssets();
-    setImporting(false);
-    if (result.ok) {
-      toast.show({ message: `Loaded ${result.data.count} investments & assets`, tone: "success" });
-      refresh();
-    } else {
-      toast.show({ message: result.error, tone: "error" });
-    }
-  }
   const kidGroups = groupByChild(
     (goals?.kids ?? []).filter((kid) => isKidInvestment(kid.accountType)),
   );
@@ -72,29 +49,6 @@ export function InvestmentsScreen() {
 
   return (
     <div className="space-y-4">
-      {needsImport ? (
-        <Card>
-          <CardBody className="flex flex-col gap-2.5">
-            <div>
-              <p className="text-sm font-semibold tracking-tight">Load your investments &amp; assets</p>
-              <p className="mt-1 text-[11px] leading-relaxed text-faint">
-                Adds your RA, TFSA, Equities, EasyProperties and car from your old
-                app so your net worth is complete. Crypto stays live in the Crypto
-                tab. These are starting figures — tap any to update to today&apos;s value.
-              </p>
-            </div>
-            <button
-              type="button"
-              disabled={importing}
-              onClick={() => void importAssets()}
-              className="h-10 w-full rounded-lg bg-accent text-sm font-medium text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-            >
-              {importing ? "Loading…" : "Load investments & assets"}
-            </button>
-          </CardBody>
-        </Card>
-      ) : null}
-
       <Card>
         <CardBody>
           <div className="flex items-start justify-between gap-3">

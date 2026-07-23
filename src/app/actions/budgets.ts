@@ -54,13 +54,13 @@ export async function createBudgetLine(input: {
     if (known.length === 0) {
       return { ok: false, error: `${category} isn't a category yet.` };
     }
-    if (known[0].kind !== "expense") {
-      // The budget tracks what he spends to live. Money put away (savings,
-      // crypto investment) is planned on the Savings screen, not budgeted as a
-      // spend.
+    // Expenses are "to spend"; contributions are "putting away". Both are valid
+    // budget lines and the plan keeps them in separate totals. Income and
+    // transfers are never budget lines.
+    if (known[0].kind !== "expense" && known[0].kind !== "contribution") {
       return {
         ok: false,
-        error: `${category} is money you put away, not a spend — track it on the Savings screen instead.`,
+        error: `${category} is ${known[0].kind}, which can't be a budget line — only spending and putting-away can.`,
       };
     }
 

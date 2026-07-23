@@ -23,6 +23,7 @@ export function BudgetLineEditor({
   onSaved,
   available,
   cycleLabel,
+  moneyKind = "expense",
 }: {
   open: boolean;
   onClose: () => void;
@@ -30,6 +31,8 @@ export function BudgetLineEditor({
   /** Categories with no budget line this cycle. */
   available: { name: string; kind: string }[];
   cycleLabel: string;
+  /** "expense" = a spending line; "contribution" = a putting-away line. */
+  moneyKind?: "expense" | "contribution";
 }) {
   const toast = useToast();
   const [saving, setSaving] = useState(false);
@@ -37,6 +40,7 @@ export function BudgetLineEditor({
   const [category, setCategory] = useState("");
 
   const creatingCategory = category === NEW_CATEGORY;
+  const putAway = moneyKind === "contribution";
 
   async function onSubmit(formData: FormData) {
     setSaving(true);
@@ -47,11 +51,10 @@ export function BudgetLineEditor({
 
     if (name === NEW_CATEGORY) {
       const newName = String(formData.get("newCategory") ?? "").trim();
-      const kind = String(formData.get("newCategoryKind") ?? "expense");
-      const created = await createCategory({
-        name: newName,
-        kind: kind as "expense" | "income" | "transfer" | "contribution",
-      });
+      // A new category made here takes the kind of the section it's added in —
+      // an expense line makes an expense category, a put-away line a
+      // contribution — so it can never land in the wrong list.
+      const created = await createCategory({ name: newName, kind: moneyKind });
       if (!created.ok) {
         setSaving(false);
         setError(created.error);
@@ -78,8 +81,12 @@ export function BudgetLineEditor({
     <SlideOver
       open={open}
       onClose={onClose}
-      title="Add a budget line"
-      description={`Applies to ${cycleLabel}. Past cycles stay as they were.`}
+      title={putAway ? "Add a putting-away line" : "Add a budget line"}
+      description={
+        putAway
+          ? `A set monthly amount you invest or save (e.g. crypto). Applies to ${cycleLabel}.`
+          : `Applies to ${cycleLabel}. Past cycles stay as they were.`
+      }
       footer={
         <button
           type="submit"
@@ -113,25 +120,15 @@ export function BudgetLineEditor({
         </Field>
 
         {creatingCategory ? (
-          <>
-            <Field label="New category name" hint="Appears in the log sheet straight away.">
-              <input
-                name="newCategory"
-                required
-                autoComplete="off"
-                className={inputClass}
-                placeholder="School fees"
-              />
-            </Field>
-            <Field label="Kind">
-              <select name="newCategoryKind" className={inputClass} defaultValue="expense">
-                <option value="expense">Expense — money out</option>
-                <option value="income">Income — money in</option>
-                <option value="contribution">Contribution — money put away</option>
-                <option value="transfer">Transfer — money moved</option>
-              </select>
-            </Field>
-          </>
+          <Field label="New category name" hint="Appears in the log sheet straight away.">
+            <input
+              name="newCategory"
+              required
+              autoComplete="off"
+              className={inputClass}
+              placeholder={putAway ? "Crypto DCA" : "School fees"}
+            />
+          </Field>
         ) : null}
 
         <Field label="Monthly amount" hint="Change it any time by tapping it on the list.">
