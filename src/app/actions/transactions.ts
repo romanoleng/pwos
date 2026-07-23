@@ -496,10 +496,13 @@ export async function updateTransaction(
     const existing = await sql<{
       amount_zar: string;
       account_id: string | null;
+      to_account_id: string | null;
+      to_kid_account_id: string | null;
       type: string;
       occurred_on: string;
     }>`
-      select amount_zar, account_id, type::text, occurred_on::text
+      select amount_zar, account_id, to_account_id, to_kid_account_id::text,
+             type::text, occurred_on::text
       from transactions where id = ${recordId}::bigint`;
     if (existing.length === 0) return { ok: false, error: "That entry no longer exists." };
 
@@ -586,6 +589,25 @@ export async function updateTransaction(
       if (newAccount) {
         await sql`update accounts set balance_zar = coalesce(balance_zar,0) + ${newAmount}
                   where id = ${newAccount} and balance_zar is not null`;
+      }
+    }
+
+    // A transfer's OTHER leg. Editing the amount of a transfer used to move
+    // only the source, leaving the destination on the old figure — both sides
+    // of the same move disagreeing. The destination was credited abs(oldAmount)
+    // and should now hold abs(newAmount), so shift it by the difference.
+    // (Transfers are never scheduled, so this is unreachable in the pending
+    // branch above.) The destination and its target can't be changed while
+    // editing, only the amount, so the ids are the ones already stored.
+    const destDelta = Math.abs(newAmount) - Math.abs(oldAmount);
+    if (destDelta !== 0) {
+      if (existing[0].to_account_id) {
+        await sql`update accounts set balance_zar = coalesce(balance_zar,0) + ${destDelta}
+                  where id = ${existing[0].to_account_id} and balance_zar is not null`;
+      }
+      if (existing[0].to_kid_account_id) {
+        await sql`update kids_accounts set balance_zar = balance_zar + ${destDelta}
+                  where id = ${existing[0].to_kid_account_id}::bigint`;
       }
     }
 

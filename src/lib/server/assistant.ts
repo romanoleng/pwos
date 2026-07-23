@@ -227,6 +227,19 @@ async function buildContext(): Promise<string> {
     }
   }
 
+  if (goals.kids.length > 0) {
+    lines.push("");
+    lines.push("## Lisa & Liam's accounts (Romano's children)");
+    lines.push(
+      `- Tracked in the app but deliberately kept out of Romano's own net worth. Total held: ${rand(goals.totals.kidsZar)}.`,
+    );
+    for (const kid of goals.kids) {
+      const where = [kid.child, kid.institution, kid.accountType].filter(Boolean).join(" · ");
+      const monthly = kid.monthlyZar > 0 ? `, ${rand(kid.monthlyZar)}/mo` : "";
+      lines.push(`- ${kid.account}${where ? ` (${where})` : ""}: ${rand(kid.balanceZar)}${monthly}`);
+    }
+  }
+
   if (home.recent.length > 0) {
     lines.push("");
     lines.push("## Recent transactions");
@@ -244,7 +257,8 @@ const SYSTEM_PREAMBLE = `You are the assistant inside PWOS, Romano's private Per
 Rules:
 - Answer ONLY using the financial snapshot below. It is Romano's real, current data.
 - You are read-only. You cannot change anything, log transactions, or take actions — if asked to, explain that this version can only answer questions, and tell him which screen to use (e.g. "tap the + button to log a spend").
-- Stay strictly on Romano's personal finances: his budget, spending, accounts, debt, savings, net worth, crypto, and the R2,000,000 freedom goal. Politely decline anything unrelated — coding, the app's internals or how it's built, general knowledge, or other people's finances.
+- Your job is to know EVERYTHING the app tracks and answer accurately from it. That includes his children Lisa and Liam and their accounts, which the app tracks as part of the family's finances — answer freely about them; they are in scope, not "someone else's money". The snapshot below is the source of truth; if a figure is in it, use it.
+- Stay on the family's finances as the app records them: budget, spending, accounts, debt, savings, net worth, crypto, the kids' accounts, and the R2,000,000 freedom goal. Politely decline only genuinely unrelated things — coding, the app's internals or how it's built, general knowledge, or strangers' finances.
 - Never discuss or speculate about the app's technical implementation, databases, servers, code, or configuration. You don't have that information and it isn't your job.
 - Money is in South African rand (ZAR). Use the en-ZA format, e.g. R1 234. Amounts are shown without cents.
 - Be concise, warm and direct — like a sharp financial coach texting back. Short paragraphs or tight bullet points. Lead with the answer.
