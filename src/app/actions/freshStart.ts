@@ -21,8 +21,6 @@ import type { MutationResult } from "./holdings";
  *   - the audit trail
  */
 
-const KEEP_BALANCE = ["capitec-main", "gotyme"];
-
 function invalidate(): void {
   for (const tag of [
     "transactions", "budget", "home", "accounts", "networth",
@@ -38,6 +36,8 @@ export type FreshStartResult = {
   hiddenBudgetLines: number;
   balancesCleared: number;
   balancesKept: string[];
+  /** What was cleared, so the undo toast can genuinely put it back. */
+  clearedBalances: { id: string; balanceZar: number }[];
 };
 
 export async function runFreshStart(
@@ -56,11 +56,19 @@ export async function runFreshStart(
     // Balances are set to NULL, not 0. NULL means "not recorded yet" and the
     // app says so; 0 would claim the account is genuinely empty, which is the
     // confident-but-wrong figure this app exists to avoid.
-    const cleared = await sql<{ id: string }>`
+    //
+    // The spared set is the SPENDABLE accounts — data, not the hardcoded
+    // Capitec Main + GOtyme pair, which stopped being the whole story the day
+    // a third payment card (the Tangem Visa) could be flagged spendable. The
+    // cleared figures come back with the returning clause so undo can restore
+    // them instead of just clearing the cutover date.
+    const cleared = await sql<{ id: string; balance_zar: string }>`
       update accounts set balance_zar = null
-      where not archived and balance_zar is not null
-        and id <> all(${KEEP_BALANCE})
-      returning id`;
+      where not archived and balance_zar is not null and not spendable
+      returning id, balance_zar`;
+
+    const kept = await sql<{ label: string }>`
+      select label from accounts where not archived and spendable order by label`;
 
     await sql`
       update app_settings
@@ -75,7 +83,11 @@ export async function runFreshStart(
         hiddenTransactions: Number(hidden.txns),
         hiddenBudgetLines: Number(hidden.lines),
         balancesCleared: cleared.length,
-        balancesKept: KEEP_BALANCE,
+        balancesKept: kept.map((row) => row.label),
+        clearedBalances: cleared.map((row) => ({
+          id: row.id,
+          balanceZar: Number.parseFloat(row.balance_zar),
+        })),
       },
     };
   } catch (error) {
@@ -84,13 +96,26 @@ export async function runFreshStart(
   }
 }
 
-/** Undo the reset entirely — the history was never deleted. */
-export async function undoFreshStart(): Promise<MutationResult> {
+/**
+ * Undo the reset entirely — the history was never deleted, and the balances
+ * the reset cleared are put back when the caller still holds them (the undo
+ * toast does; the later "Cancel the reset" button doesn't, and says less).
+ */
+export async function undoFreshStart(
+  clearedBalances?: { id: string; balanceZar: number }[],
+): Promise<MutationResult> {
   try {
     await sql`
       update app_settings
       set cutover_date = null, show_history = false, updated_at = now()
       where id = true`;
+    for (const cleared of clearedBalances ?? []) {
+      // Only fill the gap the reset made — never overwrite a figure typed
+      // since, which would replace new truth with old.
+      await sql`
+        update accounts set balance_zar = ${cleared.balanceZar}
+        where id = ${cleared.id} and balance_zar is null`;
+    }
     invalidate();
     return { ok: true, data: undefined };
   } catch (error) {

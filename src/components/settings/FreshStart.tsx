@@ -43,12 +43,14 @@ export function FreshStart({ defaultDate }: { defaultDate: string }) {
       return;
     }
     void mutate();
-    const { hiddenTransactions, balancesCleared } = result.data;
+    const { hiddenTransactions, balancesCleared, clearedBalances } = result.data;
     toast.show({
       message: `Fresh start from ${formatDate(date)} — ${hiddenTransactions} entries and ${balancesCleared} balances put aside`,
       tone: "success",
       onUndo: async () => {
-        await undoFreshStart();
+        // Passing the cleared figures back restores them too — without this
+        // the undo only brought back history and left the balances wiped.
+        await undoFreshStart(clearedBalances);
         void mutate();
         toast.show({ message: "Reset undone — everything is back", tone: "neutral" });
       },
@@ -103,7 +105,7 @@ export function FreshStart({ defaultDate }: { defaultDate: string }) {
             <p className="text-xs font-medium">From {formatDate(date)} onwards, the app will:</p>
             <ul className="space-y-1 text-[11px] leading-relaxed text-muted">
               <li>· Hide every transaction and budget line before that date</li>
-              <li>· Clear every account balance except Capitec Main and GOtyme</li>
+              <li>· Clear every account balance except your spendable cards</li>
               <li>· Keep categories, accounts, debts, goals and all crypto untouched</li>
               <li>· Delete nothing — one switch brings it all back</li>
             </ul>
