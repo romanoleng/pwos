@@ -43,7 +43,10 @@ export function LogFab() {
         type="button"
         aria-label="Log a transaction"
         onClick={() => setOpen(true)}
-        className="fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-30 grid size-14 place-items-center rounded-full bg-accent text-white shadow-[0_6px_20px_rgba(0,0,0,0.35)] transition-transform active:scale-90 md:hidden"
+        // `log-fab`: globals.css drops the button toward the screen edge when
+        // the tab bar is docked to the top (data-nav="top") — it stays
+        // bottom-right in both modes, that's a thumb decision, not a nav one.
+        className="log-fab fixed bottom-[calc(4.5rem+env(safe-area-inset-bottom))] right-4 z-30 grid size-14 place-items-center rounded-full bg-accent text-white shadow-[0_6px_20px_rgba(0,0,0,0.35)] transition-transform active:scale-90 md:hidden"
       >
         <Plus size={26} strokeWidth={2.25} />
       </button>
@@ -63,6 +66,8 @@ export function LogFab() {
         allCategories={data?.defaults.allCategories}
         kidAccounts={data?.defaults.kidAccounts}
         suggestsNewCycle={data?.defaults.suggestsNewCycle}
+        quickLinks={data?.defaults.quickLinks}
+        frequent={data?.defaults.frequent}
       />
     </>
   );

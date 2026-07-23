@@ -23,8 +23,11 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             it. 7rem (the old pb-28) only cleared the tab bar, so the FAB sat
             on the final row of every scrolling list. This is the app's only
             scroll container, so the fix covers every screen the FAB shows on;
-            ≥ md the FAB is hidden and md:py-8 takes over. */}
-        <main className="mx-auto w-full max-w-6xl px-4 pt-5 pb-[calc(9rem+env(safe-area-inset-bottom,0px))] md:px-8 md:py-8">
+            ≥ md the FAB is hidden and md:py-8 takes over.
+            `app-main` lets globals.css swap these paddings when the tab bar
+            is docked to the top (data-nav="top") — bar headroom above, only
+            FAB clearance below. */}
+        <main className="app-main mx-auto w-full max-w-6xl px-4 pt-5 pb-[calc(9rem+env(safe-area-inset-bottom,0px))] md:px-8 md:py-8">
           {children}
         </main>
       </div>
