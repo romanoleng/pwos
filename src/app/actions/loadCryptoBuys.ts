@@ -30,18 +30,23 @@ const BUYS = [
   { symbol: "FET", coin: "Artificial Superintelligence Alliance", quantity: 68.21, invested: 178 },
 ];
 
-export async function loadEasyCryptoBuys(): Promise<MutationResult<{ count: number }>> {
+export async function loadEasyCryptoBuys(): Promise<
+  MutationResult<{ added: number; alreadyThere: number }>
+> {
   try {
+    let added = 0;
     for (const b of BUYS) {
-      await sql`
+      const rows = await sql<{ id: string }>`
         insert into holdings (symbol, coin, wallet, quantity, invested_zar, notes)
         select ${b.symbol}, ${b.coin}, 'EasyCrypto', ${b.quantity}, ${b.invested}, ${MARKER}
         where not exists (
           select 1 from holdings
-          where wallet = 'EasyCrypto' and symbol = ${b.symbol} and notes = ${MARKER})`;
+          where wallet = 'EasyCrypto' and symbol = ${b.symbol} and notes = ${MARKER})
+        returning id::text`;
+      if (rows.length > 0) added += 1;
     }
     revalidateTag("crypto", "max");
-    return { ok: true, data: { count: BUYS.length } };
+    return { ok: true, data: { added, alreadyThere: BUYS.length - added } };
   } catch (error) {
     console.error("[loadEasyCryptoBuys]", error);
     return { ok: false, error: error instanceof Error ? error.message : "Couldn't log them." };
