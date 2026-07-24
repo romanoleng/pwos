@@ -4,6 +4,8 @@ import { ChevronDown, Pencil, Plus } from "lucide-react";
 import { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
+import { logYesterdaysBuys } from "@/app/actions/loadCryptoBuys";
+import { BuyEditor } from "@/components/crypto/BuyEditor";
 import { CoinSheet } from "@/components/crypto/CoinSheet";
 import { LiveIndicator } from "@/components/crypto/LiveIndicator";
 import { PortfolioChart } from "@/components/crypto/PortfolioChart";
@@ -14,6 +16,7 @@ import { MilestoneLadder } from "@/components/crypto/MilestoneLadder";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
 import { Money, Percent, Sensitive } from "@/components/ui/Money";
+import { useToast } from "@/components/ui/Toast";
 import { FREEDOM_TARGET_ZAR } from "@/lib/constants";
 import type { ChangeWindowKey, Holding, MoverWindowKey, Portfolio } from "@/lib/crypto/types";
 import {
@@ -50,6 +53,9 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
   >(null);
   // The coin tapped in Core 5 or Movers — its detail sheet (Romano's ask).
   const [openCoin, setOpenCoin] = useState<string | null>(null);
+  const [buying, setBuying] = useState(false);
+  const [loggingBuys, setLoggingBuys] = useState(false);
+  const toast = useToast();
   const refresh = () => void mutate("/api/crypto/portfolio");
 
   const [filter, setFilter] = useState<HoldingFilter>(EMPTY_FILTER);
@@ -142,6 +148,38 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
       <PortfolioChart totals={data.totals} />
 
       <div className="flex flex-wrap justify-end gap-2">
+        <button
+          type="button"
+          disabled={loggingBuys}
+          onClick={async () => {
+            setLoggingBuys(true);
+            const result = await logYesterdaysBuys();
+            setLoggingBuys(false);
+            if (!result.ok) {
+              toast.show({ message: result.error, tone: "error" });
+              return;
+            }
+            refresh();
+            toast.show({
+              message: result.data.alreadyDone
+                ? "Your 24-Jul buys are already in — open the EasyCrypto wallet"
+                : "Added your 8 EasyCrypto buys to your positions",
+              tone: "success",
+            });
+          }}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-accent/50 bg-accent/10 px-2.5 py-1.5 text-[11px] font-medium text-accent transition-colors hover:bg-accent/15 disabled:opacity-60"
+        >
+          <Plus size={13} strokeWidth={2} />
+          {loggingBuys ? "Adding…" : "Add my 24-Jul buys"}
+        </button>
+        <button
+          type="button"
+          onClick={() => setBuying(true)}
+          className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1.5 text-[11px] text-muted transition-colors hover:border-line-2 hover:text-ink"
+        >
+          <Plus size={13} strokeWidth={1.75} />
+          Log a buy
+        </button>
         <button
           type="button"
           onClick={() => setEditor({ kind: "add" })}
@@ -279,6 +317,14 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
           knownWallets={wallets.map((w) => w.wallet)}
         />
       ) : null}
+
+      <BuyEditor
+        open={buying}
+        onClose={() => setBuying(false)}
+        onSaved={refresh}
+        knownWallets={wallets.map((w) => w.wallet)}
+        knownSymbols={[...new Set(allHoldings.map((h) => h.symbol))]}
+      />
 
       {openCoin ? (
         <CoinSheet
