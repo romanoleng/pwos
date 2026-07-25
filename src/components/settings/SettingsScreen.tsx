@@ -6,6 +6,7 @@ import Link from "next/link";
 import { BriefSettings } from "@/components/settings/BriefSettings";
 import { FreshStart } from "@/components/settings/FreshStart";
 import { TabPicker } from "@/components/settings/TabPicker";
+import { TwoFactorSettings } from "@/components/settings/TwoFactorSettings";
 import { ThemePicker } from "@/components/theme";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { SignOutButton } from "@/components/shell/SignOutButton";
@@ -79,6 +80,8 @@ export function SettingsScreen() {
           </ul>
         </CardBody>
       </Card>
+
+      <TwoFactorSettings />
 
       <Card>
         <CardHeader title="Session" />

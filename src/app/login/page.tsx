@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 
 import { LoginForm } from "@/app/login/LoginForm";
 import { isAuthConfigured } from "@/lib/server/env";
+import { twoFactorEnabled } from "@/lib/server/twofactor";
 
 export const metadata: Metadata = { title: "Sign in" };
 
@@ -13,6 +14,7 @@ export default async function LoginPage({
 }) {
   const { next } = await searchParams;
   const configured = isAuthConfigured();
+  const twoFactor = configured ? await twoFactorEnabled() : false;
 
   return (
     <main className="grid min-h-dvh place-items-center px-5">
@@ -28,7 +30,7 @@ export default async function LoginPage({
         </div>
 
         {configured ? (
-          <LoginForm next={next} />
+          <LoginForm next={next} twoFactor={twoFactor} />
         ) : (
           <div className="rounded-xl border border-line bg-surface p-4">
             <p className="text-sm font-medium">Not configured yet</p>

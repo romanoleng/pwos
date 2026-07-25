@@ -10,6 +10,7 @@ import {
   recordLoginFailure,
 } from "@/lib/server/loginThrottle";
 import { endSession, isCorrectPassword, startSession } from "@/lib/server/session";
+import { twoFactorEnabled, verifySecondFactor } from "@/lib/server/twofactor";
 
 export type SignInState = { error: string | null };
 
@@ -43,6 +44,26 @@ export async function signIn(
         ? `Incorrect password. Too many attempts — locked for ${formatWait(lockedSec)}.`
         : "Incorrect password.",
     };
+  }
+
+  // Second factor, when it's turned on: the password alone isn't enough.
+  if (await twoFactorEnabled()) {
+    const code = formData.get("code");
+    const entered = typeof code === "string" ? code.trim() : "";
+    if (!entered) {
+      return { error: "Enter the 6-digit code from your authenticator app." };
+    }
+    const { ok } = await verifySecondFactor(entered);
+    if (!ok) {
+      // A wrong second factor counts toward the lockout too, so the code can't
+      // be brute-forced any more than the password.
+      const { lockedSec } = await recordLoginFailure();
+      return {
+        error: lockedSec
+          ? `Incorrect code. Too many attempts — locked for ${formatWait(lockedSec)}.`
+          : "Incorrect code. Use your authenticator app or a backup code.",
+      };
+    }
   }
 
   await clearLoginFailures();
