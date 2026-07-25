@@ -3,30 +3,15 @@
 import { redirect } from "next/navigation";
 
 import { isAuthConfigured } from "@/lib/server/env";
+import {
+  checkLoginLock,
+  clearLoginFailures,
+  formatWait,
+  recordLoginFailure,
+} from "@/lib/server/loginThrottle";
 import { endSession, isCorrectPassword, startSession } from "@/lib/server/session";
 
 export type SignInState = { error: string | null };
-
-/** Crude but effective throttle for a single-user app on one server instance. */
-const attempts = new Map<string, { count: number; firstAt: number }>();
-const WINDOW_MS = 5 * 60 * 1000;
-const MAX_ATTEMPTS = 8;
-
-function throttled(): boolean {
-  const key = "single-user";
-  const now = Date.now();
-  const record = attempts.get(key);
-  if (!record || now - record.firstAt > WINDOW_MS) {
-    attempts.set(key, { count: 1, firstAt: now });
-    return false;
-  }
-  record.count += 1;
-  return record.count > MAX_ATTEMPTS;
-}
-
-function clearThrottle(): void {
-  attempts.delete("single-user");
-}
 
 export async function signIn(
   _prevState: SignInState,
@@ -43,15 +28,24 @@ export async function signIn(
     return { error: "Enter your password." };
   }
 
-  if (throttled()) {
-    return { error: "Too many attempts. Wait a few minutes and try again." };
+  // Durable, cold-start-proof lockout (lib/server/loginThrottle.ts). Checked
+  // BEFORE the password is verified, so a locked-out attacker can't keep
+  // testing guesses.
+  const lock = await checkLoginLock();
+  if (lock.locked) {
+    return { error: `Too many attempts. Try again in ${formatWait(lock.retryAfterSec)}.` };
   }
 
   if (!isCorrectPassword(password)) {
-    return { error: "Incorrect password." };
+    const { lockedSec } = await recordLoginFailure();
+    return {
+      error: lockedSec
+        ? `Incorrect password. Too many attempts — locked for ${formatWait(lockedSec)}.`
+        : "Incorrect password.",
+    };
   }
 
-  clearThrottle();
+  await clearLoginFailures();
   await startSession();
 
   const nextRaw = formData.get("next");
