@@ -6,6 +6,7 @@
  */
 import {
   Bitcoin,
+  BookOpen,
   Briefcase,
   ChartPie,
   CreditCard,
@@ -74,6 +75,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "More",
     items: [
       { href: "/stats", label: "Stats", icon: ChartColumn, longLabel: "Stats" },
+      { href: "/guide", label: "Guide", icon: BookOpen },
       { href: "/settings", label: "Settings", icon: Settings },
       // Not a tab or sidebar entry — reached from Settings — but listed so the
       // mobile header can title it.
