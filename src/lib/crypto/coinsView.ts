@@ -11,8 +11,8 @@
 import type { Holding } from "./types";
 
 export type Timeframe = "24h" | "7d" | "30d";
-export type CoinColumn = "price" | "holdings" | "pnl";
-export type CoinSort = "value" | "change" | "holdings" | "symbol" | "pnl";
+export type CoinColumn = "price" | "holdings" | "pnl" | "invested";
+export type CoinSort = "value" | "change" | "holdings" | "symbol" | "pnl" | "invested";
 export type SortDir = "asc" | "desc";
 
 export type CoinsPrefs = {
@@ -37,6 +37,7 @@ export const DEFAULT_COINS_PREFS: CoinsPrefs = {
 export const ALL_COLUMNS: { key: CoinColumn; label: string }[] = [
   { key: "price", label: "Price + % Change" },
   { key: "holdings", label: "Total Holdings" },
+  { key: "invested", label: "Total Invested" },
   { key: "pnl", label: "Total P&L" },
 ];
 
@@ -129,6 +130,8 @@ export function sortCoins(rows: CoinRow[], prefs: CoinsPrefs): CoinRow[] {
         return nullableCompare(a.change[prefs.timeframe], b.change[prefs.timeframe], prefs.dir);
       case "pnl":
         return nullableCompare(a.pnlZar, b.pnlZar, prefs.dir);
+      case "invested":
+        return nullableCompare(a.investedZar, b.investedZar, prefs.dir);
       case "holdings":
         return nullableCompare(a.quantity, b.quantity, prefs.dir);
       case "value":

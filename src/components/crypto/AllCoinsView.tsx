@@ -28,6 +28,7 @@ const SORTS: { key: CoinSort; label: string }[] = [
   { key: "value", label: "Value" },
   { key: "change", label: "% change" },
   { key: "pnl", label: "P&L" },
+  { key: "invested", label: "Invested" },
   { key: "holdings", label: "Holdings" },
   { key: "symbol", label: "Name" },
 ];
@@ -99,7 +100,7 @@ export function AllCoinsView({
   // The sort key a column header maps to. Price sorts by the timeframe's %
   // change (like the reference's "Price / 7D"); Holdings by value; P&L by P&L.
   const colSort = (col: CoinColumn): CoinSort =>
-    col === "price" ? "change" : col === "holdings" ? "value" : "pnl";
+    col === "price" ? "change" : col === "holdings" ? "value" : col === "invested" ? "invested" : "pnl";
 
   // Tapping a header sorts by it, highest → lowest first (Romano's ask); a
   // second tap on the same header flips to lowest → highest.
@@ -132,6 +133,12 @@ export function AllCoinsView({
             />
           </div>
           <div className="flex gap-5 text-right">
+            <div>
+              <p className="text-[11px] text-faint">Invested</p>
+              <p className="mt-0.5 text-sm font-medium">
+                <Money value={totals.investedZar} variant="whole" />
+              </p>
+            </div>
             <div>
               <p className="text-[11px] text-faint">24h</p>
               <p className="mt-0.5 text-sm font-medium">
@@ -208,6 +215,7 @@ export function AllCoinsView({
             >
               {col === "price" ? `Price / ${TF_LABEL[prefs.timeframe]}` : null}
               {col === "holdings" ? "Total Holdings" : null}
+              {col === "invested" ? "Total Invested" : null}
               {col === "pnl" ? "Total P&L" : null}
               <SortArrow active={active} />
             </button>
@@ -295,6 +303,20 @@ function Cell({
         <span className="mt-0.5 block truncate text-[11px] text-faint">
           <Sensitive>{`${formatQuantity(row.quantity)} ${row.symbol}`}</Sensitive>
         </span>
+      </span>
+    );
+  }
+
+  if (col === "invested") {
+    // Cost basis is recorded in rand — kept in rand in either currency mode
+    // rather than converted at today's rate, which would misstate the cost.
+    return (
+      <span className="text-right">
+        {row.investedZar > 0 ? (
+          <Money value={row.investedZar} variant="whole" className="block text-sm font-medium" />
+        ) : (
+          <span className="text-sm text-faint">—</span>
+        )}
       </span>
     );
   }
