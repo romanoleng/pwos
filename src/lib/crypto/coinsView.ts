@@ -12,7 +12,7 @@ import type { Holding } from "./types";
 
 export type Timeframe = "24h" | "7d" | "30d";
 export type CoinColumn = "price" | "holdings" | "pnl";
-export type CoinSort = "value" | "change" | "holdings" | "symbol";
+export type CoinSort = "value" | "change" | "holdings" | "symbol" | "pnl";
 export type SortDir = "asc" | "desc";
 
 export type CoinsPrefs = {
@@ -127,6 +127,8 @@ export function sortCoins(rows: CoinRow[], prefs: CoinsPrefs): CoinRow[] {
       }
       case "change":
         return nullableCompare(a.change[prefs.timeframe], b.change[prefs.timeframe], prefs.dir);
+      case "pnl":
+        return nullableCompare(a.pnlZar, b.pnlZar, prefs.dir);
       case "holdings":
         return nullableCompare(a.quantity, b.quantity, prefs.dir);
       case "value":

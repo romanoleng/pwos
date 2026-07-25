@@ -84,6 +84,15 @@ describe("sortCoins", () => {
     const out = sortCoins(rows, { ...DEFAULT_COINS_PREFS, sort: "change", timeframe: "24h", dir: "desc" });
     assert.deepEqual(out.map((r) => r.symbol), ["ATOM", "BTC"]);
   });
+
+  it("sorts by P&L, highest first", () => {
+    const pnlRows = aggregateByCoin([
+      holding({ symbol: "WIN", valueZar: 900, investedZar: 500 }), // +400
+      holding({ symbol: "DOWN", valueZar: 200, investedZar: 500 }), // -300
+    ]);
+    const out = sortCoins(pnlRows, { ...DEFAULT_COINS_PREFS, sort: "pnl", dir: "desc" });
+    assert.deepEqual(out.map((r) => r.symbol), ["WIN", "DOWN"]);
+  });
 });
 
 describe("usdFactor", () => {

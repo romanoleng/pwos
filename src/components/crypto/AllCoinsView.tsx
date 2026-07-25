@@ -1,6 +1,6 @@
 "use client";
 
-import { ArrowDownUp, SlidersHorizontal } from "lucide-react";
+import { ArrowDown, ArrowDownUp, ArrowUp, SlidersHorizontal } from "lucide-react";
 import { useEffect, useMemo, useState } from "react";
 
 import { Money, Percent, Sensitive } from "@/components/ui/Money";
@@ -27,6 +27,7 @@ const TF_LABEL: Record<Timeframe, string> = { "24h": "24H", "7d": "7D", "30d": "
 const SORTS: { key: CoinSort; label: string }[] = [
   { key: "value", label: "Value" },
   { key: "change", label: "% change" },
+  { key: "pnl", label: "P&L" },
   { key: "holdings", label: "Holdings" },
   { key: "symbol", label: "Name" },
 ];
@@ -94,6 +95,26 @@ export function AllCoinsView({
   const effUsd = usd && canUsd;
 
   const gridTemplate = `minmax(0,1fr) ${prefs.columns.map(() => "minmax(0,auto)").join(" ")}`;
+
+  // The sort key a column header maps to. Price sorts by the timeframe's %
+  // change (like the reference's "Price / 7D"); Holdings by value; P&L by P&L.
+  const colSort = (col: CoinColumn): CoinSort =>
+    col === "price" ? "change" : col === "holdings" ? "value" : "pnl";
+
+  // Tapping a header sorts by it, highest → lowest first (Romano's ask); a
+  // second tap on the same header flips to lowest → highest.
+  function sortByHeader(key: CoinSort) {
+    update({ sort: key, dir: prefs.sort === key && prefs.dir === "desc" ? "asc" : "desc" });
+  }
+
+  const SortArrow = ({ active }: { active: boolean }) =>
+    !active ? (
+      <ArrowDownUp size={10} strokeWidth={2} className="opacity-40" />
+    ) : prefs.dir === "desc" ? (
+      <ArrowDown size={10} strokeWidth={2.5} className="text-accent" />
+    ) : (
+      <ArrowUp size={10} strokeWidth={2.5} className="text-accent" />
+    );
 
   return (
     <div className="overflow-hidden rounded-xl border border-line bg-surface">
@@ -165,19 +186,33 @@ export function AllCoinsView({
       >
         <button
           type="button"
-          onClick={() => update({ sort: "symbol", dir: prefs.dir === "asc" ? "desc" : "asc" })}
-          className="flex items-center gap-1 text-left uppercase hover:text-muted"
+          onClick={() => sortByHeader("symbol")}
+          className={`flex items-center gap-1 text-left uppercase hover:text-muted ${
+            prefs.sort === "symbol" ? "text-muted" : ""
+          }`}
         >
           Coin
-          {prefs.sort === "symbol" ? <ArrowDownUp size={10} strokeWidth={2} /> : null}
+          <SortArrow active={prefs.sort === "symbol"} />
         </button>
-        {prefs.columns.map((col) => (
-          <span key={col} className="text-right">
-            {col === "price" ? `Price / ${TF_LABEL[prefs.timeframe]}` : null}
-            {col === "holdings" ? "Total Holdings" : null}
-            {col === "pnl" ? "Total P&L" : null}
-          </span>
-        ))}
+        {prefs.columns.map((col) => {
+          const key = colSort(col);
+          const active = prefs.sort === key;
+          return (
+            <button
+              key={col}
+              type="button"
+              onClick={() => sortByHeader(key)}
+              className={`flex items-center justify-end gap-1 uppercase hover:text-muted ${
+                active ? "text-muted" : ""
+              }`}
+            >
+              {col === "price" ? `Price / ${TF_LABEL[prefs.timeframe]}` : null}
+              {col === "holdings" ? "Total Holdings" : null}
+              {col === "pnl" ? "Total P&L" : null}
+              <SortArrow active={active} />
+            </button>
+          );
+        })}
       </div>
 
       {/* rows */}
