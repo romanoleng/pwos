@@ -28,13 +28,24 @@ export function AssistantChat() {
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const scrollRef = useRef<HTMLDivElement>(null);
+  const lastAnswerRef = useRef<HTMLDivElement>(null);
 
-  // Keep the newest message in view. We deliberately do NOT auto-focus the
-  // input on open: like WhatsApp, opening the chat shows the whole thread with
-  // the input bar resting at the bottom, and the keyboard only rises when the
-  // bar is tapped — so the conversation is readable before you commit to typing.
+  // Keep the right thing in view. When a NEW ANSWER arrives, align its TOP to
+  // the top of the panel so a long reply reads from its first line — slamming
+  // to the very bottom (as this once did) dropped you at the end of the answer
+  // and made you scroll back up. For your own message and the typing dots,
+  // scroll to the bottom so the latest is visible. We deliberately do NOT
+  // auto-focus the input on open: the thread is readable before the keyboard
+  // rises, only lifting when the input bar is tapped.
   useEffect(() => {
-    if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight;
+    const box = scrollRef.current;
+    if (!box) return;
+    const last = turns[turns.length - 1];
+    if (last?.role === "assistant" && lastAnswerRef.current) {
+      box.scrollTo({ top: Math.max(0, lastAnswerRef.current.offsetTop - 12), behavior: "smooth" });
+    } else {
+      box.scrollTo({ top: box.scrollHeight, behavior: "smooth" });
+    }
   }, [turns, busy]);
 
   async function send() {
@@ -105,13 +116,17 @@ export function AssistantChat() {
               </button>
             </header>
 
-            <div ref={scrollRef} className="flex-1 space-y-3 overflow-y-auto px-4 py-4">
+            <div ref={scrollRef} className="relative flex-1 space-y-3 overflow-y-auto px-4 py-4">
               <Bubble role="assistant">{GREETING}</Bubble>
-              {turns.map((turn, i) => (
-                <Bubble key={i} role={turn.role}>
-                  {turn.content}
-                </Bubble>
-              ))}
+              {turns.map((turn, i) => {
+                // The newest answer gets a ref so we can align its top on arrival.
+                const isLatestAnswer = turn.role === "assistant" && i === turns.length - 1;
+                return (
+                  <Bubble key={i} role={turn.role} innerRef={isLatestAnswer ? lastAnswerRef : undefined}>
+                    {turn.content}
+                  </Bubble>
+                );
+              })}
               {busy ? (
                 <div className="flex items-center gap-1.5 px-1 text-xs text-faint" aria-live="polite">
                   <span className="size-1.5 animate-pulse rounded-full bg-muted" />
@@ -156,10 +171,18 @@ export function AssistantChat() {
   );
 }
 
-function Bubble({ role, children }: { role: "user" | "assistant"; children: React.ReactNode }) {
+function Bubble({
+  role,
+  children,
+  innerRef,
+}: {
+  role: "user" | "assistant";
+  children: React.ReactNode;
+  innerRef?: React.Ref<HTMLDivElement>;
+}) {
   const isUser = role === "user";
   return (
-    <div className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
+    <div ref={innerRef} className={`flex ${isUser ? "justify-end" : "justify-start"}`}>
       <div
         className={`max-w-[85%] whitespace-pre-wrap rounded-2xl px-3.5 py-2.5 text-sm leading-relaxed ${
           isUser ? "bg-accent text-white" : "bg-surface-2 text-ink"
