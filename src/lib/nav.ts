@@ -13,6 +13,7 @@ import {
   ChartColumn,
   Home,
   Landmark,
+  Lock,
   Receipt,
   RefreshCw,
   PiggyBank,
@@ -75,6 +76,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "More",
     items: [
       { href: "/stats", label: "Stats", icon: ChartColumn, longLabel: "Stats" },
+      { href: "/vault", label: "Vault", icon: Lock, longLabel: "Vault · preview" },
       { href: "/guide", label: "Guide", icon: BookOpen },
       { href: "/settings", label: "Settings", icon: Settings },
       // Not a tab or sidebar entry — reached from Settings — but listed so the
