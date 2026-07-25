@@ -11,6 +11,7 @@ import { PortfolioChart } from "@/components/crypto/PortfolioChart";
 import { SnapshotButton } from "@/components/crypto/SnapshotButton";
 import { HoldingEditor } from "@/components/crypto/HoldingEditor";
 import { HoldingsToolbar } from "@/components/crypto/HoldingsToolbar";
+import { AllCoinsView } from "@/components/crypto/AllCoinsView";
 import { MilestoneLadder } from "@/components/crypto/MilestoneLadder";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { CollapsibleSection } from "@/components/ui/CollapsibleSection";
@@ -52,6 +53,9 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
   // The coin tapped in Core 5 or Movers — its detail sheet (Romano's ask).
   const [openCoin, setOpenCoin] = useState<string | null>(null);
   const [buying, setBuying] = useState(false);
+  // Two ways to see your positions: grouped by wallet (the drill-down) or a
+  // flat list of every coin totalled across wallets (Romano's ask, 2026-07-25).
+  const [holdView, setHoldView] = useState<"wallets" | "coins">("wallets");
   const refresh = () => void mutate("/api/crypto/portfolio");
 
   const [filter, setFilter] = useState<HoldingFilter>(EMPTY_FILTER);
@@ -168,24 +172,48 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
         <MoversCard movers={movers} onPick={setOpenCoin} />
       </div>
 
-      <HoldingsToolbar
-        filter={filter}
-        onFilterChange={setFilter}
-        sortKey={sortKey}
-        sortDirection={sortDirection}
-        onSortChange={(key, direction) => {
-          setSortKey(key);
-          setSortDirection(direction);
-        }}
-        wallets={wallets.map((w) => w.wallet)}
-        onExport={exportCsv}
-        resultCount={visible.length}
-        totalCount={data.holdings.length}
-      />
+      <div className="inline-flex rounded-lg border border-line bg-surface-2 p-0.5 text-xs font-medium">
+        {(
+          [
+            ["wallets", "By wallet"],
+            ["coins", "All coins"],
+          ] as const
+        ).map(([key, label]) => (
+          <button
+            key={key}
+            type="button"
+            onClick={() => setHoldView(key)}
+            className={`rounded-md px-3 py-1.5 transition-colors ${
+              holdView === key ? "bg-accent text-white" : "text-muted hover:text-ink"
+            }`}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
 
-      {/* While filtering, wallet grouping hides matches behind collapsed
-          sections — so results become one flat, sorted list instead. */}
-      {filtering ? (
+      {holdView === "coins" ? (
+        <AllCoinsView holdings={data.holdings} totals={data.totals} onPick={setOpenCoin} />
+      ) : (
+        <>
+          <HoldingsToolbar
+            filter={filter}
+            onFilterChange={setFilter}
+            sortKey={sortKey}
+            sortDirection={sortDirection}
+            onSortChange={(key, direction) => {
+              setSortKey(key);
+              setSortDirection(direction);
+            }}
+            wallets={wallets.map((w) => w.wallet)}
+            onExport={exportCsv}
+            resultCount={visible.length}
+            totalCount={data.holdings.length}
+          />
+
+          {/* While filtering, wallet grouping hides matches behind collapsed
+              sections — so results become one flat, sorted list instead. */}
+          {filtering ? (
         <Card>
           <CardHeader
             title="Results"
@@ -229,6 +257,8 @@ export function CryptoDashboard({ initial }: { initial?: Portfolio }) {
           />
         </CollapsibleSection>
         ))
+          )}
+        </>
       )}
 
       {meta.inferredIds.length > 0 ? (
