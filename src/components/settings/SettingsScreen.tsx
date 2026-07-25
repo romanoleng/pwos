@@ -3,6 +3,7 @@
 import { ChevronRight, Shapes } from "lucide-react";
 import Link from "next/link";
 
+import { BriefSettings } from "@/components/settings/BriefSettings";
 import { FreshStart } from "@/components/settings/FreshStart";
 import { TabPicker } from "@/components/settings/TabPicker";
 import { ThemePicker } from "@/components/theme";
@@ -39,6 +40,8 @@ export function SettingsScreen() {
       </Card>
 
       <TabPicker />
+
+      <BriefSettings />
 
       <FreshStart defaultDate="2026-07-24" />
 
