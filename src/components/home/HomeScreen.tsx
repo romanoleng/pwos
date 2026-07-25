@@ -13,6 +13,7 @@ import Link from "next/link";
 import { useState } from "react";
 import useSWR from "swr";
 
+import { DailyBrief } from "@/components/home/DailyBrief";
 import { LogTransaction, type EditingTransaction } from "@/components/transactions/LogTransaction";
 import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
@@ -83,6 +84,8 @@ export function HomeScreen() {
 
   return (
     <div className="space-y-4">
+      <DailyBrief />
+
       <PeriodBar
         hint={`${period.label} · ${
           period.start ? formatDate(period.start) : "the beginning"
