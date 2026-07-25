@@ -5,7 +5,7 @@ import { NAV_GROUPS } from "@/lib/nav";
 import { PageHeader } from "@/components/ui/Card";
 import { SignOutButton } from "@/components/shell/SignOutButton";
 
-export const metadata: Metadata = { title: "More" };
+export const metadata: Metadata = { title: "Menu" };
 
 /**
  * Mobile overflow for everything that doesn't earn a tab. Desktop users reach
@@ -14,7 +14,7 @@ export const metadata: Metadata = { title: "More" };
 export default function MorePage() {
   return (
     <>
-      <PageHeader title="More" description="Everything else." />
+      <PageHeader title="Menu" description="Everything else." />
 
       <div className="space-y-6">
         {NAV_GROUPS.map((group) => (

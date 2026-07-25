@@ -40,7 +40,7 @@ export function TabPicker() {
     <Card>
       <CardHeader
         title="Navigation"
-        description="Pick the three middle tabs and where the bar sits. Home and More stay put. Saved on this device."
+        description="Pick the three middle tabs and where the bar sits. Home and Menu stay put. Saved on this device."
       />
       <CardBody className="space-y-3">
         {/* Previews the reverted bar: dark ground, quiet labels. */}
@@ -60,7 +60,7 @@ export function TabPicker() {
           })}
           <TabPreview
             icon={<MoreHorizontal size={14} strokeWidth={2} />}
-            label="More"
+            label="Menu"
             fixed
           />
         </div>
@@ -89,7 +89,7 @@ export function TabPicker() {
         </div>
         <p className="text-[11px] leading-relaxed text-faint">
           Picking a fourth swaps out your oldest choice. Everything not on the
-          bar stays one tap away under More.
+          bar stays one tap away under Menu.
         </p>
 
         <div

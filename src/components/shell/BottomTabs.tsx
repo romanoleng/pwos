@@ -29,7 +29,7 @@ export function BottomTabs() {
     ...chosen
       .map((href) => TAB_CHOICES.find((c) => c.href === href))
       .filter((c): c is NonNullable<typeof c> => c !== undefined),
-    { href: "/more", label: "More", icon: MoreHorizontal },
+    { href: "/more", label: "Menu", icon: MoreHorizontal },
   ];
 
   return (
