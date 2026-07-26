@@ -3,6 +3,7 @@
 import { ChevronRight, Shapes } from "lucide-react";
 import Link from "next/link";
 
+import { AutoLockSettings } from "@/components/settings/AutoLockSettings";
 import { BriefSettings } from "@/components/settings/BriefSettings";
 import { FreshStart } from "@/components/settings/FreshStart";
 import { TabPicker } from "@/components/settings/TabPicker";
@@ -82,6 +83,8 @@ export function SettingsScreen() {
       </Card>
 
       <TwoFactorSettings />
+
+      <AutoLockSettings />
 
       <Card>
         <CardHeader title="Session" />

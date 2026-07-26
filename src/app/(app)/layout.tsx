@@ -1,4 +1,5 @@
 import { AssistantChat } from "@/components/shell/AssistantChat";
+import { AutoLock } from "@/components/shell/AutoLock";
 import { BottomTabs } from "@/components/shell/BottomTabs";
 import { LogFab } from "@/components/shell/LogFab";
 import { Sidebar } from "@/components/shell/Sidebar";
@@ -35,6 +36,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <LogFab />
       <AssistantChat />
       <BottomTabs />
+      <AutoLock />
     </div>
     </ToastProvider>
   );
