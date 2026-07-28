@@ -3,6 +3,7 @@
 import {
   ArrowRight,
   Briefcase,
+  CalendarClock,
   CreditCard,
   PiggyBank,
   Plus,
@@ -71,6 +72,23 @@ export function HomeScreen() {
   const usedPct =
     budget.budgetedZar > 0 ? (budget.spentZar / budget.budgetedZar) * 100 : 0;
 
+  // Days to payday — the same countdown the budget pace is built on, surfaced
+  // up top because it's what makes the per-day allowance mean something. Payday
+  // is the 24th, so the cycle end IS the next payday.
+  const toPayday = budget.daysLeft;
+  const paydayLabel =
+    toPayday <= 0 ? "Payday today" : toPayday === 1 ? "Payday tomorrow" : `Payday in ${toPayday} days`;
+  const paydayWhen =
+    toPayday >= 1
+      ? new Intl.DateTimeFormat("en-ZA", {
+          timeZone: "Africa/Johannesburg",
+          day: "numeric",
+          month: "short",
+        }).format(new Date(`${budget.cycleEnd.slice(0, 10)}T12:00:00+02:00`))
+      : null;
+  const paydayTone =
+    toPayday <= 0 ? "text-gain" : toPayday <= 3 ? "text-warn" : "text-faint";
+
   // The first block is about what's spendable — the payment cards only
   // (Romano's ask, 2026-07-23). Savings and business stay one tap away under
   // All. The label names them rather than hardcoding "Capitec Main + GOtyme",
@@ -107,6 +125,11 @@ export function HomeScreen() {
               <p className="mt-1 text-xs text-muted">
                 {spendableLabel} ·{" "}
                 <Money value={available.totalCashZar} variant="whole" /> cash in total
+              </p>
+              <p className={`mt-1.5 flex items-center gap-1.5 text-[11px] font-medium ${paydayTone}`}>
+                <CalendarClock size={12} strokeWidth={2} className="shrink-0" />
+                {paydayLabel}
+                {paydayWhen ? <span className="text-faint">· {paydayWhen}</span> : null}
               </p>
             </div>
 
@@ -201,8 +224,8 @@ export function HomeScreen() {
                   </span>
                 ) : null}
               </p>
-              <p className="text-[11px] text-faint">
-                {budget.daysLeft} {budget.daysLeft === 1 ? "day" : "days"} left
+              <p className="shrink-0 text-[11px] text-faint">
+                {Math.round(Math.min(100, Math.max(0, usedPct)))}% used
               </p>
             </div>
             <div className="mt-2 h-1.5 w-full overflow-hidden rounded-full bg-raise">
