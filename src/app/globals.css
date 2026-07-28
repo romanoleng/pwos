@@ -237,6 +237,17 @@
   padding-bottom: 0;
 }
 
+/* Optional quick-access top bar (lib/topTabs.ts) — sticky just under the mobile
+   header, at the same offset the top-docked tab bar uses. Hidden when the main
+   bar is already docked to the top, so there are never two stacked bars. */
+.top-tabs {
+  position: sticky;
+  top: calc(3rem + env(safe-area-inset-top, 0px));
+}
+[data-nav="top"] .top-tabs {
+  display: none;
+}
+
 /* With the bar at the top, the scroll container needs headroom for it —
    and only FAB clearance at the foot (the + button stays bottom-right in
    both modes: 1.25rem margin + 3.5rem button + 1rem breathing). */

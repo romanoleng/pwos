@@ -4,6 +4,7 @@ import { BottomTabs } from "@/components/shell/BottomTabs";
 import { LogFab } from "@/components/shell/LogFab";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { TopBar } from "@/components/shell/TopBar";
+import { TopTabs } from "@/components/shell/TopTabs";
 import { ToastProvider } from "@/components/ui/Toast";
 
 /**
@@ -19,6 +20,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       <Sidebar />
       <div className="md:pl-60">
         <TopBar />
+        <TopTabs />
         {/* Bottom padding must clear the FAB, not just the tab bar: the FAB's
             bottom edge sits 4.5rem (+ safe inset) up, it is 3.5rem tall, and
             1rem of breathing room keeps the last row's amount readable beside

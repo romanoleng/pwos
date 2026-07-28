@@ -122,7 +122,10 @@ export function HomeScreen() {
         day: "numeric",
         month: "short",
       }).format(new Date(Date.UTC(payY, payM - 1, payD, 10)));
-  const paydayTone = isPayday ? "text-gain" : toPayday <= 3 ? "text-warn" : "text-faint";
+  // Runway colour (Romano's ask): red when payday is far, amber mid-month,
+  // green as it comes into reach (and on the day).
+  const paydayTone =
+    isPayday || toPayday <= 3 ? "text-gain" : toPayday <= 14 ? "text-warn" : "text-loss";
 
   // The first block is about what's spendable — the payment cards only
   // (Romano's ask, 2026-07-23). Savings and business stay one tap away under
