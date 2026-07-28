@@ -10,6 +10,7 @@ import { CalendarView, MonthlyView, SummaryView } from "@/components/transaction
 import { useToast } from "@/components/ui/Toast";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money, Sensitive } from "@/components/ui/Money";
+import { iconForCategory } from "@/lib/categoryIcons";
 import { formatDate } from "@/lib/format";
 import type { HomeSummary } from "@/lib/server/home";
 import type { TransactionRow } from "@/lib/server/transactions";
@@ -85,20 +86,28 @@ export function TransactionsScreen() {
   const [view, setView] = useState<"list" | "calendar" | "monthly" | "summary">("list");
   const [dayFilter, setDayFilter] = useState<string | null>(null);
   const [types, setTypes] = useState<TransactionType[]>([]);
+  const [account, setAccount] = useState<string | null>(null);
 
   const all = useMemo(() => data?.transactions ?? [], [data]);
+
+  // The accounts that actually appear, so the filter only offers real ones.
+  const accounts = useMemo(
+    () => [...new Set(all.map((r) => r.accountLabel).filter((a): a is string => !!a))].sort(),
+    [all],
+  );
 
   const visible = useMemo(() => {
     const needle = query.trim().toLowerCase();
     return all.filter((row) => {
       if (dayFilter && row.date?.slice(0, 10) !== dayFilter) return false;
       if (types.length > 0 && !types.includes(row.type)) return false;
+      if (account && row.accountLabel !== account) return false;
       if (!needle) return true;
       return `${row.description} ${row.category ?? ""} ${row.accountLabel ?? ""}`
         .toLowerCase()
         .includes(needle);
     });
-  }, [all, query, types, dayFilter]);
+  }, [all, query, types, dayFilter, account]);
 
   // Negate rather than Math.abs: a refund sits in a spending category with a
   // positive amount ("Reversal - Purchase at Pick n Pay", +R508), and must
@@ -111,6 +120,100 @@ export function TransactionsScreen() {
     .reduce((total, row) => total + row.amountZar, 0);
   const lowConfidence = all.filter((row) => row.typeConfidence === "low").length;
   const anomalies = all.filter((row) => row.signAnomaly);
+
+  // A little insight for whatever's in view: the single biggest spend.
+  const expensesShown = visible.filter((row) => row.type === "expense");
+  const biggest = expensesShown.length
+    ? expensesShown.reduce((a, b) => (-b.amountZar > -a.amountZar ? b : a))
+    : null;
+  const dayGroups = useMemo(() => groupByDay(visible.slice(0, 200)), [visible]);
+
+  function renderRow(row: TransactionRow) {
+    const open = expanded === row.recordId;
+    const Icon = iconForCategory(row.category ?? row.description);
+    return (
+      <li key={row.recordId}>
+        <button
+          type="button"
+          onClick={() => setExpanded(open ? null : row.recordId)}
+          aria-expanded={open}
+          className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-2"
+        >
+          <Icon size={15} strokeWidth={1.75} className="shrink-0 text-muted" />
+          <div className="min-w-0 flex-1">
+            <p className="truncate text-sm">{row.description}</p>
+            <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-faint">
+              <span>{row.accountLabel ?? "unassigned"}</span>
+              {row.category ? (
+                <>
+                  <span>·</span>
+                  <span>{row.category}</span>
+                </>
+              ) : null}
+              <span className={`capitalize ${TYPE_TONE[row.type]}`} title={row.typeReason}>
+                {row.type}
+                {row.typeConfidence === "low" ? "?" : ""}
+              </span>
+            </p>
+          </div>
+          <Money
+            value={row.amountZar}
+            className="shrink-0 text-sm"
+            tone={row.amountZar < 0 ? "flat" : "gain"}
+          />
+          <ChevronDown
+            size={14}
+            strokeWidth={1.75}
+            className={`shrink-0 text-faint transition-transform ${open ? "rotate-180" : ""}`}
+          />
+        </button>
+
+        {open ? (
+          <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-bg/40 px-4 py-2.5">
+            <p className="text-[11px] text-faint">
+              {row.type}
+              {row.notes ? (
+                <>
+                  {" · "}
+                  <Sensitive>{row.notes}</Sensitive>
+                </>
+              ) : null}
+            </p>
+            <div className="flex gap-2">
+              <button
+                type="button"
+                onClick={() =>
+                  setEditing({
+                    recordId: row.recordId,
+                    description: row.description,
+                    amountZar: row.amountZar,
+                    category: row.category,
+                    subcategory: row.subcategory,
+                    accountLabel: row.accountLabel,
+                    date: row.date,
+                    notes: row.notes,
+                  })
+                }
+                className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-line-2 hover:text-ink"
+              >
+                <Pencil size={12} strokeWidth={1.75} />
+                Edit
+              </button>
+              <button
+                type="button"
+                disabled={busy === row.recordId}
+                onClick={() => remove(row.recordId, row.description)}
+                className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-loss/40 hover:text-loss disabled:opacity-50"
+              >
+                <Trash2 size={12} strokeWidth={1.75} />
+                {busy === row.recordId ? "Deleting…" : "Delete"}
+              </button>
+            </div>
+          </div>
+        ) : null}
+      </li>
+    );
+  }
 
   if (error) {
     return (
@@ -198,15 +301,60 @@ export function TransactionsScreen() {
         ))}
       </div>
 
-      <div className="grid grid-cols-2 gap-4 rounded-xl border border-line bg-surface px-4 py-3">
-        <div>
-          <p className="text-[11px] text-faint">Spend shown</p>
-          <Money value={spend} variant="whole" className="text-sm" />
+      {accounts.length > 1 ? (
+        <div className="no-scrollbar -mx-1 flex gap-1.5 overflow-x-auto px-1">
+          <button
+            type="button"
+            onClick={() => setAccount(null)}
+            aria-pressed={account === null}
+            className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
+              account === null
+                ? "border-accent/50 bg-accent/15 text-ink"
+                : "border-line text-muted hover:border-line-2 hover:text-ink"
+            }`}
+          >
+            All accounts
+          </button>
+          {accounts.map((label) => (
+            <button
+              key={label}
+              type="button"
+              onClick={() => setAccount(account === label ? null : label)}
+              aria-pressed={account === label}
+              className={`shrink-0 rounded-full border px-2.5 py-1 text-[11px] transition-colors ${
+                account === label
+                  ? "border-accent/50 bg-accent/15 text-ink"
+                  : "border-line text-muted hover:border-line-2 hover:text-ink"
+              }`}
+            >
+              {label}
+            </button>
+          ))}
         </div>
-        <div>
-          <p className="text-[11px] text-faint">Income shown</p>
-          <Money value={income} variant="whole" className="text-sm" />
+      ) : null}
+
+      <div className="rounded-xl border border-line bg-surface px-4 py-3">
+        <div className="grid grid-cols-2 gap-4">
+          <div>
+            <p className="text-[11px] text-faint">Spend shown</p>
+            <Money value={spend} variant="whole" className="text-sm" />
+          </div>
+          <div>
+            <p className="text-[11px] text-faint">Income shown</p>
+            <Money value={income} variant="whole" className="text-sm text-gain" />
+          </div>
         </div>
+        <p className="mt-2.5 border-t border-line pt-2.5 text-[11px] text-faint">
+          {visible.length} {visible.length === 1 ? "entry" : "entries"}
+          {biggest ? (
+            <>
+              {" · biggest "}
+              <Money value={-biggest.amountZar} variant="whole" className="text-muted" />
+              {" — "}
+              <span className="text-muted">{biggest.description}</span>
+            </>
+          ) : null}
+        </p>
       </div>
 
       {anomalies.length > 0 ? (
@@ -324,99 +472,31 @@ export function TransactionsScreen() {
             Nothing matches that filter.
           </CardBody>
         ) : (
-          <ul className="divide-y divide-line">
-            {visible.slice(0, 200).map((row) => {
-              const open = expanded === row.recordId;
-              return (
-              <li key={row.recordId}>
-              <button
-                type="button"
-                onClick={() => setExpanded(open ? null : row.recordId)}
-                aria-expanded={open}
-                className="flex w-full items-center gap-3 px-4 py-2.5 text-left transition-colors hover:bg-surface-2"
-              >
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm">{row.description}</p>
-                  <p className="mt-0.5 flex flex-wrap items-center gap-1.5 text-[11px] text-faint">
-                    <span>{row.date ? formatDate(row.date) : "no date"}</span>
-                    <span>·</span>
-                    <span>{row.accountLabel ?? "unassigned"}</span>
-                    {row.category ? (
+          <div>
+            {dayGroups.map((group) => (
+              <div key={group.day}>
+                <div className="flex items-center justify-between gap-3 border-b border-line bg-surface-2/40 px-4 py-1.5">
+                  <span className="text-[11px] font-medium text-muted">
+                    {dayHeaderLabel(group.day)}
+                  </span>
+                  <span className="text-[11px] text-faint">
+                    {group.outZar > 0 ? (
                       <>
-                        <span>·</span>
-                        <span>{row.category}</span>
+                        <Money value={group.outZar} variant="whole" /> out
                       </>
                     ) : null}
-                    <span
-                      className={`capitalize ${TYPE_TONE[row.type]}`}
-                      title={row.typeReason}
-                    >
-                      {row.type}
-                      {row.typeConfidence === "low" ? "?" : ""}
-                    </span>
-                  </p>
-                </div>
-                <Money
-                  value={row.amountZar}
-                  className="shrink-0 text-sm"
-                  tone={row.amountZar < 0 ? "flat" : "gain"}
-                />
-                <ChevronDown
-                  size={14}
-                  strokeWidth={1.75}
-                  className={`shrink-0 text-faint transition-transform ${open ? "rotate-180" : ""}`}
-                />
-              </button>
-
-              {open ? (
-                <div className="flex flex-wrap items-center justify-between gap-3 border-t border-line bg-bg/40 px-4 py-2.5">
-                  <p className="text-[11px] text-faint">
-                    {row.type}
-                    {/* Notes are free text and often carry amounts or refs —
-                        the privacy eye masks them like any figure. */}
-                    {row.notes ? (
+                    {group.outZar > 0 && group.inZar > 0 ? " · " : null}
+                    {group.inZar > 0 ? (
                       <>
-                        {" · "}
-                        <Sensitive>{row.notes}</Sensitive>
+                        <Money value={group.inZar} variant="whole" className="text-gain" /> in
                       </>
                     ) : null}
-                  </p>
-                  <div className="flex gap-2">
-                    <button
-                      type="button"
-                      onClick={() =>
-                        setEditing({
-                          recordId: row.recordId,
-                          description: row.description,
-                          amountZar: row.amountZar,
-                          category: row.category,
-                          subcategory: row.subcategory,
-                          accountLabel: row.accountLabel,
-                          date: row.date,
-                          notes: row.notes,
-                        })
-                      }
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-line-2 hover:text-ink"
-                    >
-                      <Pencil size={12} strokeWidth={1.75} />
-                      Edit
-                    </button>
-                    <button
-                      type="button"
-                      disabled={busy === row.recordId}
-                      onClick={() => remove(row.recordId, row.description)}
-                      className="inline-flex items-center gap-1.5 rounded-lg border border-line px-2.5 py-1 text-[11px] text-muted transition-colors hover:border-loss/40 hover:text-loss disabled:opacity-50"
-                    >
-                      <Trash2 size={12} strokeWidth={1.75} />
-                      {busy === row.recordId ? "Deleting…" : "Delete"}
-                    </button>
-                  </div>
+                  </span>
                 </div>
-              ) : null}
-              </li>
-              );
-            })}
-          </ul>
+                <ul className="divide-y divide-line">{group.rows.map(renderRow)}</ul>
+              </div>
+            ))}
+          </div>
         )}
       </Card>
       )}
@@ -462,4 +542,33 @@ export function TransactionsScreen() {
       ) : null}
     </div>
   );
+}
+
+type DayGroup = { day: string; rows: TransactionRow[]; outZar: number; inZar: number };
+
+/** Group already-sorted rows into consecutive days, with each day's in/out. */
+function groupByDay(rows: TransactionRow[]): DayGroup[] {
+  const groups: DayGroup[] = [];
+  let current: DayGroup | null = null;
+  for (const row of rows) {
+    const day = row.date?.slice(0, 10) ?? "no-date";
+    if (!current || current.day !== day) {
+      current = { day, rows: [], outZar: 0, inZar: 0 };
+      groups.push(current);
+    }
+    current.rows.push(row);
+    if (row.type === "expense") current.outZar += -row.amountZar;
+    else if (row.type === "income") current.inZar += row.amountZar;
+  }
+  return groups;
+}
+
+function dayHeaderLabel(day: string): string {
+  if (day === "no-date") return "No date";
+  return new Intl.DateTimeFormat("en-ZA", {
+    weekday: "short",
+    day: "numeric",
+    month: "short",
+    timeZone: "Africa/Johannesburg",
+  }).format(new Date(`${day}T12:00:00+02:00`));
 }
