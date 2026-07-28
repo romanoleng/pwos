@@ -22,8 +22,37 @@ import {
  * Stored per device — what suits a thumb on the phone needn't bind the desktop.
  * The bar is always at the bottom; the floating + button stays bottom-right.
  */
+type Section = "bottom" | TopPlacement;
+
 export function TabPicker() {
   const chosen = useChosenTabs();
+  const stripOn = useTopEnabled("strip");
+  const stripLinks = useTopLinkHrefs("strip");
+  const headerOn = useTopEnabled("header");
+  const headerLinks = useTopLinkHrefs("header");
+
+  // A screen lives in one place only (Romano's ask): adding it to one section
+  // removes it from the other two. The bottom bar must keep exactly three, so
+  // if this evicts one it's back-filled with an unused essential.
+  function clearElsewhere(href: string, keep: Section) {
+    if (keep !== "bottom" && chosen.includes(href)) {
+      let next = chosen.filter((h) => h !== href);
+      if (next.length < 3) {
+        const used = new Set([...next, ...stripLinks, ...headerLinks, href]);
+        const fill =
+          TAB_CHOICES.find((c) => !used.has(c.href))?.href ??
+          TAB_CHOICES.find((c) => !next.includes(c.href) && c.href !== href)?.href;
+        if (fill) next = [...next, fill];
+      }
+      setChosenTabs(next);
+    }
+    if (keep !== "strip" && stripLinks.includes(href)) {
+      setTopLinks("strip", stripLinks.filter((h) => h !== href));
+    }
+    if (keep !== "header" && headerLinks.includes(href)) {
+      setTopLinks("header", headerLinks.filter((h) => h !== href));
+    }
+  }
 
   function toggle(href: string) {
     if (chosen.includes(href)) {
@@ -35,10 +64,21 @@ export function TabPicker() {
       }
       return;
     }
+    clearElsewhere(href, "bottom");
     // Adding a fourth replaces the oldest choice, so a tap always does
     // something visible rather than being silently ignored.
     const next = chosen.length >= 3 ? [...chosen.slice(1), href] : [...chosen, href];
     setChosenTabs(next);
+  }
+
+  function toggleTop(placement: TopPlacement, links: string[], href: string) {
+    if (links.includes(href)) {
+      setTopLinks(placement, links.filter((h) => h !== href));
+      return;
+    }
+    clearElsewhere(href, placement);
+    const next = links.length >= MAX_TOP_LINKS ? [...links.slice(1), href] : [...links, href];
+    setTopLinks(placement, next);
   }
 
   return (
@@ -104,14 +144,20 @@ export function TabPicker() {
           </p>
           <div className="mt-3 space-y-4">
             <QuickAccessBlock
-              placement="strip"
               title="Below the header"
               hint="A flat strip under the header."
+              on={stripOn}
+              links={stripLinks}
+              onToggleEnabled={() => setTopEnabled("strip", !stripOn)}
+              onToggleLink={(href) => toggleTop("strip", stripLinks, href)}
             />
             <QuickAccessBlock
-              placement="header"
               title="In the header"
               hint="Icons beside the page title."
+              on={headerOn}
+              links={headerLinks}
+              onToggleEnabled={() => setTopEnabled("header", !headerOn)}
+              onToggleLink={(href) => toggleTop("header", headerLinks, href)}
             />
           </div>
         </div>
@@ -121,26 +167,20 @@ export function TabPicker() {
 }
 
 function QuickAccessBlock({
-  placement,
   title,
   hint,
+  on,
+  links,
+  onToggleEnabled,
+  onToggleLink,
 }: {
-  placement: TopPlacement;
   title: string;
   hint: string;
+  on: boolean;
+  links: string[];
+  onToggleEnabled: () => void;
+  onToggleLink: (href: string) => void;
 }) {
-  const on = useTopEnabled(placement);
-  const links = useTopLinkHrefs(placement);
-
-  function toggle(href: string) {
-    if (links.includes(href)) {
-      setTopLinks(placement, links.filter((h) => h !== href));
-      return;
-    }
-    const next = links.length >= MAX_TOP_LINKS ? [...links.slice(1), href] : [...links, href];
-    setTopLinks(placement, next);
-  }
-
   return (
     <div className="rounded-xl border border-line p-3">
       <label className="flex items-center justify-between gap-4">
@@ -153,7 +193,7 @@ function QuickAccessBlock({
           role="switch"
           aria-checked={on}
           aria-label={title}
-          onClick={() => setTopEnabled(placement, !on)}
+          onClick={onToggleEnabled}
           className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${
             on ? "bg-accent" : "bg-line-2"
           }`}
@@ -169,7 +209,8 @@ function QuickAccessBlock({
       {on ? (
         <div className="mt-3 border-t border-line pt-3">
           <p className="mb-2 text-[11px] text-faint">
-            Up to {MAX_TOP_LINKS} — a {MAX_TOP_LINKS + 1}th swaps out the oldest.
+            Up to {MAX_TOP_LINKS} — a {MAX_TOP_LINKS + 1}th swaps out the oldest. Picking one here
+            removes it from the other bars.
           </p>
           <div className="flex flex-wrap gap-1.5">
             {TOP_CHOICES.map((choice) => {
@@ -180,7 +221,7 @@ function QuickAccessBlock({
                   key={choice.href}
                   type="button"
                   aria-pressed={active}
-                  onClick={() => toggle(choice.href)}
+                  onClick={() => onToggleLink(choice.href)}
                   className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
                     active
                       ? "border-accent/50 bg-accent/15 text-ink"
