@@ -226,6 +226,14 @@
   border-top: 1px solid var(--line);
   /* Clears the iPhone home indicator when installed as a PWA. */
   padding-bottom: env(safe-area-inset-bottom, 0px);
+  /* iOS Safari drops a plain fixed bottom bar during momentum scroll. Promoting
+     it to its own compositor layer keeps it painted throughout the scroll — the
+     standard fix for the "bar vanishes then comes back" behaviour. */
+  transform: translateZ(0);
+  -webkit-transform: translateZ(0);
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+  will-change: transform;
 }
 
 [data-nav="top"] .tab-nav {
