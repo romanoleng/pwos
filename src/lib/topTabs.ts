@@ -17,6 +17,8 @@ import {
 } from "lucide-react";
 import { useSyncExternalStore } from "react";
 
+import { useChosenTabs } from "./tabs";
+
 /**
  * Optional quick-access to more screens (Romano's ask, 2026-07-26; made
  * choosable and dual-placement 2026-07-27). Two INDEPENDENT placements —
@@ -46,7 +48,12 @@ export const TOP_CHOICES: TopChoice[] = [
 ];
 
 export const MAX_TOP_LINKS = 5;
-const DEFAULT_LINKS = ["/wealth", "/crypto", "/investments", "/net-worth", "/stats"];
+// Different defaults per placement, so enabling both doesn't start with the
+// same screens in each (they'd collide).
+const DEFAULTS: Record<TopPlacement, string[]> = {
+  strip: ["/wealth", "/crypto", "/investments", "/net-worth", "/stats"],
+  header: ["/accounts", "/transactions", "/businesses"],
+};
 
 const listeners = new Set<() => void>();
 const enabledCache: Record<TopPlacement, boolean | null> = { strip: null, header: null };
@@ -74,9 +81,9 @@ function readLinks(p: TopPlacement): string[] {
       const valid =
         Array.isArray(parsed) &&
         parsed.every((h) => typeof h === "string" && TOP_CHOICES.some((c) => c.href === h));
-      linksCache[p] = valid && parsed.length > 0 ? (parsed as string[]).slice(0, MAX_TOP_LINKS) : DEFAULT_LINKS;
+      linksCache[p] = valid && parsed.length > 0 ? (parsed as string[]).slice(0, MAX_TOP_LINKS) : DEFAULTS[p];
     } catch {
-      linksCache[p] = DEFAULT_LINKS;
+      linksCache[p] = DEFAULTS[p];
     }
   }
   return linksCache[p] as string[];
@@ -99,7 +106,7 @@ export function setTopEnabled(p: TopPlacement, on: boolean): void {
 
 export function setTopLinks(p: TopPlacement, hrefs: string[]): void {
   const valid = hrefs.filter((h) => TOP_CHOICES.some((c) => c.href === h)).slice(0, MAX_TOP_LINKS);
-  linksCache[p] = valid.length > 0 ? valid : DEFAULT_LINKS;
+  linksCache[p] = valid.length > 0 ? valid : DEFAULTS[p];
   try {
     localStorage.setItem(linksKey(p), JSON.stringify(linksCache[p]));
   } catch {
@@ -118,7 +125,7 @@ export function useTopEnabled(p: TopPlacement): boolean {
 }
 
 export function useTopLinkHrefs(p: TopPlacement): string[] {
-  return useSyncExternalStore(subscribe, () => readLinks(p), () => DEFAULT_LINKS);
+  return useSyncExternalStore(subscribe, () => readLinks(p), () => DEFAULTS[p]);
 }
 
 /** The chosen links resolved to their icon + label, in order. */
@@ -126,4 +133,25 @@ export function resolveTopLinks(hrefs: string[]): TopChoice[] {
   return hrefs
     .map((h) => TOP_CHOICES.find((c) => c.href === h))
     .filter((c): c is TopChoice => c !== undefined);
+}
+
+/**
+ * What a placement should ACTUALLY show, deduped across the bars so a screen
+ * never appears in two of them at once (Romano's ask, 2026-07-27). Priority:
+ * the bottom bar wins, then the strip, then the header — a link claimed by a
+ * higher-priority bar is dropped from the lower one. This is a render-time
+ * guard, so even legacy overlapping choices resolve cleanly.
+ */
+export function useResolvedTopLinks(placement: TopPlacement): TopChoice[] {
+  const stripOn = useTopEnabled("strip");
+  const stripHrefs = useTopLinkHrefs("strip");
+  const headerHrefs = useTopLinkHrefs("header");
+  const bottom = useChosenTabs();
+
+  const bottomSet = new Set(bottom);
+  const stripResolved = stripHrefs.filter((h) => !bottomSet.has(h));
+  if (placement === "strip") return resolveTopLinks(stripResolved);
+
+  const claimed = new Set([...bottom, ...(stripOn ? stripResolved : [])]);
+  return resolveTopLinks(headerHrefs.filter((h) => !claimed.has(h)));
 }

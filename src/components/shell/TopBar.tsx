@@ -1,12 +1,12 @@
 "use client";
 
-import { Settings, X } from "lucide-react";
+import { BookOpen, Settings, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { PrivacyToggle } from "@/components/shell/PrivacyToggle";
 import { isActivePath, navTitleFor } from "@/lib/nav";
-import { resolveTopLinks, useTopEnabled, useTopLinkHrefs } from "@/lib/topTabs";
+import { useResolvedTopLinks, useTopEnabled } from "@/lib/topTabs";
 
 /**
  * Mobile-only header. Desktop gets its identity from the sidebar, so repeating
@@ -17,7 +17,8 @@ export function TopBar() {
   const router = useRouter();
   const onSettings = pathname.startsWith("/settings");
   const headerTabs = useTopEnabled("header");
-  const topLinks = resolveTopLinks(useTopLinkHrefs("header"));
+  const topLinks = useResolvedTopLinks("header");
+  const showHeaderTabs = headerTabs && topLinks.length > 0;
 
   return (
     <header className="pt-safe sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur-md md:hidden">
@@ -26,7 +27,7 @@ export function TopBar() {
           {navTitleFor(pathname)}
         </h1>
         <div className="flex shrink-0 items-center gap-0.5">
-        {headerTabs
+        {showHeaderTabs
           ? topLinks.map(({ href, label, icon: Icon }) => {
               const active = isActivePath(pathname, href);
               return (
@@ -47,8 +48,17 @@ export function TopBar() {
         {/* A hairline sets the app controls (eye, settings) apart from the
             quick-access nav icons, so it reads as "the app's own controls"
             rather than another place to go. */}
-        {headerTabs ? <span aria-hidden className="mx-1 h-4 w-px bg-line-2" /> : null}
+        {showHeaderTabs ? <span aria-hidden className="mx-1 h-4 w-px bg-line-2" /> : null}
         <PrivacyToggle />
+        {/* Guide always within reach, beside Settings — the app's help, growing
+            over time (Romano's ask, 2026-07-27). */}
+        <Link
+          href="/guide"
+          aria-label="Guide"
+          className="rounded-lg p-1.5 text-accent transition-colors hover:bg-surface-2 hover:opacity-80"
+        >
+          <BookOpen size={16} strokeWidth={1.75} />
+        </Link>
         {/* One slot, one meaning, every screen. The theme toggle used to live
             here — a set-once preference in the only permanently visible spot.
             It's in Settings now. The middle stays empty for a future

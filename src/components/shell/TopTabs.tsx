@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { isActivePath } from "@/lib/nav";
-import { resolveTopLinks, useTopEnabled, useTopLinkHrefs } from "@/lib/topTabs";
+import { useResolvedTopLinks, useTopEnabled } from "@/lib/topTabs";
 
 /**
  * The optional quick-access strip (see lib/topTabs.ts). Flatter than the bottom
@@ -16,7 +16,7 @@ import { resolveTopLinks, useTopEnabled, useTopLinkHrefs } from "@/lib/topTabs";
  */
 export function TopTabs() {
   const enabled = useTopEnabled("strip");
-  const links = resolveTopLinks(useTopLinkHrefs("strip"));
+  const links = useResolvedTopLinks("strip");
   const pathname = usePathname();
   if (!enabled || links.length === 0) return null;
 
