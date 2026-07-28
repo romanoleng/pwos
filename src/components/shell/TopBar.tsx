@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 
 import { PrivacyToggle } from "@/components/shell/PrivacyToggle";
 import { isActivePath, navTitleFor } from "@/lib/nav";
-import { TOP_LINKS, useTopTabsMode } from "@/lib/topTabs";
+import { resolveTopLinks, useTopLinkHrefs, useTopTabsMode } from "@/lib/topTabs";
 
 /**
  * Mobile-only header. Desktop gets its identity from the sidebar, so repeating
@@ -17,6 +17,7 @@ export function TopBar() {
   const router = useRouter();
   const onSettings = pathname.startsWith("/settings");
   const topMode = useTopTabsMode();
+  const topLinks = resolveTopLinks(useTopLinkHrefs());
 
   return (
     <header className="pt-safe sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur-md md:hidden">
@@ -26,7 +27,7 @@ export function TopBar() {
         </h1>
         <div className="flex shrink-0 items-center gap-0.5">
         {topMode === "header"
-          ? TOP_LINKS.map(({ href, label, icon: Icon }) => {
+          ? topLinks.map(({ href, label, icon: Icon }) => {
               const active = isActivePath(pathname, href);
               return (
                 <Link

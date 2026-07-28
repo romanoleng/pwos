@@ -23,10 +23,12 @@ export type NavPosition = "bottom" | "top";
 
 const STORAGE_KEY = "pwos-nav";
 
-/** Runs in <head> before paint — mirrors THEME_INIT_SCRIPT. */
-export const NAV_INIT_SCRIPT = `(function(){try{var v=localStorage.getItem(${JSON.stringify(
-  STORAGE_KEY,
-)});document.documentElement.setAttribute("data-nav",v==="top"?"top":"bottom")}catch(e){document.documentElement.setAttribute("data-nav","bottom")}})()`;
+/**
+ * Runs in <head> before paint. The bar is now always at the bottom (Romano
+ * dropped the top option, 2026-07-27) — this always stamps "bottom", ignoring
+ * any older stored preference, so nobody who once chose "top" is stuck there.
+ */
+export const NAV_INIT_SCRIPT = `(function(){try{document.documentElement.setAttribute("data-nav","bottom")}catch(e){}})()`;
 
 function isNavPosition(value: string | null): value is NavPosition {
   return value === "bottom" || value === "top";

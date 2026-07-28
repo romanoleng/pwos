@@ -3,24 +3,40 @@
 import { Home, MoreHorizontal } from "lucide-react";
 
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
-import { applyNavPosition, useNavPosition, type NavPosition } from "@/lib/navPosition";
 import { TAB_CHOICES, setChosenTabs, useChosenTabs } from "@/lib/tabs";
-import { TOP_LINKS, setTopTabsMode, useTopTabsMode, type TopTabsMode } from "@/lib/topTabs";
+import {
+  MAX_TOP_LINKS,
+  TOP_CHOICES,
+  setTopLinks,
+  setTopTabsMode,
+  useTopLinkHrefs,
+  useTopTabsMode,
+  type TopTabsMode,
+} from "@/lib/topTabs";
 
 /**
- * Which three screens sit in the middle of the tab bar (Romano's ask), and
- * which edge of the screen the bar lives on.
+ * Which three screens sit in the middle of the bottom tab bar, plus the
+ * optional quick-access buttons and where they show (Romano's ask).
  *
- * Home and More are fixed; the rest is his. Selection order is slot order, so
- * picking Debt first puts Debt first. Stored per device — what suits a thumb
- * on the phone needn't bind the desktop. Position is per-device for the same
- * reason; the floating + button stays bottom-right regardless, because
- * reachability is a thumb question, not a navigation question.
+ * Home and Menu are fixed; the rest is his. Selection order is slot order.
+ * Stored per device — what suits a thumb on the phone needn't bind the desktop.
+ * The bar is always at the bottom; the floating + button stays bottom-right.
  */
 export function TabPicker() {
   const chosen = useChosenTabs();
-  const position = useNavPosition();
   const topMode = useTopTabsMode();
+  const topLinks = useTopLinkHrefs();
+
+  function toggleTop(href: string) {
+    if (topLinks.includes(href)) {
+      setTopLinks(topLinks.filter((h) => h !== href));
+      return;
+    }
+    // Past the cap, the newest choice replaces the oldest so a tap always does
+    // something visible.
+    const next = topLinks.length >= MAX_TOP_LINKS ? [...topLinks.slice(1), href] : [...topLinks, href];
+    setTopLinks(next);
+  }
 
   function toggle(href: string) {
     if (chosen.includes(href)) {
@@ -94,45 +110,10 @@ export function TabPicker() {
           bar stays one tap away under Menu.
         </p>
 
-        <div
-          role="radiogroup"
-          aria-label="Bar position"
-          className="border-t border-line pt-3"
-        >
-          <p className="text-xs font-medium text-muted">Bar position</p>
-          <div className="mt-2 grid grid-cols-2 gap-2">
-            {(
-              [
-                { id: "bottom", label: "Bottom", hint: "Under your thumb. The default." },
-                { id: "top", label: "Top", hint: "Under the header, off the keyboard." },
-              ] as { id: NavPosition; label: string; hint: string }[]
-            ).map((option) => {
-              const active = position === option.id;
-              return (
-                <button
-                  key={option.id}
-                  type="button"
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => applyNavPosition(option.id)}
-                  className={`rounded-xl border px-3 py-2.5 text-left transition-colors ${
-                    active ? "border-accent/50 bg-accent/10" : "border-line hover:border-line-2"
-                  }`}
-                >
-                  <span className="block text-sm font-medium">{option.label}</span>
-                  <span className="mt-0.5 block text-[11px] leading-snug text-faint">
-                    {option.hint}
-                  </span>
-                </button>
-              );
-            })}
-          </div>
-        </div>
-
         <div role="radiogroup" aria-label="Quick-access buttons" className="border-t border-line pt-3">
           <p className="text-xs font-medium text-muted">Quick-access buttons</p>
           <p className="mt-0.5 text-[11px] leading-snug text-faint">
-            The big-picture screens ({TOP_LINKS.map((l) => l.label).join(" · ")}), one tap away.
+            Extra screens, one tap away — choose where they show.
           </p>
           <div className="mt-2 grid grid-cols-3 gap-2">
             {(
@@ -162,6 +143,36 @@ export function TabPicker() {
               );
             })}
           </div>
+
+          {topMode !== "off" ? (
+            <div className="mt-3">
+              <p className="mb-2 text-[11px] text-faint">
+                Which buttons — up to {MAX_TOP_LINKS}. A {MAX_TOP_LINKS + 1}th swaps out the oldest.
+              </p>
+              <div className="flex flex-wrap gap-1.5">
+                {TOP_CHOICES.map((choice) => {
+                  const active = topLinks.includes(choice.href);
+                  const Icon = choice.icon;
+                  return (
+                    <button
+                      key={choice.href}
+                      type="button"
+                      aria-pressed={active}
+                      onClick={() => toggleTop(choice.href)}
+                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                        active
+                          ? "border-accent/50 bg-accent/15 text-ink"
+                          : "border-line text-muted hover:border-line-2 hover:text-ink"
+                      }`}
+                    >
+                      <Icon size={13} strokeWidth={1.75} />
+                      {choice.label}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+          ) : null}
         </div>
       </CardBody>
     </Card>

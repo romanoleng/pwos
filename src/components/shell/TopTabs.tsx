@@ -4,27 +4,28 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { isActivePath } from "@/lib/nav";
-import { TOP_LINKS, useTopTabsMode } from "@/lib/topTabs";
+import { resolveTopLinks, useTopLinkHrefs, useTopTabsMode } from "@/lib/topTabs";
 
 /**
  * The optional quick-access strip (see lib/topTabs.ts). Flatter than the bottom
  * tabs — a thin, horizontal icon+label row — sticky just below the header so
- * the wealth screens stay reachable as you scroll. Only renders in "strip"
+ * the chosen screens stay reachable as you scroll. Only renders in "strip"
  * placement; "header" renders inline in TopBar instead. Mobile only; the
- * `top-tabs` sticky offset and its data-nav handling live in globals.css.
+ * `top-tabs` sticky offset lives in globals.css.
  */
 export function TopTabs() {
   const mode = useTopTabsMode();
+  const links = resolveTopLinks(useTopLinkHrefs());
   const pathname = usePathname();
-  if (mode !== "strip") return null;
+  if (mode !== "strip" || links.length === 0) return null;
 
   return (
     <nav className="top-tabs z-[19] border-b border-line bg-bg/90 backdrop-blur-md md:hidden">
-      <ul className="grid grid-cols-5 divide-x divide-line/60">
-        {TOP_LINKS.map(({ href, label, icon: Icon }) => {
+      <ul className="flex divide-x divide-line/60">
+        {links.map(({ href, label, icon: Icon }) => {
           const active = isActivePath(pathname, href);
           return (
-            <li key={href}>
+            <li key={href} className="flex-1">
               <Link
                 href={href}
                 aria-current={active ? "page" : undefined}
