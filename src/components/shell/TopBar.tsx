@@ -44,6 +44,10 @@ export function TopBar() {
               );
             })
           : null}
+        {/* A hairline sets the app controls (eye, settings) apart from the
+            quick-access nav icons, so it reads as "the app's own controls"
+            rather than another place to go. */}
+        {headerTabs ? <span aria-hidden className="mx-1 h-4 w-px bg-line-2" /> : null}
         <PrivacyToggle />
         {/* One slot, one meaning, every screen. The theme toggle used to live
             here — a set-once preference in the only permanently visible spot.
@@ -69,7 +73,7 @@ export function TopBar() {
           <Link
             href="/settings"
             aria-label="Settings"
-            className="-mr-1.5 rounded-lg p-1.5 text-muted transition-colors hover:bg-surface-2 hover:text-ink"
+            className="-mr-1.5 rounded-lg p-1.5 text-accent transition-colors hover:bg-surface-2"
           >
             <Settings size={17} strokeWidth={1.75} />
           </Link>

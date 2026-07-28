@@ -45,9 +45,7 @@ export function PrivacyToggle() {
           if (hidden) setAsking(true);
           else setValuesHidden(true);
         }}
-        className={`rounded-lg p-1.5 transition-colors hover:bg-surface-2 ${
-          hidden ? "text-accent" : "text-muted hover:text-ink"
-        }`}
+        className="rounded-lg p-1.5 text-accent transition-colors hover:bg-surface-2 hover:opacity-80"
       >
         {hidden ? (
           <EyeOff size={17} strokeWidth={1.75} />
