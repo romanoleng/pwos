@@ -51,6 +51,18 @@ export type StatsSummary = {
   };
   /** Net for the period: what came in, less what went out. */
   netZar: number;
+  /**
+   * Money that moved but ISN'T spending — transfers between your own accounts
+   * and contributions put into savings/investments. Surfaced so a big movement
+   * (a bond funded by a transfer, a crypto buy) is visible rather than hidden,
+   * and never mistaken for a spend.
+   */
+  moved: {
+    transferZar: number;
+    transferCount: number;
+    contributionZar: number;
+    contributionCount: number;
+  };
   /** Twelve months of both, oldest first, for the trend. */
   months: MonthPoint[];
   /** The same period one step back, so the headline can be compared. */
@@ -130,12 +142,19 @@ export async function getStats(periodKind: PeriodKind = "cycle"): Promise<StatsS
         and (${start}::date is null or t.occurred_on >= ${start}::date)
       group by 1 order by 2 desc`,
 
-    sql<{ income: string; expense: string; in_n: string; out_n: string }>`
+    sql<{
+      income: string; expense: string; in_n: string; out_n: string;
+      transfer: string; tr_n: string; contribution: string; co_n: string;
+    }>`
       select
-        coalesce(sum(amount_zar)  filter (where type = 'income'), 0)  as income,
-        coalesce(sum(-amount_zar) filter (where type = 'expense'), 0) as expense,
-        count(*) filter (where type = 'income')::text                 as in_n,
-        count(*) filter (where type = 'expense')::text                as out_n
+        coalesce(sum(amount_zar)  filter (where type = 'income'), 0)       as income,
+        coalesce(sum(-amount_zar) filter (where type = 'expense'), 0)      as expense,
+        count(*) filter (where type = 'income')::text                      as in_n,
+        count(*) filter (where type = 'expense')::text                     as out_n,
+        coalesce(sum(abs(amount_zar)) filter (where type = 'transfer'), 0)     as transfer,
+        count(*) filter (where type = 'transfer')::text                    as tr_n,
+        coalesce(sum(abs(amount_zar)) filter (where type = 'contribution'), 0) as contribution,
+        count(*) filter (where type = 'contribution')::text                as co_n
       from transactions
       where occurred_on < ${end}::date
         and (${start}::date is null or occurred_on >= ${start}::date)`,
@@ -187,6 +206,12 @@ export async function getStats(periodKind: PeriodKind = "cycle"): Promise<StatsS
       byAccount: slices(expenseByAccount),
     },
     netZar: incomeZar - expenseZar,
+    moved: {
+      transferZar: money(totals[0]?.transfer),
+      transferCount: Number(totals[0]?.tr_n ?? 0),
+      contributionZar: money(totals[0]?.contribution),
+      contributionCount: Number(totals[0]?.co_n ?? 0),
+    },
     months: months.map((m) => ({
       month: m.month,
       incomeZar: money(m.income),

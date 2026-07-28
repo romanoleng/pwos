@@ -126,6 +126,27 @@ export function StatsScreen() {
         </CardBody>
       </Card>
 
+      {data.moved.transferCount > 0 || data.moved.contributionCount > 0 ? (
+        <Card>
+          <CardHeader
+            title="Also moved · not spending"
+            description="Transfers between your own accounts and money put into savings or investments. Kept out of Spent on purpose — it's not consumption — but shown here so nothing's hidden."
+          />
+          <CardBody className="grid grid-cols-2 gap-3">
+            <MovedStat
+              label="Transferred"
+              value={data.moved.transferZar}
+              count={data.moved.transferCount}
+            />
+            <MovedStat
+              label="Put away"
+              value={data.moved.contributionZar}
+              count={data.moved.contributionCount}
+            />
+          </CardBody>
+        </Card>
+      ) : null}
+
       <Breakdown
         title={side === "income" ? "Where it came from" : "Where it went"}
         description={
@@ -184,6 +205,20 @@ function SideButton({
         {count} {count === 1 ? "entry" : "entries"}
       </span>
     </button>
+  );
+}
+
+function MovedStat({ label, value, count }: { label: string; value: number; count: number }) {
+  return (
+    <div className="rounded-xl border border-line px-3 py-2.5">
+      <span className="block text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
+        {label}
+      </span>
+      <Money value={value} variant="whole" className="mt-1 block text-lg font-semibold tracking-tight text-info" />
+      <span className="mt-0.5 block text-[11px] text-faint">
+        {count} {count === 1 ? "entry" : "entries"}
+      </span>
+    </div>
   );
 }
 
