@@ -20,7 +20,6 @@ import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { PeriodBar, usePeriodKind } from "@/components/ui/PeriodBar";
-import { PAYDAY_DAY_OF_MONTH } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import type { HomeSummary } from "@/lib/server/home";
 
@@ -37,6 +36,19 @@ const KIND_ICONS: Record<string, LucideIcon> = {
   business: Briefcase,
   other: Wallet,
 };
+
+/**
+ * Romano's real payday: the 25th, pulled back to the Friday before when the
+ * 25th lands on a weekend (Sat → 24th, Sun → 23rd). This is the day the money
+ * actually arrives and is deliberately distinct from the budget cycle's anchor
+ * (the 24th) — only the Home countdown uses it.
+ */
+function paydayDayOf(year: number, month1: number): number {
+  const dow = new Date(Date.UTC(year, month1 - 1, 25)).getUTCDay(); // 0 Sun … 6 Sat
+  if (dow === 6) return 24; // Saturday → Friday
+  if (dow === 0) return 23; // Sunday → Friday
+  return 25;
+}
 
 /**
  * Home is the daily driver: what's available, the cards, the budget, and one
@@ -73,10 +85,9 @@ export function HomeScreen() {
   const usedPct =
     budget.budgetedZar > 0 ? (budget.spentZar / budget.budgetedZar) * 100 : 0;
 
-  // Days to the actual payday (the 24th), computed straight from the calendar.
-  // Deliberately NOT from the budget cycle's daysLeft: that resets to a full
-  // month on payday and can read 0 if a cycle has lapsed, which would wrongly
-  // show "Payday today" on the wrong day. The calendar can't drift.
+  // Days to the real payday (25th, or the Friday before if it's a weekend),
+  // computed straight from the calendar so it never depends on the budget
+  // cycle's state (which resets on payday and can read 0 if a cycle lapses).
   const parts = new Intl.DateTimeFormat("en-CA", {
     timeZone: "Africa/Johannesburg",
     year: "numeric",
@@ -86,13 +97,18 @@ export function HomeScreen() {
   const ty = Number(parts.find((p) => p.type === "year")?.value);
   const tm = Number(parts.find((p) => p.type === "month")?.value);
   const td = Number(parts.find((p) => p.type === "day")?.value);
-  const daysInMonth = new Date(Date.UTC(ty, tm, 0)).getUTCDate();
-  const toPayday =
-    td < PAYDAY_DAY_OF_MONTH
-      ? PAYDAY_DAY_OF_MONTH - td
-      : td === PAYDAY_DAY_OF_MONTH
-        ? 0
-        : daysInMonth - td + PAYDAY_DAY_OF_MONTH;
+  // This month's payday, or next month's once this month's has passed.
+  let payY = ty;
+  let payM = tm;
+  let payD = paydayDayOf(ty, tm);
+  if (td > payD) {
+    payM = tm === 12 ? 1 : tm + 1;
+    payY = tm === 12 ? ty + 1 : ty;
+    payD = paydayDayOf(payY, payM);
+  }
+  const toPayday = Math.round(
+    (Date.UTC(payY, payM - 1, payD) - Date.UTC(ty, tm - 1, td)) / 86_400_000,
+  );
   const isPayday = toPayday === 0;
   const paydayLabel = isPayday
     ? "Payday today"
@@ -105,7 +121,7 @@ export function HomeScreen() {
         timeZone: "Africa/Johannesburg",
         day: "numeric",
         month: "short",
-      }).format(new Date(Date.UTC(ty, tm - 1, td, 10) + toPayday * 86_400_000));
+      }).format(new Date(Date.UTC(payY, payM - 1, payD, 10)));
   const paydayTone = isPayday ? "text-gain" : toPayday <= 3 ? "text-warn" : "text-faint";
 
   // The first block is about what's spendable — the payment cards only
