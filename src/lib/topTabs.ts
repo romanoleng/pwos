@@ -8,6 +8,7 @@ import {
   ChartColumn,
   ChartPie,
   CreditCard,
+  Lock,
   PiggyBank,
   Receipt,
   Scale,
@@ -44,6 +45,7 @@ export const TOP_CHOICES: TopChoice[] = [
   { href: "/savings", label: "Savings", icon: PiggyBank },
   { href: "/debt", label: "Debt", icon: CreditCard },
   { href: "/businesses", label: "Business", icon: Briefcase },
+  { href: "/vault", label: "Vault", icon: Lock },
   { href: "/guide", label: "Guide", icon: BookOpen },
 ];
 
