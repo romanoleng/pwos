@@ -73,32 +73,39 @@ export function HomeScreen() {
   const usedPct =
     budget.budgetedZar > 0 ? (budget.spentZar / budget.budgetedZar) * 100 : 0;
 
-  // Days to payday — the same countdown the budget pace is built on, surfaced
-  // up top because it's what makes the per-day allowance mean something. The
-  // budget cycle RESETS on payday, so daysLeft jumps back to a full month on
-  // the 24th and never reaches 0 — "Payday today" therefore keys off the actual
-  // day of the month, not the counter, and every other day counts down to the
-  // cycle end (which is the next payday).
-  const sastDay = Number(
-    new Intl.DateTimeFormat("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric" }).format(
-      new Date(),
-    ),
-  );
-  const isPayday = sastDay === PAYDAY_DAY_OF_MONTH;
-  const toPayday = budget.daysLeft;
+  // Days to the actual payday (the 24th), computed straight from the calendar.
+  // Deliberately NOT from the budget cycle's daysLeft: that resets to a full
+  // month on payday and can read 0 if a cycle has lapsed, which would wrongly
+  // show "Payday today" on the wrong day. The calendar can't drift.
+  const parts = new Intl.DateTimeFormat("en-CA", {
+    timeZone: "Africa/Johannesburg",
+    year: "numeric",
+    month: "2-digit",
+    day: "2-digit",
+  }).formatToParts(new Date());
+  const ty = Number(parts.find((p) => p.type === "year")?.value);
+  const tm = Number(parts.find((p) => p.type === "month")?.value);
+  const td = Number(parts.find((p) => p.type === "day")?.value);
+  const daysInMonth = new Date(Date.UTC(ty, tm, 0)).getUTCDate();
+  const toPayday =
+    td < PAYDAY_DAY_OF_MONTH
+      ? PAYDAY_DAY_OF_MONTH - td
+      : td === PAYDAY_DAY_OF_MONTH
+        ? 0
+        : daysInMonth - td + PAYDAY_DAY_OF_MONTH;
+  const isPayday = toPayday === 0;
   const paydayLabel = isPayday
     ? "Payday today"
     : toPayday === 1
       ? "Payday tomorrow"
       : `Payday in ${toPayday} days`;
-  const paydayWhen =
-    !isPayday && toPayday >= 1
-      ? new Intl.DateTimeFormat("en-ZA", {
-          timeZone: "Africa/Johannesburg",
-          day: "numeric",
-          month: "short",
-        }).format(new Date(`${budget.cycleEnd.slice(0, 10)}T12:00:00+02:00`))
-      : null;
+  const paydayWhen = isPayday
+    ? null
+    : new Intl.DateTimeFormat("en-ZA", {
+        timeZone: "Africa/Johannesburg",
+        day: "numeric",
+        month: "short",
+      }).format(new Date(Date.UTC(ty, tm - 1, td, 10) + toPayday * 86_400_000));
   const paydayTone = isPayday ? "text-gain" : toPayday <= 3 ? "text-warn" : "text-faint";
 
   // The first block is about what's spendable — the payment cards only
