@@ -4,18 +4,19 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { isActivePath } from "@/lib/nav";
-import { TOP_LINKS, useTopTabsEnabled } from "@/lib/topTabs";
+import { TOP_LINKS, useTopTabsMode } from "@/lib/topTabs";
 
 /**
- * The optional quick-access top bar (see lib/topTabs.ts). Flatter than the
- * bottom tabs — a thin, horizontal icon+label row — and sticky just below the
- * header so the wealth screens stay reachable as you scroll. Mobile only; the
+ * The optional quick-access strip (see lib/topTabs.ts). Flatter than the bottom
+ * tabs — a thin, horizontal icon+label row — sticky just below the header so
+ * the wealth screens stay reachable as you scroll. Only renders in "strip"
+ * placement; "header" renders inline in TopBar instead. Mobile only; the
  * `top-tabs` sticky offset and its data-nav handling live in globals.css.
  */
 export function TopTabs() {
-  const enabled = useTopTabsEnabled();
+  const mode = useTopTabsMode();
   const pathname = usePathname();
-  if (!enabled) return null;
+  if (mode !== "strip") return null;
 
   return (
     <nav className="top-tabs z-[19] border-b border-line bg-bg/90 backdrop-blur-md md:hidden">

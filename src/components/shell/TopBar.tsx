@@ -5,7 +5,8 @@ import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { PrivacyToggle } from "@/components/shell/PrivacyToggle";
-import { navTitleFor } from "@/lib/nav";
+import { isActivePath, navTitleFor } from "@/lib/nav";
+import { TOP_LINKS, useTopTabsMode } from "@/lib/topTabs";
 
 /**
  * Mobile-only header. Desktop gets its identity from the sidebar, so repeating
@@ -15,12 +16,33 @@ export function TopBar() {
   const pathname = usePathname();
   const router = useRouter();
   const onSettings = pathname.startsWith("/settings");
+  const topMode = useTopTabsMode();
 
   return (
     <header className="pt-safe sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur-md md:hidden">
-      <div className="flex h-12 items-center justify-between px-4">
-        <h1 className="text-sm font-semibold tracking-tight">{navTitleFor(pathname)}</h1>
-        <div className="flex items-center gap-0.5">
+      <div className="flex h-12 items-center justify-between gap-2 px-4">
+        <h1 className="min-w-0 truncate text-sm font-semibold tracking-tight">
+          {navTitleFor(pathname)}
+        </h1>
+        <div className="flex shrink-0 items-center gap-0.5">
+        {topMode === "header"
+          ? TOP_LINKS.map(({ href, label, icon: Icon }) => {
+              const active = isActivePath(pathname, href);
+              return (
+                <Link
+                  key={href}
+                  href={href}
+                  aria-label={label}
+                  aria-current={active ? "page" : undefined}
+                  className={`rounded-lg p-1.5 transition-colors hover:bg-surface-2 ${
+                    active ? "text-accent" : "text-muted hover:text-ink"
+                  }`}
+                >
+                  <Icon size={16} strokeWidth={active ? 2.25 : 1.75} />
+                </Link>
+              );
+            })
+          : null}
         <PrivacyToggle />
         {/* One slot, one meaning, every screen. The theme toggle used to live
             here — a set-once preference in the only permanently visible spot.

@@ -5,7 +5,7 @@ import { Home, MoreHorizontal } from "lucide-react";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { applyNavPosition, useNavPosition, type NavPosition } from "@/lib/navPosition";
 import { TAB_CHOICES, setChosenTabs, useChosenTabs } from "@/lib/tabs";
-import { TOP_LINKS, setTopTabsEnabled, useTopTabsEnabled } from "@/lib/topTabs";
+import { TOP_LINKS, setTopTabsMode, useTopTabsMode, type TopTabsMode } from "@/lib/topTabs";
 
 /**
  * Which three screens sit in the middle of the tab bar (Romano's ask), and
@@ -20,7 +20,7 @@ import { TOP_LINKS, setTopTabsEnabled, useTopTabsEnabled } from "@/lib/topTabs";
 export function TabPicker() {
   const chosen = useChosenTabs();
   const position = useNavPosition();
-  const topTabs = useTopTabsEnabled();
+  const topMode = useTopTabsMode();
 
   function toggle(href: string) {
     if (chosen.includes(href)) {
@@ -129,30 +129,40 @@ export function TabPicker() {
           </div>
         </div>
 
-        <label className="flex items-center justify-between gap-4 border-t border-line pt-3">
-          <span className="min-w-0">
-            <span className="block text-sm font-medium">Quick-access top bar</span>
-            <span className="mt-0.5 block text-[11px] leading-snug text-faint">
-              A flat strip under the header: {TOP_LINKS.map((l) => l.label).join(" · ")}.
-            </span>
-          </span>
-          <button
-            type="button"
-            role="switch"
-            aria-checked={topTabs}
-            aria-label="Quick-access top bar"
-            onClick={() => setTopTabsEnabled(!topTabs)}
-            className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${
-              topTabs ? "bg-accent" : "bg-line-2"
-            }`}
-          >
-            <span
-              className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
-                topTabs ? "translate-x-4" : "translate-x-0"
-              }`}
-            />
-          </button>
-        </label>
+        <div role="radiogroup" aria-label="Quick-access buttons" className="border-t border-line pt-3">
+          <p className="text-xs font-medium text-muted">Quick-access buttons</p>
+          <p className="mt-0.5 text-[11px] leading-snug text-faint">
+            The big-picture screens ({TOP_LINKS.map((l) => l.label).join(" · ")}), one tap away.
+          </p>
+          <div className="mt-2 grid grid-cols-3 gap-2">
+            {(
+              [
+                { id: "off", label: "Off", hint: "Only under Menu." },
+                { id: "strip", label: "Below header", hint: "A flat strip." },
+                { id: "header", label: "In header", hint: "Icons by the title." },
+              ] as { id: TopTabsMode; label: string; hint: string }[]
+            ).map((option) => {
+              const active = topMode === option.id;
+              return (
+                <button
+                  key={option.id}
+                  type="button"
+                  role="radio"
+                  aria-checked={active}
+                  onClick={() => setTopTabsMode(option.id)}
+                  className={`rounded-xl border px-2.5 py-2 text-left transition-colors ${
+                    active ? "border-accent/50 bg-accent/10" : "border-line hover:border-line-2"
+                  }`}
+                >
+                  <span className="block text-[13px] font-medium">{option.label}</span>
+                  <span className="mt-0.5 block text-[10.5px] leading-snug text-faint">
+                    {option.hint}
+                  </span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
       </CardBody>
     </Card>
   );

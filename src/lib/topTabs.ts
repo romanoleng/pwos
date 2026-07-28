@@ -4,13 +4,15 @@ import { Bitcoin, ChartColumn, ChartPie, Scale, TrendingUp, type LucideIcon } fr
 import { useSyncExternalStore } from "react";
 
 /**
- * Optional quick-access top bar (Romano's ask, 2026-07-26): a second, flatter
- * strip under the header with the "big picture" screens, so the wealth views
- * are one tap away while the bottom bar stays the daily-driver set.
- *
- * Fixed set for now (a curated overview cluster); off by default and toggled
- * per device in Settings → Navigation.
+ * Optional quick-access to the "big picture" screens (Romano's ask,
+ * 2026-07-26), so the wealth views are one tap away while the bottom bar stays
+ * the daily-driver set. Two placements, his choice per device:
+ *   - "strip"  — a flat sticky row just under the header.
+ *   - "header" — icon-only, inline beside the page title (no extra height).
+ *   - "off"    — hidden (default).
  */
+
+export type TopTabsMode = "off" | "strip" | "header";
 
 export const TOP_LINKS: { href: string; label: string; icon: LucideIcon }[] = [
   { href: "/wealth", label: "Wealth", icon: ChartPie },
@@ -23,24 +25,26 @@ export const TOP_LINKS: { href: string; label: string; icon: LucideIcon }[] = [
 const KEY = "pwos-toptabs";
 const listeners = new Set<() => void>();
 
-let cached: boolean | null = null;
+let cached: TopTabsMode | null = null;
 
-function read(): boolean {
+function read(): TopTabsMode {
   if (cached === null) {
     try {
-      cached = localStorage.getItem(KEY) === "1";
+      const raw = localStorage.getItem(KEY);
+      // "1" was the old on/off flag (always the strip); map it forward.
+      cached = raw === "1" || raw === "strip" ? "strip" : raw === "header" ? "header" : "off";
     } catch {
-      cached = false;
+      cached = "off";
     }
   }
   return cached;
 }
 
-export function setTopTabsEnabled(next: boolean): void {
+export function setTopTabsMode(next: TopTabsMode): void {
   cached = next;
   try {
-    if (next) localStorage.setItem(KEY, "1");
-    else localStorage.removeItem(KEY);
+    if (next === "off") localStorage.removeItem(KEY);
+    else localStorage.setItem(KEY, next);
   } catch {
     /* private browsing — in-memory only */
   }
@@ -52,6 +56,6 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-export function useTopTabsEnabled(): boolean {
-  return useSyncExternalStore(subscribe, read, () => false);
+export function useTopTabsMode(): TopTabsMode {
+  return useSyncExternalStore(subscribe, read, () => "off");
 }
