@@ -20,6 +20,7 @@ import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
 import { Money } from "@/components/ui/Money";
 import { PeriodBar, usePeriodKind } from "@/components/ui/PeriodBar";
+import { PAYDAY_DAY_OF_MONTH } from "@/lib/constants";
 import { formatDate } from "@/lib/format";
 import type { HomeSummary } from "@/lib/server/home";
 
@@ -73,21 +74,32 @@ export function HomeScreen() {
     budget.budgetedZar > 0 ? (budget.spentZar / budget.budgetedZar) * 100 : 0;
 
   // Days to payday — the same countdown the budget pace is built on, surfaced
-  // up top because it's what makes the per-day allowance mean something. Payday
-  // is the 24th, so the cycle end IS the next payday.
+  // up top because it's what makes the per-day allowance mean something. The
+  // budget cycle RESETS on payday, so daysLeft jumps back to a full month on
+  // the 24th and never reaches 0 — "Payday today" therefore keys off the actual
+  // day of the month, not the counter, and every other day counts down to the
+  // cycle end (which is the next payday).
+  const sastDay = Number(
+    new Intl.DateTimeFormat("en-ZA", { timeZone: "Africa/Johannesburg", day: "numeric" }).format(
+      new Date(),
+    ),
+  );
+  const isPayday = sastDay === PAYDAY_DAY_OF_MONTH;
   const toPayday = budget.daysLeft;
-  const paydayLabel =
-    toPayday <= 0 ? "Payday today" : toPayday === 1 ? "Payday tomorrow" : `Payday in ${toPayday} days`;
+  const paydayLabel = isPayday
+    ? "Payday today"
+    : toPayday === 1
+      ? "Payday tomorrow"
+      : `Payday in ${toPayday} days`;
   const paydayWhen =
-    toPayday >= 1
+    !isPayday && toPayday >= 1
       ? new Intl.DateTimeFormat("en-ZA", {
           timeZone: "Africa/Johannesburg",
           day: "numeric",
           month: "short",
         }).format(new Date(`${budget.cycleEnd.slice(0, 10)}T12:00:00+02:00`))
       : null;
-  const paydayTone =
-    toPayday <= 0 ? "text-gain" : toPayday <= 3 ? "text-warn" : "text-faint";
+  const paydayTone = isPayday ? "text-gain" : toPayday <= 3 ? "text-warn" : "text-faint";
 
   // The first block is about what's spendable — the payment cards only
   // (Romano's ask, 2026-07-23). Savings and business stay one tap away under
