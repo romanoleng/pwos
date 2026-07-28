@@ -7,11 +7,11 @@ import { TAB_CHOICES, setChosenTabs, useChosenTabs } from "@/lib/tabs";
 import {
   MAX_TOP_LINKS,
   TOP_CHOICES,
+  setTopEnabled,
   setTopLinks,
-  setTopTabsMode,
+  useTopEnabled,
   useTopLinkHrefs,
-  useTopTabsMode,
-  type TopTabsMode,
+  type TopPlacement,
 } from "@/lib/topTabs";
 
 /**
@@ -24,19 +24,6 @@ import {
  */
 export function TabPicker() {
   const chosen = useChosenTabs();
-  const topMode = useTopTabsMode();
-  const topLinks = useTopLinkHrefs();
-
-  function toggleTop(href: string) {
-    if (topLinks.includes(href)) {
-      setTopLinks(topLinks.filter((h) => h !== href));
-      return;
-    }
-    // Past the cap, the newest choice replaces the oldest so a tap always does
-    // something visible.
-    const next = topLinks.length >= MAX_TOP_LINKS ? [...topLinks.slice(1), href] : [...topLinks, href];
-    setTopLinks(next);
-  }
 
   function toggle(href: string) {
     if (chosen.includes(href)) {
@@ -110,72 +97,105 @@ export function TabPicker() {
           bar stays one tap away under Menu.
         </p>
 
-        <div role="radiogroup" aria-label="Quick-access buttons" className="border-t border-line pt-3">
+        <div className="border-t border-line pt-3">
           <p className="text-xs font-medium text-muted">Quick-access buttons</p>
           <p className="mt-0.5 text-[11px] leading-snug text-faint">
-            Extra screens, one tap away — choose where they show.
+            Extra screens, one tap away. Turn on either place (or both) and pick what goes in each.
           </p>
-          <div className="mt-2 grid grid-cols-3 gap-2">
-            {(
-              [
-                { id: "off", label: "Off", hint: "Only under Menu." },
-                { id: "strip", label: "Below header", hint: "A flat strip." },
-                { id: "header", label: "In header", hint: "Icons by the title." },
-              ] as { id: TopTabsMode; label: string; hint: string }[]
-            ).map((option) => {
-              const active = topMode === option.id;
+          <div className="mt-3 space-y-4">
+            <QuickAccessBlock
+              placement="strip"
+              title="Below the header"
+              hint="A flat strip under the header."
+            />
+            <QuickAccessBlock
+              placement="header"
+              title="In the header"
+              hint="Icons beside the page title."
+            />
+          </div>
+        </div>
+      </CardBody>
+    </Card>
+  );
+}
+
+function QuickAccessBlock({
+  placement,
+  title,
+  hint,
+}: {
+  placement: TopPlacement;
+  title: string;
+  hint: string;
+}) {
+  const on = useTopEnabled(placement);
+  const links = useTopLinkHrefs(placement);
+
+  function toggle(href: string) {
+    if (links.includes(href)) {
+      setTopLinks(placement, links.filter((h) => h !== href));
+      return;
+    }
+    const next = links.length >= MAX_TOP_LINKS ? [...links.slice(1), href] : [...links, href];
+    setTopLinks(placement, next);
+  }
+
+  return (
+    <div className="rounded-xl border border-line p-3">
+      <label className="flex items-center justify-between gap-4">
+        <span className="min-w-0">
+          <span className="block text-sm font-medium">{title}</span>
+          <span className="mt-0.5 block text-[11px] leading-snug text-faint">{hint}</span>
+        </span>
+        <button
+          type="button"
+          role="switch"
+          aria-checked={on}
+          aria-label={title}
+          onClick={() => setTopEnabled(placement, !on)}
+          className={`relative h-6 w-10 shrink-0 rounded-full transition-colors ${
+            on ? "bg-accent" : "bg-line-2"
+          }`}
+        >
+          <span
+            className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow-sm transition-transform ${
+              on ? "translate-x-4" : "translate-x-0"
+            }`}
+          />
+        </button>
+      </label>
+
+      {on ? (
+        <div className="mt-3 border-t border-line pt-3">
+          <p className="mb-2 text-[11px] text-faint">
+            Up to {MAX_TOP_LINKS} — a {MAX_TOP_LINKS + 1}th swaps out the oldest.
+          </p>
+          <div className="flex flex-wrap gap-1.5">
+            {TOP_CHOICES.map((choice) => {
+              const active = links.includes(choice.href);
+              const Icon = choice.icon;
               return (
                 <button
-                  key={option.id}
+                  key={choice.href}
                   type="button"
-                  role="radio"
-                  aria-checked={active}
-                  onClick={() => setTopTabsMode(option.id)}
-                  className={`rounded-xl border px-2.5 py-2 text-left transition-colors ${
-                    active ? "border-accent/50 bg-accent/10" : "border-line hover:border-line-2"
+                  aria-pressed={active}
+                  onClick={() => toggle(choice.href)}
+                  className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
+                    active
+                      ? "border-accent/50 bg-accent/15 text-ink"
+                      : "border-line text-muted hover:border-line-2 hover:text-ink"
                   }`}
                 >
-                  <span className="block text-[13px] font-medium">{option.label}</span>
-                  <span className="mt-0.5 block text-[10.5px] leading-snug text-faint">
-                    {option.hint}
-                  </span>
+                  <Icon size={13} strokeWidth={1.75} />
+                  {choice.label}
                 </button>
               );
             })}
           </div>
-
-          {topMode !== "off" ? (
-            <div className="mt-3">
-              <p className="mb-2 text-[11px] text-faint">
-                Which buttons — up to {MAX_TOP_LINKS}. A {MAX_TOP_LINKS + 1}th swaps out the oldest.
-              </p>
-              <div className="flex flex-wrap gap-1.5">
-                {TOP_CHOICES.map((choice) => {
-                  const active = topLinks.includes(choice.href);
-                  const Icon = choice.icon;
-                  return (
-                    <button
-                      key={choice.href}
-                      type="button"
-                      aria-pressed={active}
-                      onClick={() => toggleTop(choice.href)}
-                      className={`flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors ${
-                        active
-                          ? "border-accent/50 bg-accent/15 text-ink"
-                          : "border-line text-muted hover:border-line-2 hover:text-ink"
-                      }`}
-                    >
-                      <Icon size={13} strokeWidth={1.75} />
-                      {choice.label}
-                    </button>
-                  );
-                })}
-              </div>
-            </div>
-          ) : null}
         </div>
-      </CardBody>
-    </Card>
+      ) : null}
+    </div>
   );
 }
 

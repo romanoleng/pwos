@@ -8,6 +8,7 @@ import {
   ChartColumn,
   ChartPie,
   CreditCard,
+  FileText,
   PiggyBank,
   Receipt,
   Scale,
@@ -19,18 +20,17 @@ import { useSyncExternalStore } from "react";
 
 /**
  * Optional quick-access to more screens (Romano's ask, 2026-07-26; made
- * choosable 2026-07-27), so favourites are one tap away while the bottom bar
- * stays the daily-driver set. Two things, both per device:
- *   - placement: "off" | "strip" (flat row under the header) | "header"
- *     (icon-only beside the title).
- *   - which screens: up to five, picked from the pool below.
+ * choosable and dual-placement 2026-07-27). Two INDEPENDENT placements —
+ * a flat strip below the header and icons in the header — each with its own
+ * on/off and its own chosen buttons, so both can run at once with different
+ * screens in each. Everything is per device.
  */
 
-export type TopTabsMode = "off" | "strip" | "header";
+export type TopPlacement = "strip" | "header";
 
 export type TopChoice = { href: string; label: string; icon: LucideIcon };
 
-/** The pool Romano picks the quick-access buttons from. */
+/** The pool the quick-access buttons are picked from — screens from the Menu. */
 export const TOP_CHOICES: TopChoice[] = [
   { href: "/wealth", label: "Wealth", icon: ChartPie },
   { href: "/crypto", label: "Crypto", icon: Bitcoin },
@@ -43,68 +43,67 @@ export const TOP_CHOICES: TopChoice[] = [
   { href: "/savings", label: "Savings", icon: PiggyBank },
   { href: "/debt", label: "Debt", icon: CreditCard },
   { href: "/businesses", label: "Business", icon: Briefcase },
+  { href: "/reports", label: "Reports", icon: FileText },
   { href: "/guide", label: "Guide", icon: BookOpen },
 ];
 
 export const MAX_TOP_LINKS = 5;
 const DEFAULT_LINKS = ["/wealth", "/crypto", "/investments", "/net-worth", "/stats"];
 
-const MODE_KEY = "pwos-toptabs";
-const LINKS_KEY = "pwos-toptabs-links";
 const listeners = new Set<() => void>();
+const enabledCache: Record<TopPlacement, boolean | null> = { strip: null, header: null };
+const linksCache: Record<TopPlacement, string[] | null> = { strip: null, header: null };
 
-let cachedMode: TopTabsMode | null = null;
-let cachedLinks: string[] | null = null;
+const enabledKey = (p: TopPlacement) => `pwos-top-${p}`;
+const linksKey = (p: TopPlacement) => `pwos-top-${p}-links`;
 
-function readMode(): TopTabsMode {
-  if (cachedMode === null) {
+function readEnabled(p: TopPlacement): boolean {
+  if (enabledCache[p] === null) {
     try {
-      const raw = localStorage.getItem(MODE_KEY);
-      // "1" was the old on/off flag (always the strip); map it forward.
-      cachedMode = raw === "1" || raw === "strip" ? "strip" : raw === "header" ? "header" : "off";
+      enabledCache[p] = localStorage.getItem(enabledKey(p)) === "1";
     } catch {
-      cachedMode = "off";
+      enabledCache[p] = false;
     }
   }
-  return cachedMode;
+  return enabledCache[p] as boolean;
 }
 
-function readLinks(): string[] {
-  if (cachedLinks === null) {
+function readLinks(p: TopPlacement): string[] {
+  if (linksCache[p] === null) {
     try {
-      const raw = localStorage.getItem(LINKS_KEY);
+      const raw = localStorage.getItem(linksKey(p));
       const parsed = raw ? (JSON.parse(raw) as unknown) : null;
       const valid =
         Array.isArray(parsed) &&
         parsed.every((h) => typeof h === "string" && TOP_CHOICES.some((c) => c.href === h));
-      cachedLinks = valid && parsed.length > 0 ? (parsed as string[]).slice(0, MAX_TOP_LINKS) : DEFAULT_LINKS;
+      linksCache[p] = valid && parsed.length > 0 ? (parsed as string[]).slice(0, MAX_TOP_LINKS) : DEFAULT_LINKS;
     } catch {
-      cachedLinks = DEFAULT_LINKS;
+      linksCache[p] = DEFAULT_LINKS;
     }
   }
-  return cachedLinks;
+  return linksCache[p] as string[];
 }
 
 function emit(): void {
   for (const listener of listeners) listener();
 }
 
-export function setTopTabsMode(next: TopTabsMode): void {
-  cachedMode = next;
+export function setTopEnabled(p: TopPlacement, on: boolean): void {
+  enabledCache[p] = on;
   try {
-    if (next === "off") localStorage.removeItem(MODE_KEY);
-    else localStorage.setItem(MODE_KEY, next);
+    if (on) localStorage.setItem(enabledKey(p), "1");
+    else localStorage.removeItem(enabledKey(p));
   } catch {
     /* private browsing — in-memory only */
   }
   emit();
 }
 
-export function setTopLinks(hrefs: string[]): void {
+export function setTopLinks(p: TopPlacement, hrefs: string[]): void {
   const valid = hrefs.filter((h) => TOP_CHOICES.some((c) => c.href === h)).slice(0, MAX_TOP_LINKS);
-  cachedLinks = valid.length > 0 ? valid : DEFAULT_LINKS;
+  linksCache[p] = valid.length > 0 ? valid : DEFAULT_LINKS;
   try {
-    localStorage.setItem(LINKS_KEY, JSON.stringify(cachedLinks));
+    localStorage.setItem(linksKey(p), JSON.stringify(linksCache[p]));
   } catch {
     /* private browsing — in-memory only */
   }
@@ -116,13 +115,12 @@ function subscribe(listener: () => void): () => void {
   return () => listeners.delete(listener);
 }
 
-export function useTopTabsMode(): TopTabsMode {
-  return useSyncExternalStore(subscribe, readMode, () => "off");
+export function useTopEnabled(p: TopPlacement): boolean {
+  return useSyncExternalStore(subscribe, () => readEnabled(p), () => false);
 }
 
-/** The chosen hrefs (for the picker). */
-export function useTopLinkHrefs(): string[] {
-  return useSyncExternalStore(subscribe, readLinks, () => DEFAULT_LINKS);
+export function useTopLinkHrefs(p: TopPlacement): string[] {
+  return useSyncExternalStore(subscribe, () => readLinks(p), () => DEFAULT_LINKS);
 }
 
 /** The chosen links resolved to their icon + label, in order. */

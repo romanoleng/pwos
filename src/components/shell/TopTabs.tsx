@@ -4,23 +4,24 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 import { isActivePath } from "@/lib/nav";
-import { resolveTopLinks, useTopLinkHrefs, useTopTabsMode } from "@/lib/topTabs";
+import { resolveTopLinks, useTopEnabled, useTopLinkHrefs } from "@/lib/topTabs";
 
 /**
  * The optional quick-access strip (see lib/topTabs.ts). Flatter than the bottom
  * tabs — a thin, horizontal icon+label row — sticky just below the header so
- * the chosen screens stay reachable as you scroll. Only renders in "strip"
- * placement; "header" renders inline in TopBar instead. Mobile only; the
- * `top-tabs` sticky offset lives in globals.css.
+ * the chosen screens stay reachable as you scroll. Independent of the in-header
+ * placement (both can run at once). Solid background, no blur, so it doesn't
+ * flicker during iOS momentum scroll. Mobile only; the `top-tabs` sticky offset
+ * lives in globals.css.
  */
 export function TopTabs() {
-  const mode = useTopTabsMode();
-  const links = resolveTopLinks(useTopLinkHrefs());
+  const enabled = useTopEnabled("strip");
+  const links = resolveTopLinks(useTopLinkHrefs("strip"));
   const pathname = usePathname();
-  if (mode !== "strip" || links.length === 0) return null;
+  if (!enabled || links.length === 0) return null;
 
   return (
-    <nav className="top-tabs z-[19] border-b border-line bg-bg/90 backdrop-blur-md md:hidden">
+    <nav className="top-tabs z-[19] border-b border-line bg-bg md:hidden">
       <ul className="flex divide-x divide-line/60">
         {links.map(({ href, label, icon: Icon }) => {
           const active = isActivePath(pathname, href);

@@ -33,7 +33,7 @@ export function BottomTabs() {
   ];
 
   return (
-    <nav className="tab-nav z-30 bg-bg/95 backdrop-blur-md md:hidden">
+    <nav className="tab-nav z-30 bg-bg md:hidden">
       {/* Hairline dividers keep each of the five buttons on its own ground
           without the bar itself needing a fill. */}
       <ul className="grid grid-cols-5 divide-x divide-line">
