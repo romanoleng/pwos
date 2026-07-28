@@ -94,9 +94,14 @@ export function isActivePath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-export function navTitleFor(pathname: string): string {
-  const match = ALL_NAV_ITEMS.filter((item) => isActivePath(pathname, item.href)).sort(
+/** The nav item whose href best matches the path (longest prefix wins). */
+export function navItemFor(pathname: string): NavItem | undefined {
+  return ALL_NAV_ITEMS.filter((item) => isActivePath(pathname, item.href)).sort(
     (a, b) => b.href.length - a.href.length,
   )[0];
+}
+
+export function navTitleFor(pathname: string): string {
+  const match = navItemFor(pathname);
   return match?.longLabel ?? match?.label ?? "PWOS";
 }

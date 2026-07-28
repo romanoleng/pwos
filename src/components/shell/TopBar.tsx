@@ -1,11 +1,11 @@
 "use client";
 
-import { BookOpen, Settings, X } from "lucide-react";
+import { BookOpen, Home, Settings, X } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
 import { PrivacyToggle } from "@/components/shell/PrivacyToggle";
-import { isActivePath, navTitleFor } from "@/lib/nav";
+import { isActivePath, navItemFor, navTitleFor } from "@/lib/nav";
 import { useResolvedTopLinks, useTopEnabled } from "@/lib/topTabs";
 
 /**
@@ -23,9 +23,21 @@ export function TopBar() {
   return (
     <header className="pt-safe sticky top-0 z-20 border-b border-line bg-bg/90 backdrop-blur-md md:hidden">
       <div className="flex h-12 items-center justify-between gap-2 px-4">
-        <h1 className="min-w-0 truncate text-sm font-semibold tracking-tight">
-          {navTitleFor(pathname)}
-        </h1>
+        {/* The page name reads as the app's own pill button — the current
+            screen's icon beside its title, matching the quick-access and
+            control chips (Romano's ask, 2026-07-28). Not a link: it names
+            where you are, it doesn't take you somewhere. */}
+        {(() => {
+          const Icon = navItemFor(pathname)?.icon ?? Home;
+          return (
+            <span className="flex min-w-0 items-center gap-1.5 rounded-lg border border-line bg-surface-2 py-1 pl-2 pr-2.5">
+              <Icon size={15} strokeWidth={1.75} className="shrink-0 text-accent" />
+              <h1 className="min-w-0 truncate text-sm font-semibold tracking-tight">
+                {navTitleFor(pathname)}
+              </h1>
+            </span>
+          );
+        })()}
         <div className="flex shrink-0 items-center gap-0.5">
         {showHeaderTabs
           ? topLinks.map(({ href, label, icon: Icon }) => {
