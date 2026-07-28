@@ -219,21 +219,37 @@
    attribute and component state can leave content hidden under a bar.
    ------------------------------------------------------------------------- */
 
+/* The mobile tab bar is a static flex row at the FOOT of the app shell, not a
+   fixed element. iOS Safari drops fixed bottom bars during momentum scroll (the
+   bar vanishes, then returns when the scroll settles); as an ordinary flex row
+   in a shell whose content scrolls internally (see .app-shell below), it is
+   simply always there and never fights the viewport. */
 .tab-nav {
-  position: fixed;
-  inset-inline: 0;
-  bottom: 0;
+  flex-shrink: 0;
   border-top: 1px solid var(--line);
   /* Clears the iPhone home indicator when installed as a PWA. */
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  /* iOS Safari drops a plain fixed bottom bar during momentum scroll. Promoting
-     it to its own compositor layer keeps it painted throughout the scroll — the
-     standard fix for the "bar vanishes then comes back" behaviour. */
-  transform: translateZ(0);
-  -webkit-transform: translateZ(0);
-  backface-visibility: hidden;
-  -webkit-backface-visibility: hidden;
-  will-change: transform;
+}
+
+/* Mobile: a full-height flex column with the page scrolling INSIDE .app-main,
+   so the header, quick-access strip and tab bar are permanent rows that can't
+   disappear. Desktop keeps normal document flow (sidebar + page scroll). */
+@media (max-width: 767px) {
+  .app-shell {
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+    overflow: hidden;
+  }
+  .app-shell > * {
+    flex-shrink: 0;
+  }
+  .app-main {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
 }
 
 [data-nav="top"] .tab-nav {
