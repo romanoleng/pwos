@@ -15,6 +15,7 @@ import {
   Landmark,
   ListChecks,
   Lock,
+  MoreHorizontal,
   Receipt,
   RefreshCw,
   PiggyBank,
@@ -81,14 +82,21 @@ export const NAV_GROUPS: NavGroup[] = [
       { href: "/vault", label: "Vault", icon: Lock, longLabel: "Vault · preview" },
       { href: "/guide", label: "Guide", icon: BookOpen },
       { href: "/settings", label: "Settings", icon: Settings },
-      // Not a tab or sidebar entry — reached from Settings — but listed so the
-      // mobile header can title it.
-      { href: "/settings/categories", label: "Categories", icon: Shapes },
     ],
   },
 ];
 
 export const ALL_NAV_ITEMS: NavItem[] = NAV_GROUPS.flatMap((group) => group.items);
+
+/**
+ * Routes that need a header title/icon but must NOT appear as a Menu row:
+ * `/more` is the Menu itself (listing it inside would be circular), and
+ * Categories is reached from Settings, not a top-level destination.
+ */
+const HEADER_ONLY_ITEMS: NavItem[] = [
+  { href: "/more", label: "Menu", icon: MoreHorizontal },
+  { href: "/settings/categories", label: "Categories", icon: Shapes },
+];
 
 /** Longest-prefix match so /crypto/BTC still highlights the Crypto tab. */
 export function isActivePath(pathname: string, href: string): boolean {
@@ -96,11 +104,13 @@ export function isActivePath(pathname: string, href: string): boolean {
   return pathname === href || pathname.startsWith(`${href}/`);
 }
 
-/** The nav item whose href best matches the path (longest prefix wins). */
+/** The nav item whose href best matches the path (longest prefix wins).
+ *  Header-only routes (Menu, Categories) are included so every screen has a
+ *  title and icon, even the ones that never appear as a Menu row. */
 export function navItemFor(pathname: string): NavItem | undefined {
-  return ALL_NAV_ITEMS.filter((item) => isActivePath(pathname, item.href)).sort(
-    (a, b) => b.href.length - a.href.length,
-  )[0];
+  return [...ALL_NAV_ITEMS, ...HEADER_ONLY_ITEMS]
+    .filter((item) => isActivePath(pathname, item.href))
+    .sort((a, b) => b.href.length - a.href.length)[0];
 }
 
 export function navTitleFor(pathname: string): string {

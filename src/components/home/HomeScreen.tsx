@@ -18,6 +18,7 @@ import { DailyBrief } from "@/components/home/DailyBrief";
 import { LogTransaction, type EditingTransaction } from "@/components/transactions/LogTransaction";
 import { LoadingCard } from "@/components/ui/LoadingCard";
 import { Card, CardBody, CardHeader } from "@/components/ui/Card";
+import { CountUpMoney } from "@/components/ui/CountUpMoney";
 import { Money } from "@/components/ui/Money";
 import { PeriodBar, usePeriodKind } from "@/components/ui/PeriodBar";
 import { formatDate } from "@/lib/format";
@@ -155,7 +156,7 @@ export function HomeScreen() {
               <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
                 Available to spend
               </p>
-              <Money
+              <CountUpMoney
                 value={available.spendableZar}
                 variant="whole"
                 className="mt-1.5 block text-4xl font-semibold tracking-tight"
@@ -226,20 +227,20 @@ export function HomeScreen() {
             <div>
               <dt className="text-[11px] text-faint">Spent</dt>
               <dd className="mt-0.5 text-sm font-medium">
-                <Money value={period.spentZar} variant="whole" />
+                <CountUpMoney value={period.spentZar} variant="whole" />
               </dd>
             </div>
             <div>
               <dt className="text-[11px] text-faint">Came in</dt>
               <dd className="mt-0.5 text-sm font-medium">
-                <Money value={period.incomeZar} variant="whole" className="text-gain" />
+                <CountUpMoney value={period.incomeZar} variant="whole" className="text-gain" />
               </dd>
             </div>
             <div>
               <dt className="text-[11px] text-faint">Today</dt>
               <dd className="mt-0.5 text-sm font-medium">
                 {today.count > 0 ? (
-                  <Money value={today.spendZar} variant="whole" />
+                  <CountUpMoney value={today.spendZar} variant="whole" />
                 ) : (
                   <span className="text-faint">—</span>
                 )}
