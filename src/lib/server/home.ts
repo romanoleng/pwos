@@ -69,6 +69,8 @@ export type HomeSummary = {
     overspent: boolean;
     cycleStart: string;
     cycleEnd: string;
+    /** Categories with spend this cycle but no budget line (excl. Uncategorised). */
+    unbudgetedCount: number;
   };
   today: { spendZar: number; count: number };
   /** Entries dated ahead of today — logged early, not yet happened. */
@@ -226,6 +228,9 @@ export async function getHome(
         overspent: remainingZar < 0,
         cycleStart: cycle.start,
         cycleEnd: cycle.end,
+        unbudgetedCount: budget.unbudgetedCategories.filter(
+          (c) => c.category !== "Uncategorised",
+        ).length,
       };
     })(),
     today: { spendZar: money(todayRow[0]?.spend), count: Number(todayRow[0]?.n ?? 0) },

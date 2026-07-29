@@ -274,6 +274,26 @@ export function HomeScreen() {
               />
             </div>
           </Link>
+
+          {/* Catch categories that are being logged but have no budget line, so
+              spend stops quietly landing outside the plan (Romano's ask,
+              2026-07-29). One tap to Budgets, where "Budget all these" fixes it. */}
+          {budget.unbudgetedCount > 0 ? (
+            <Link
+              href="/budgets"
+              className="mt-3 flex items-center justify-between gap-2 rounded-lg border border-warn/30 bg-warn/5 px-3 py-2 text-[11px] text-warn transition-colors hover:bg-warn/10"
+            >
+              <span>
+                {budget.unbudgetedCount}{" "}
+                {budget.unbudgetedCount === 1 ? "category is" : "categories are"} being logged
+                without a budget line
+              </span>
+              <span className="flex shrink-0 items-center gap-1 font-medium">
+                Budget them
+                <ArrowRight size={12} strokeWidth={2} />
+              </span>
+            </Link>
+          ) : null}
         </CardBody>
       </Card>
 

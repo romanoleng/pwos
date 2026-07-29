@@ -99,6 +99,12 @@ export function LogTransaction({
   );
   const [category, setCategory] = useState(editing?.category ?? "");
   const [subcategory, setSubcategory] = useState(editing?.subcategory ?? "");
+  // Adding a subcategory is a deliberate act now, not a side effect of typing:
+  // the field is chips only, and a new tag is added through this, so a slip of
+  // the thumb can't mint "Petrol " or "petro" as its own thing (Romano's ask,
+  // 2026-07-29 — linked options, fewer mistakes).
+  const [addingSub, setAddingSub] = useState(false);
+  const [newSub, setNewSub] = useState("");
   // Categories created right here, so a budget line for something the app has
   // never seen (e.g. "CreativeDigital Expenses") doesn't mean leaving the sheet.
   // Held locally too so the new name is usable this instant; it's already in the
@@ -185,10 +191,17 @@ export function LogTransaction({
   // for categories that never grew a second level.
   const subcategoryOptions =
     category ? (frequent.subcategoriesByCategory[category] ?? []) : [];
-  const showSubcategory =
-    direction !== "move" &&
-    category !== "" &&
-    (subcategoryOptions.length > 0 || subcategory !== "");
+  // Shown once a category is chosen (expense/income). Optional — it's a finer
+  // tag — but always available so subcategory structure can be built as you go.
+  const showSubcategory = direction !== "move" && category !== "";
+
+  function addSubcategory() {
+    const name = newSub.trim();
+    if (!name) return;
+    setSubcategory(name);
+    setNewSub("");
+    setAddingSub(false);
+  }
 
   // Description suggestions scope to the category too — "Braai packs" belongs
   // under Groceries, not under Petrol. Global recents stay as the fallback.
@@ -211,6 +224,8 @@ export function LogTransaction({
   function reset() {
     setCategory("");
     setSubcategory("");
+    setAddingSub(false);
+    setNewSub("");
     setAddingCategory(false);
     setNewCategory("");
     setCategoryError(null);
@@ -462,6 +477,8 @@ export function LogTransaction({
             onChange={(event) => {
               setCategory(event.target.value);
               setSubcategory("");
+              setAddingSub(false);
+              setNewSub("");
             }}
           >
             <option value="" disabled>
@@ -563,33 +580,74 @@ export function LogTransaction({
 
         {showSubcategory ? (
           <Field label="Subcategory" hint="Optional — a finer tag inside the category.">
-            <input
-              name="subcategory"
-              autoComplete="off"
-              list="pwos-subcategories"
-              value={subcategory}
-              onChange={(event) => setSubcategory(event.target.value)}
-              className={inputClass}
-              placeholder="None"
-            />
-            <datalist id="pwos-subcategories">
-              {subcategoryOptions.map((option) => (
-                <option key={option} value={option} />
-              ))}
-            </datalist>
-            {subcategoryOptions.length > 0 ? (
+            {/* Chips only: pick from the tags this category already knows. A
+                custom value chosen via "+ New" shows as its own active chip. */}
+            {subcategoryOptions.length > 0 || subcategory !== "" ? (
               <ChipRow>
                 {subcategoryOptions.map((option) => (
                   <Chip
                     key={option}
                     active={subcategory === option}
-                    onClick={() => setSubcategory(subcategory === option ? "" : option)}
+                    onClick={() => {
+                      setSubcategory(subcategory === option ? "" : option);
+                      setAddingSub(false);
+                    }}
                   >
                     {option}
                   </Chip>
                 ))}
+                {subcategory !== "" && !subcategoryOptions.includes(subcategory) ? (
+                  <Chip active onClick={() => setSubcategory("")}>
+                    {subcategory}
+                  </Chip>
+                ) : null}
               </ChipRow>
             ) : null}
+
+            {addingSub ? (
+              <div className="mt-2 flex items-center gap-2">
+                <input
+                  autoFocus
+                  value={newSub}
+                  onChange={(event) => setNewSub(event.target.value)}
+                  onKeyDown={(event) => {
+                    if (event.key === "Enter") {
+                      event.preventDefault();
+                      addSubcategory();
+                    }
+                  }}
+                  className={inputClass}
+                  placeholder="Finer tag"
+                  maxLength={60}
+                />
+                <button
+                  type="button"
+                  disabled={newSub.trim() === ""}
+                  onClick={addSubcategory}
+                  className="h-10 shrink-0 rounded-lg bg-accent px-3 text-[11px] font-medium text-white transition-opacity disabled:opacity-50"
+                >
+                  Add
+                </button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAddingSub(false);
+                    setNewSub("");
+                  }}
+                  className="h-10 shrink-0 rounded-lg border border-line px-3 text-[11px] text-muted transition-colors hover:text-ink"
+                >
+                  Cancel
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => setAddingSub(true)}
+                className="mt-2 text-[11px] font-medium text-accent hover:underline"
+              >
+                + New subcategory
+              </button>
+            )}
           </Field>
         ) : null}
 
