@@ -13,6 +13,7 @@ import {
   ChartColumn,
   Home,
   Landmark,
+  ListChecks,
   Lock,
   Receipt,
   RefreshCw,
@@ -76,6 +77,7 @@ export const NAV_GROUPS: NavGroup[] = [
     title: "More",
     items: [
       { href: "/stats", label: "Stats", icon: ChartColumn, longLabel: "Stats" },
+      { href: "/data-check", label: "Data check", icon: ListChecks, longLabel: "Data check" },
       { href: "/vault", label: "Vault", icon: Lock, longLabel: "Vault · preview" },
       { href: "/guide", label: "Guide", icon: BookOpen },
       { href: "/settings", label: "Settings", icon: Settings },
