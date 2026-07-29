@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import { createBudgetLine, createCategory } from "@/app/actions/budgets";
 import { parseAmount } from "@/lib/amount";
@@ -24,6 +24,7 @@ export function BudgetLineEditor({
   available,
   cycleLabel,
   moneyKind = "expense",
+  presetCategory = null,
 }: {
   open: boolean;
   onClose: () => void;
@@ -33,11 +34,35 @@ export function BudgetLineEditor({
   cycleLabel: string;
   /** "expense" = a spending line; "contribution" = a putting-away line. */
   moneyKind?: "expense" | "contribution";
+  /** Open pre-aimed at a category (e.g. from "spent outside any budget line").
+   *  If it's a known category it's pre-selected; if not, its name pre-fills the
+   *  new-category field so the whole thing is one tap and a number. */
+  presetCategory?: string | null;
 }) {
   const toast = useToast();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [category, setCategory] = useState("");
+  const [newName, setNewName] = useState("");
+
+  // When the sheet opens with a preset, aim it: pick the category if it's known,
+  // otherwise drop into "new category" with the name already filled.
+  useEffect(() => {
+    if (!open) return;
+    setError(null);
+    if (!presetCategory) {
+      setCategory("");
+      setNewName("");
+      return;
+    }
+    if (available.some((c) => c.name === presetCategory)) {
+      setCategory(presetCategory);
+      setNewName("");
+    } else {
+      setCategory(NEW_CATEGORY);
+      setNewName(presetCategory);
+    }
+  }, [open, presetCategory, available]);
 
   const creatingCategory = category === NEW_CATEGORY;
   const putAway = moneyKind === "contribution";
@@ -72,6 +97,7 @@ export function BudgetLineEditor({
     }
 
     setCategory("");
+    setNewName("");
     onClose();
     onSaved();
     toast.show({ message: `${name} budgeted`, tone: "success" });
@@ -125,6 +151,8 @@ export function BudgetLineEditor({
               name="newCategory"
               required
               autoComplete="off"
+              value={newName}
+              onChange={(event) => setNewName(event.target.value)}
               className={inputClass}
               placeholder={putAway ? "Crypto DCA" : "School fees"}
             />

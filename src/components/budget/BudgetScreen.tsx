@@ -36,6 +36,7 @@ export function BudgetScreen() {
   const { mutate: mutateAll } = useSWRConfig();
   const toast = useToast();
   const [adding, setAdding] = useState(false);
+  const [presetCategory, setPresetCategory] = useState<string | null>(null);
   const [addingAway, setAddingAway] = useState(false);
   const [incomeDraft, setIncomeDraft] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
@@ -276,13 +277,27 @@ export function BudgetScreen() {
             These categories have no budget for this cycle, so the figures above
             don&apos;t include them. Real money — shown here rather than hidden.
           </p>
-          <ul className="mt-2 space-y-1">
+          <ul className="mt-2 space-y-1.5">
             {unbudgetedCategories.map((entry) => (
               <li
                 key={entry.category}
-                className="flex justify-between gap-3 text-[11px] text-muted"
+                className="flex items-center justify-between gap-3 text-[11px] text-muted"
               >
-                <span>{entry.category}</span>
+                <span className="flex min-w-0 items-center gap-2">
+                  <span className="truncate">{entry.category}</span>
+                  {entry.category !== "Uncategorised" ? (
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setPresetCategory(entry.category);
+                        setAdding(true);
+                      }}
+                      className="shrink-0 rounded border border-warn/40 px-1.5 py-0.5 text-[10px] font-medium text-warn transition-colors hover:bg-warn/10"
+                    >
+                      Budget this
+                    </button>
+                  ) : null}
+                </span>
                 <Money value={entry.amountZar} variant="whole" />
               </li>
             ))}
@@ -305,7 +320,10 @@ export function BudgetScreen() {
           action={
             <button
               type="button"
-              onClick={() => setAdding(true)}
+              onClick={() => {
+                setPresetCategory(null);
+                setAdding(true);
+              }}
               className="flex items-center gap-1 rounded-lg border border-line px-2.5 py-1.5 text-[11px] font-medium hover:bg-surface-2"
             >
               <Plus size={13} strokeWidth={2} />
@@ -377,7 +395,10 @@ export function BudgetScreen() {
               ) : null}
               <button
                 type="button"
-                onClick={() => setAdding(true)}
+                onClick={() => {
+                  setPresetCategory(null);
+                  setAdding(true);
+                }}
                 className="rounded-lg border border-line px-3.5 py-2 text-xs font-medium"
               >
                 Add lines one at a time
@@ -542,6 +563,7 @@ export function BudgetScreen() {
         onSaved={refresh}
         available={data.availableCategories}
         cycleLabel={`${formatDate(cycle.start)} → ${formatDate(cycle.end)}`}
+        presetCategory={presetCategory}
       />
 
       <BudgetLineEditor
