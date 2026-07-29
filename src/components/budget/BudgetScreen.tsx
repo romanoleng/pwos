@@ -5,8 +5,8 @@ import { useState } from "react";
 import useSWR, { useSWRConfig } from "swr";
 
 import {
-  copyBudgetsForward, deleteBudgetLine, restoreBudgetLine, seedBudgetsBlank,
-  seedBudgetsFromActuals, setExpectedIncome,
+  budgetAllUnbudgeted, copyBudgetsForward, deleteBudgetLine, restoreBudgetLine,
+  seedBudgetsBlank, seedBudgetsFromActuals, setExpectedIncome,
 } from "@/app/actions/budgets";
 import { BudgetLineEditor } from "@/components/budget/BudgetLineEditor";
 import { LoadingCard } from "@/components/ui/LoadingCard";
@@ -85,6 +85,21 @@ export function BudgetScreen() {
             : { message: `Couldn't undo: ${undone.error}`, tone: "error" },
         );
       },
+    });
+  }
+
+  async function onBudgetAll() {
+    setBusy(true);
+    const result = await budgetAllUnbudgeted();
+    setBusy(false);
+    if (!result.ok) {
+      toast.show({ message: result.error, tone: "error" });
+      return;
+    }
+    refresh();
+    toast.show({
+      message: `${result.data.created} ${result.data.created === 1 ? "line" : "lines"} added — tap any amount to adjust`,
+      tone: "success",
     });
   }
 
@@ -277,6 +292,16 @@ export function BudgetScreen() {
             These categories have no budget for this cycle, so the figures above
             don&apos;t include them. Real money — shown here rather than hidden.
           </p>
+          {unbudgetedCategories.some((e) => e.category !== "Uncategorised") ? (
+            <button
+              type="button"
+              onClick={() => void onBudgetAll()}
+              disabled={busy}
+              className="mt-2 rounded-lg bg-warn/15 px-2.5 py-1.5 text-[11px] font-medium text-warn transition-colors hover:bg-warn/25 disabled:opacity-50"
+            >
+              Budget all these · seeded at what you&apos;ve spent
+            </button>
+          ) : null}
           <ul className="mt-2 space-y-1.5">
             {unbudgetedCategories.map((entry) => (
               <li

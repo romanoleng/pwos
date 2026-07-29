@@ -3,6 +3,7 @@
 import { revalidateTag } from "next/cache";
 
 import { getCurrentCycle } from "@/lib/server/cycle";
+import { cutoverFloor } from "@/lib/server/cutover";
 import { sql } from "@/lib/server/db";
 
 import type { MutationResult } from "./holdings";
@@ -82,6 +83,50 @@ export async function createBudgetLine(input: {
   } catch (error) {
     console.error("[createBudgetLine]", error);
     return { ok: false, error: error instanceof Error ? error.message : "Couldn't add it." };
+  }
+}
+
+/**
+ * Give every category with spend-but-no-line a budget line at once, seeded at
+ * what's already been spent this cycle (rounded to R10).
+ *
+ * This is the batch companion to "Budget this": logging a category never
+ * creates a budget line, so anything you spend on without a plan collects in
+ * "spent outside any budget line". When that's several categories, adding them
+ * one by one is a chore — this lifts them all onto the plan in one tap, with
+ * amounts you then adjust. Only categories that actually exist as expense
+ * categories are eligible; unknown/uncategorised spend is left alone.
+ */
+export async function budgetAllUnbudgeted(): Promise<
+  MutationResult<{ created: number }>
+> {
+  const cycle = await getCurrentCycle();
+  const floor = await cutoverFloor();
+  try {
+    const created = await sql<{ id: string }>`
+      insert into budgets (cycle_start, category, budgeted_zar, kind)
+      select ${cycle.start}::date, t.category,
+             round(sum(-t.amount_zar) / 10) * 10, null
+      from transactions t
+      join categories c on c.name = t.category and c.kind = 'expense'
+      where t.type = 'expense'
+        and t.occurred_on >= ${cycle.start}::date and t.occurred_on < ${cycle.end}::date
+        and (${floor}::date is null or t.occurred_on >= ${floor}::date)
+        and not exists (
+          select 1 from budgets b
+          where b.cycle_start = ${cycle.start}::date and b.category = t.category)
+      group by t.category
+      having sum(-t.amount_zar) > 0
+      returning id::text`;
+
+    if (created.length === 0) {
+      return { ok: false, error: "Nothing to add — every spent category already has a line." };
+    }
+    invalidate();
+    return { ok: true, data: { created: created.length } };
+  } catch (error) {
+    console.error("[budgetAllUnbudgeted]", error);
+    return { ok: false, error: error instanceof Error ? error.message : "Couldn't add them." };
   }
 }
 
