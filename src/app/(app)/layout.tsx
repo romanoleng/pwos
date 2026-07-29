@@ -2,6 +2,7 @@ import { AssistantChat } from "@/components/shell/AssistantChat";
 import { AutoLock } from "@/components/shell/AutoLock";
 import { BottomTabs } from "@/components/shell/BottomTabs";
 import { LogFab } from "@/components/shell/LogFab";
+import { NavProgress } from "@/components/shell/NavProgress";
 import { Sidebar } from "@/components/shell/Sidebar";
 import { TopBar } from "@/components/shell/TopBar";
 import { TopTabs } from "@/components/shell/TopTabs";
@@ -21,6 +22,7 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
         the bars are permanent and iOS Safari can't drop them mid-scroll. On
         desktop it's normal block flow — the fixed sidebar, then page scroll. */}
     <div className="app-shell min-h-dvh md:pl-60">
+      <NavProgress />
       <Sidebar />
       <TopBar />
       <TopTabs />

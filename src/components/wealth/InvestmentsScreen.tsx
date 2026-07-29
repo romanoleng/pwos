@@ -46,6 +46,8 @@ export function InvestmentsScreen() {
   const classes = data.classes.filter((c) => INVESTMENT_CLASSES.includes(c.category));
   const total = classes.reduce((sum, c) => sum + c.valueZar, 0);
   const crypto = data.classes.find((c) => c.category === "Crypto");
+  const kidsTotal = kidGroups.reduce((sum, g) => sum + g.balanceZar, 0);
+  const kidsMonthly = kidGroups.reduce((sum, g) => sum + g.monthlyZar, 0);
 
   return (
     <div className="space-y-4">
@@ -92,6 +94,27 @@ export function InvestmentsScreen() {
           </ul>
         </CollapsibleSection>
       ))}
+
+      {kidGroups.length > 0 ? (
+        <Card>
+          <CardBody>
+            <p className="text-[11px] font-medium uppercase tracking-[0.08em] text-faint">
+              Kids&apos; investments · combined
+            </p>
+            <Money value={kidsTotal} variant="whole" className="mt-1.5 block text-xl font-semibold tracking-tight" />
+            <p className="mt-1 text-[11px] text-faint">
+              Lisa &amp; Liam together · kept separate from your net worth
+              {kidsMonthly > 0 ? (
+                <>
+                  {" · +"}
+                  <Money value={kidsMonthly} variant="whole" />
+                  /mo
+                </>
+              ) : null}
+            </p>
+          </CardBody>
+        </Card>
+      ) : null}
 
       {kidGroups.map((group) => (
         <CollapsibleSection
