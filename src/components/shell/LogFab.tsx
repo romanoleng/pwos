@@ -64,6 +64,7 @@ export function LogFab() {
         recentDescriptions={data?.defaults.descriptions}
         accounts={data?.defaults.accounts}
         allCategories={data?.defaults.allCategories}
+        budgetLines={data?.defaults.budgetLines}
         kidAccounts={data?.defaults.kidAccounts}
         suggestsNewCycle={data?.defaults.suggestsNewCycle}
         quickLinks={data?.defaults.quickLinks}

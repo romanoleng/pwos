@@ -15,6 +15,7 @@ import { MAX_MONTHS, MIN_MONTHS, type ScheduleMode } from "@/lib/schedule";
 import { AmountInput } from "@/components/ui/AmountInput";
 import { Chip, ChipRow } from "@/components/ui/ChipRow";
 import { Field, SlideOver, inputClass } from "@/components/ui/SlideOver";
+import { Money } from "@/components/ui/Money";
 import { useToast } from "@/components/ui/Toast";
 import { toLocalISODate } from "@/lib/crypto/history";
 import { formatMoneyWhole } from "@/lib/format";
@@ -60,6 +61,7 @@ export function LogTransaction({
   recentDescriptions = [],
   accounts = [],
   allCategories = [],
+  budgetLines = [],
   kidAccounts = [],
   suggestsNewCycle = false,
   quickLinks = [],
@@ -77,6 +79,9 @@ export function LogTransaction({
   accounts?: { label: string; kind: string }[];
   /** Every category from the database, split by kind for the right mode. */
   allCategories?: { name: string; kind: string }[];
+  /** This cycle's expense budget lines, so the sheet shows what's left on a
+   *  category the moment it's chosen. */
+  budgetLines?: { category: string; budgetedZar: number; remainingZar: number }[];
   /** Lisa's and Liam's accounts, offered as transfer destinations. */
   kidAccounts?: { id: string; child: string | null; account: string }[];
   /**
@@ -191,6 +196,15 @@ export function LogTransaction({
   // for categories that never grew a second level.
   const subcategoryOptions =
     category ? (frequent.subcategoriesByCategory[category] ?? []) : [];
+
+  // What's left on the chosen category's budget line this cycle — shown inline
+  // so the plan is visible at the moment of spending, and a category with no
+  // line is flagged before the surprise shows up on Budgets (Romano's ask,
+  // 2026-07-29). Expense logging only; income/transfers have no budget line.
+  const activeBudgetLine =
+    direction === "out" && category
+      ? (budgetLines.find((l) => l.category === category) ?? null)
+      : null;
   // Shown once a category is chosen (expense/income). Optional — it's a finer
   // tag — but always available so subcategory structure can be built as you go.
   const showSubcategory = direction !== "move" && category !== "";
@@ -575,6 +589,36 @@ export function LogTransaction({
           ) : null}
           {categoryError ? (
             <p className="mt-1.5 text-[11px] text-loss">{categoryError}</p>
+          ) : null}
+
+          {direction === "out" && category !== "" ? (
+            activeBudgetLine ? (
+              <p
+                className={`mt-2 text-[11px] ${
+                  activeBudgetLine.remainingZar < 0
+                    ? "text-loss"
+                    : activeBudgetLine.budgetedZar > 0 &&
+                        activeBudgetLine.remainingZar < activeBudgetLine.budgetedZar * 0.2
+                      ? "text-warn"
+                      : "text-gain"
+                }`}
+              >
+                {activeBudgetLine.remainingZar < 0 ? (
+                  <>
+                    Over by <Money value={Math.abs(activeBudgetLine.remainingZar)} variant="whole" />
+                  </>
+                ) : (
+                  <>
+                    <Money value={activeBudgetLine.remainingZar} variant="whole" /> left
+                  </>
+                )}{" "}
+                of <Money value={activeBudgetLine.budgetedZar} variant="whole" /> this cycle
+              </p>
+            ) : (
+              <p className="mt-2 text-[11px] text-faint">
+                No budget line yet — logs fine, but won&apos;t track to a plan. Add one on Budgets.
+              </p>
+            )
           ) : null}
         </Field>
 

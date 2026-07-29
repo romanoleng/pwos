@@ -377,6 +377,7 @@ export function HomeScreen() {
         recentDescriptions={defaults.descriptions}
         accounts={defaults.accounts}
         allCategories={defaults.allCategories}
+        budgetLines={defaults.budgetLines}
         kidAccounts={defaults.kidAccounts}
         suggestsNewCycle={defaults.suggestsNewCycle}
         quickLinks={defaults.quickLinks}

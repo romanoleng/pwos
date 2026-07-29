@@ -513,6 +513,7 @@ export function TransactionsScreen() {
         onSaved={() => void mutate()}
         accounts={home?.defaults.accounts}
         allCategories={home?.defaults.allCategories}
+        budgetLines={home?.defaults.budgetLines}
         kidAccounts={home?.defaults.kidAccounts}
         suggestsNewCycle={home?.defaults.suggestsNewCycle}
         suggestedCategories={home?.defaults.categories}

@@ -91,6 +91,9 @@ export type HomeSummary = {
     accounts: { label: string; kind: string }[];
     /** Every category, so the picker matches the database exactly. */
     allCategories: { name: string; kind: string }[];
+    /** Expense budget lines this cycle, so the log sheet can show what's left
+     *  on a category the moment it's picked. */
+    budgetLines: { category: string; budgetedZar: number; remainingZar: number }[];
     /** Lisa's and Liam's accounts — valid transfer destinations. */
     kidAccounts: { id: string; child: string | null; account: string }[];
     /** Start of the cycle in progress. */
@@ -258,6 +261,11 @@ export async function getHome(
       descriptions: descRows.map((r) => r.description),
       accounts: accountRows,
       allCategories: allCatRows,
+      budgetLines: budget.lines.map((l) => ({
+        category: l.category,
+        budgetedZar: l.budgetedZar,
+        remainingZar: l.remainingZar,
+      })),
       kidAccounts: kidRows,
       cycleStart: cycle.start,
       suggestsNewCycle: cycle.elapsedDays >= 20,
