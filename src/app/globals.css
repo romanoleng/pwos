@@ -240,6 +240,11 @@
     flex-direction: column;
     height: 100dvh;
     overflow: hidden;
+    /* Containing block for the floating buttons below: they anchor to this
+       non-scrolling shell, not the iOS "fixed" viewport. `relative` (unlike
+       transform) does NOT capture descendant `position: fixed`, so the
+       full-screen Ask/log overlays still cover the viewport as intended. */
+    position: relative;
   }
   .app-shell > * {
     flex-shrink: 0;
@@ -249,6 +254,17 @@
     min-height: 0;
     overflow-y: auto;
     -webkit-overflow-scrolling: touch;
+  }
+  /* The + and Ask buttons were the last `position: fixed` floaters, so they
+     still hit the same iOS Safari bug the tab bar did — dropped or lagged
+     during momentum scroll, so they read as missing or "behind" content.
+     Anchoring them to the shell (which never scrolls; .app-main does) makes
+     them simply always present, like the tab bar. Their inset utilities
+     (bottom/right/left) resolve against the shell, whose edges are the
+     viewport edges here (height: 100dvh), so the position is unchanged. */
+  .log-fab,
+  .ask-fab {
+    position: absolute;
   }
 }
 
